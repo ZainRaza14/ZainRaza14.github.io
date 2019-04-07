@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Syed Zain Raza</title>
+    <title>Syed Zain Raza - Reinforcement Learning and Psychology </title>
 
     <!-- Bootstrap Core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -55,7 +55,7 @@
                         <a href="about.html">About</a>
                     </li>
                     <li>
-                        <a href="post1.html">Blogs</a>
+                        <a href="post.html">Blogs</a>
                     </li>
                     <li>
                         <a href="contact.html">Contact</a>
@@ -69,46 +69,68 @@
 
     <!-- Page Header -->
     <!-- Set your background image for this header on the line below. -->
-    <header class="intro-header" style="background-image: url('img/home-bg.jpg')">
+    <header class="intro-header" style="background-image: url('img/post-bg.jpg')">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                    <div class="site-heading">
-                        <h1>Syed Zain Raza</h1>
-                        <hr class="small">
-                        <span class="subheading">Thoughts of an Aficionado of Video Games and Artificial Inteliigence</span>
+                    <div class="post-heading">
+                        <h1> Reinforcement Learning and Psychology ?</h1>
+                        <h2 class="subheading"> Model based and Model free !</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on April 6th, 2019</span>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                <div class="post-preview">
-                    <a href="post.html">
-                        <h2 class="post-title">
-                            Are Goals Really Worth For ?
-                        </h2>
-                        <h3 class="post-subtitle">
-                            An uncoventional thougth !
-                        </h3>
-                    </a>
-                    <p class="post-meta">Posted by <a href="#">Syed Zain Raza</a> on March 14th, 2019</p>
+    <!-- Post Content -->
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p> In this post I am going to talk about how RL concepts such as model based reinforcement learning, and model free reinforcement learning are similar and inspired from habitual and goal directed behaviors in psychology. 
+                    </p>
+                    <p>
+                    	Habits, as mostly described by most psychologists, are behavioral patterns triggered by appropriate stimuli and then performed automatically. Goal driven behaviors, on the other hand, are inspired by the kind of goal one is reaching for and the relationships between actions and their outcomes. Habits are usually controlled by previous stimuli and goals are driven by their consequences. One of the issues related to habitual behavior is that it does not respond quickly to changes made in the environment. 
+                    </p>
+                    <p>
+                    	In this sense, model free reinforcement learning is related to habitual behavior as it is also least resistant to change. If some thing changes in the environment, the agent has to traverse the environment many times again and again by obtaining rewards and in the same time updating its value function or policy. 
+                    </p>
+
+                    <p>
+                    	But if we look at goal-based behavior, it is more open to changes and will adopt well if things change in the environment mainly because of planning. Model based reinforcement learning in the same way can accommodate changes easily. Any change in the environment will eventually change its policy right away and planning will help to predict the consequences of the changes that the agent has never experience before.
+                    </p>
+                    <p>
+                    	These concepts can be explained in a better way by showing the following example of a rat who is trying to navigate a maze which has rewards at its ultimate ends.
+                    </p>
+
+                    <img src="img/img_rat.png" alt="Rat in a Maze">
+
+                    <p>
+                    	Left side of the figure shows the model free approach in which each state-action pair have rewards with them. These rewards have been gathered by completing the maze many times through trial and error. With this kind of method, rat just has to decide at each state the action with the largest reward. 
+                    </p>
+                    <p>
+                    	Right side of the figure shows the model-based approach in which there is an environment model which includes states-actions-next states and a reward model which states the final rewards associated to each end. The rat in this method, can decide which way to turn at each state by using the model to simulate sequences of action choices to ﬁnd a path yielding the highest return in the end. 
+                    </p>
+                    <p>
+                    	The values in the state action pairs of model free method are used by rat to take maximum rewarding action. In this specific example, rat will choose to L from S1 and then R from S2 to get a reward of 4. On the other hand, in model-based method, rat will choose L and then R to get the same reward of 4 provided the model used by it is accurate. 
+                    </p>
+                    <p>
+                    	Another important result from experiments Adams(1982) shows that by following a goal driven approach for a long period of time will eventually result into habitual behavior. Research done by Daw, Niv and Dayan (2015) shows that animals use both model and model free based methodologies to take actions. But over the course of time, model free process is more used as it becomes more reliable after it has gained enough experience using trial and error methods. This suggests that with more experience an agent can shift from model-based to model free processes.
+                    </p>
+                    <p>
+                    	Both fields research has an effect on each other and progress in one will eventually help the other one to grow too.  Reinforcement learning theory has aided simplify thinking about these issues and animal learning theories can help make better agents in the computational world.
+                    </p>
+
+                    <p>
+                    	This post was inspired from the book “Reinforcement Learning” by Richard S. Sutton and Andrew G. Barto.
+                    </p>
+                    
                 </div>
-                <hr>
-                
-                <!-- Pager -->
-                <ul class="pager">
-                    <li class="next">
-                        <a href="#">Older Posts &rarr;</a>
-                    </li>
-                </ul>
             </div>
         </div>
-    </div>
+    </article>
 
     <hr>
 
