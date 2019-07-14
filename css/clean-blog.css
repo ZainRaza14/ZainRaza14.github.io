@@ -35,6 +35,13 @@ a img:hover,
 a img:focus {
   cursor: zoom-in;
 }
+
+img {
+  width: 100%;
+  height: auto;
+}
+
+
 blockquote {
   color: #777777;
   font-style: italic;
