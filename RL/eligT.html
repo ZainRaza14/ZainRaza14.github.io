@@ -92,7 +92,7 @@
                     <p> In this post I am going to talk about how Eligbility traces concept is used in different reinforcement learning algorithmss.
                     </p>
                     <p>
-                    	Eligibility traces is one of the most important concepts in reinforcement learning. Almost all famous RL algorithms use the idea of eligibility traces. 
+                    	Eligibility traces is one of the most important concept in reinforcement learning. Almost all famous RL algorithms use the idea of eligibility traces. 
                     </p>
                     <p>
                     	The basic idea of eligibility traces is that it starts working when some weight w is used to estimate a value. It starts to decrease with a fixed amount decided by the parameter λ which is between 0 and 1. Before the trace reaches zero, if there occurs a TD error then learning occurs for the weight w. 
@@ -115,7 +115,7 @@
                     <p> δt = Rt+1 + γˆ v(St+1,wt)−ˆ v(St,wt)</p>
 
                     <p> Weight vector updates also depends now on eligibility trace vector: </p> 
-                    
+
                     <p> wt+1 = wt + αδtzt </p>
 
 
