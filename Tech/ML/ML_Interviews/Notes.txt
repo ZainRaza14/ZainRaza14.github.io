@@ -1,0 +1,1 @@
+Cost function is actually the method in my DL lectures. 
