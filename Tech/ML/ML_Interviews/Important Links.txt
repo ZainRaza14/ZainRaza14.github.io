@@ -1,3 +1,8 @@
 https://medium.com/@mlengineer/generative-and-discriminative-models-af5637a66a3#:~:text=In%20General%2C%20A%20Discriminative%20model,actual%20distribution%20of%20each%20class.&text=A%20Generative%20Model%20%E2%80%8Clearns%20the,the%20help%20of%20Bayes%20Theorem.
 
 https://medium.com/@mlengineer/joint-probability-vs-conditional-probability-fa2d47d95c4a
+
+https://www.youtube.com/watch?v=F6GSRDoB-Cg - Andrew Ng
+
+
+
