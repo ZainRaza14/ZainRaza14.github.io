@@ -412,3 +412,255 @@ img::-moz-selection {
 body {
   -webkit-tap-highlight-color: #0085A1;
 }
+
+/* ===== ELITE DESIGN UPGRADES ===== */
+
+/* --- Hero overlay for better text contrast --- */
+.intro-header {
+  position: relative;
+}
+.intro-header::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 100%);
+  z-index: 1;
+}
+.intro-header .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- Blog category cards on index/blogs pages --- */
+.post-preview {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-left: 4px solid #0085A1;
+  border-radius: 2px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.post-preview:hover {
+  box-shadow: 0 6px 24px rgba(0,133,161,0.10);
+  transform: translateY(-2px);
+}
+.post-preview > a > .post-title {
+  margin-top: 0;
+  font-size: 26px;
+}
+.post-preview > a > .post-subtitle {
+  color: #666;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* --- Bio intro blurb on homepage --- */
+.bio-intro {
+  background: #f7fbfc;
+  border-radius: 2px;
+  padding: 28px 32px;
+  margin-bottom: 36px;
+  border-left: 4px solid #0085A1;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #444;
+}
+.bio-intro p { margin: 0; }
+
+/* --- Section headers for about page --- */
+.section-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #0085A1;
+  margin: 48px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e8e8e8;
+  display: block;
+}
+
+/* --- Skill / interest tags --- */
+.tag-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag-list li {
+  background: #f0f8fa;
+  color: #0085A1;
+  border: 1px solid #b3dde5;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* --- Timeline-style education / experience entries --- */
+.timeline-item {
+  padding: 20px 0 20px 20px;
+  border-left: 3px solid #e8e8e8;
+  margin-bottom: 8px;
+  position: relative;
+}
+.timeline-item::before {
+  content: '';
+  width: 10px; height: 10px;
+  background: #0085A1;
+  border-radius: 50%;
+  position: absolute;
+  left: -6.5px;
+  top: 26px;
+}
+.timeline-item .tl-title {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 2px;
+  color: #222;
+}
+.timeline-item .tl-sub {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: #0085A1;
+  margin: 0 0 4px;
+}
+.timeline-item .tl-date {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  color: #999;
+  font-style: italic;
+}
+
+/* --- Book list grid --- */
+.book-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  font-family: 'Open Sans', sans-serif;
+}
+@media (max-width: 600px) {
+  .book-grid { grid-template-columns: 1fr; }
+}
+.book-grid li {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  color: #444;
+  line-height: 1.4;
+}
+.book-grid li.fav {
+  color: #222;
+  font-weight: 600;
+}
+.book-grid li.fav::after {
+  content: ' ★';
+  color: #f5a623;
+}
+
+/* --- Game cards --- */
+.game-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.game-cards li a {
+  display: block;
+  padding: 12px 20px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #333;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.game-cards li a:hover {
+  background: #0085A1;
+  color: #fff;
+  border-color: #0085A1;
+  text-decoration: none;
+}
+
+/* --- Contact social cards --- */
+.contact-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 32px 0;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 600px) {
+  .contact-cards { grid-template-columns: 1fr; }
+}
+.contact-cards li a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 2px;
+  text-decoration: none;
+  color: #333;
+  font-family: 'Open Sans', sans-serif;
+  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+}
+.contact-cards li a:hover {
+  box-shadow: 0 4px 16px rgba(0,133,161,0.12);
+  border-color: #0085A1;
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: #0085A1;
+}
+.contact-cards li a .fa {
+  font-size: 24px;
+  color: #0085A1;
+  width: 28px;
+  text-align: center;
+}
+.contact-card-label {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+}
+.contact-card-value {
+  font-size: 13px;
+  color: #777;
+  display: block;
+  word-break: break-all;
+}
+
+/* --- Footer LinkedIn icon --- */
+footer .list-inline li a .fa-linkedin {
+  font-size: inherit;
+}
+
+/* --- Misc polish --- */
+.intro-header .site-heading h2,
+.intro-header .page-heading h2 {
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.intro-header .site-heading .subheading,
+.intro-header .page-heading .subheading {
+  text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
