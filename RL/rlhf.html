@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Reinforcement Learning from Human Feedback (RLHF) explained - how ChatGPT and modern AI assistants are trained using human preferences by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Reinforcement Learning from Human Feedback</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="../css/clean-blog.min.css?v=2" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about.html">About</a></li>
+                    <li><a href="../blogs.html">Blogs</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="intro-header" style="background-image: url('../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Reinforcement Learning from Human Feedback</h1>
+                        <h2 class="subheading">How ChatGPT Learned to Talk to Us</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on June 4th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post Content -->
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>If you have used ChatGPT, Claude, or any modern AI assistant, you have experienced the output of one of the most consequential techniques in recent AI research: Reinforcement Learning from Human Feedback, or RLHF. It is the method that turned raw language models — capable but unpredictable — into assistants that feel genuinely helpful, safe, and aligned with what humans actually want.</p>
+
+                    <p>In this post I want to break down how RLHF works, why it matters, and what it tells us about the deeper challenge of building AI systems that do what we intend.</p>
+
+                    <h3>The Problem RLHF Solves</h3>
+
+                    <p>Large language models like GPT are trained to predict the next token in a sequence. Given enough text, they become extraordinarily good at this. But "predict the next token well" is not the same as "be a helpful, honest, and harmless assistant." A model optimizing purely for token prediction might confidently generate misinformation, produce harmful content, or give technically correct but completely unhelpful answers.</p>
+
+                    <p>This gap between what a model is trained to do and what we actually want it to do is called the alignment problem. RLHF is one of the most practical solutions we have found so far.</p>
+
+                    <h3>The Three Stages of RLHF</h3>
+
+                    <p>RLHF as applied in systems like InstructGPT (the precursor to ChatGPT) involves three distinct stages.</p>
+
+                    <h3>Stage 1: Supervised Fine-Tuning</h3>
+
+                    <p>The process begins with a pretrained language model. Human labelers are given prompts and asked to write ideal responses. These prompt-response pairs are used to fine-tune the model using standard supervised learning. The result is a model that starts to behave more like a useful assistant — but this alone is not enough, because human-written demonstrations are expensive to produce at scale and do not capture the full range of nuance in what makes a response good or bad.</p>
+
+                    <h3>Stage 2: Training a Reward Model</h3>
+
+                    <p>This is where the reinforcement learning angle begins. Human labelers are shown multiple model outputs for the same prompt and asked to rank them from best to worst. These rankings are used to train a separate neural network called a reward model. The reward model learns to predict how much a human would prefer a given response — essentially internalizing human judgment into a function that can be computed automatically.</p>
+
+                    <p>This is a powerful idea. Instead of needing a human to evaluate every single output the model produces during training, we train a proxy that can do it for us cheaply and at scale. The reward model becomes a compressed representation of human preferences.</p>
+
+                    <h3>Stage 3: Reinforcement Learning with PPO</h3>
+
+                    <p>With the reward model in place, the language model is now fine-tuned using reinforcement learning. Specifically, most RLHF implementations use Proximal Policy Optimization, or PPO — an algorithm from the policy gradient family of RL methods. The language model acts as the policy. It generates a response to a prompt, the reward model scores that response, and the policy is updated to produce higher-scoring responses over time.</p>
+
+                    <p>There is an important stabilizing term added to this objective: a KL divergence penalty that prevents the model from drifting too far from the supervised fine-tuned model. Without this constraint, the model could learn to exploit the reward model — producing outputs that score highly according to the proxy but are actually nonsensical or degenerate. This is a well-known problem in RL called reward hacking.</p>
+
+                    <h3>Why This Matters Beyond Chatbots</h3>
+
+                    <p>RLHF is significant not just because it made ChatGPT better at conversation. It represents a broader paradigm shift in how we think about training AI systems. Rather than specifying objectives mathematically — which is extremely hard for complex, subjective tasks — we let human judgment shape the reward signal directly.</p>
+
+                    <p>This connects to decades of prior work in RL. The reward hypothesis in classical reinforcement learning states that all goals can be described as the maximization of a cumulative reward signal. RLHF operationalizes this for language by asking: what if the reward signal came from people?</p>
+
+                    <p>The implications extend far beyond language models. Researchers are applying RLHF-style techniques to robotics, code generation, scientific reasoning, and multi-modal systems. Anywhere that desired behavior is easier to demonstrate or evaluate than to specify formally, RLHF provides a viable path.</p>
+
+                    <h3>The Limitations</h3>
+
+                    <p>RLHF is not without its problems. A few are worth taking seriously.</p>
+
+                    <p>First, it inherits the biases of the human labelers. If the people doing preference ranking have systematic blind spots or cultural biases, those biases get encoded into the reward model and propagated into the final system. The quality and diversity of human feedback matters enormously.</p>
+
+                    <p>Second, reward hacking remains a persistent risk. The reward model is a proxy for human preferences, not the real thing. Models are incentivized to find outputs that score well according to the proxy, which may diverge from what we actually want as the model becomes more capable.</p>
+
+                    <p>Third, RLHF is expensive. Collecting high-quality human preference data at scale requires significant infrastructure and careful labeler training. This has led to research into alternatives such as Constitutional AI (Anthropic's approach, which uses AI feedback rather than purely human feedback) and Direct Preference Optimization (DPO), which bypasses the reward model entirely by framing the preference learning problem as a classification objective.</p>
+
+                    <h3>What Comes Next</h3>
+
+                    <p>RLHF kicked off a wave of research into how to align AI systems with human intent. The field is moving quickly. DPO has emerged as a simpler and more stable alternative for many settings. RLAIF — Reinforcement Learning from AI Feedback — uses a more capable AI system to generate preference labels, reducing human labeling costs. And researchers are exploring ways to make reward models more robust to distribution shift and adversarial exploitation.</p>
+
+                    <p>What remains constant across all of these approaches is the core insight that RLHF introduced: the objective function matters as much as the architecture, and human judgment is a legitimate — and often necessary — component of defining that objective.</p>
+
+                    <h3>Conclusion</h3>
+
+                    <p>Reinforcement Learning from Human Feedback is one of those ideas that feels obvious in retrospect but required years of research to make practical. It solved a real problem — the gap between what language models were trained to do and what we wanted them to do — in a way that scaled. And in doing so, it reshaped the entire trajectory of AI development.</p>
+
+                    <p>For anyone who has spent time with classical RL, RLHF feels like a natural extension: the same loop of action, feedback, and policy update, but with humans in the loop as the source of ground truth. The elegance is in the simplicity of that substitution, and the complexity is in making it work reliably at scale.</p>
+
+                    <p>That tension — between elegant ideas and messy real-world implementation — is what makes this field worth following closely.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://twitter.com/500zainraza">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/in/syed-zain-raza-ba96899b">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Theme JavaScript -->
+    <script src="../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
