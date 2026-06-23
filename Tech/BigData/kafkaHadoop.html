@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Installing Kafka and Hadoop - a practical setup guide by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Installing Kafka and Hadoop</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Installing Kafka and Hadoop</h1>
+                        <h2 class="subheading">Setting up the two pillars of big data infrastructure</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Kafka and Hadoop serve different but complementary roles in a big data stack. Hadoop is a batch processing framework for storing and analyzing large datasets at rest. Kafka is a distributed streaming platform for data in motion — ingesting, routing, and processing high-throughput event streams in real time. This guide walks through installing both on Ubuntu.</p>
+
+                    <h3>Prerequisites</h3>
+
+                    <p>Both Kafka and Hadoop require Java. Install OpenJDK first:</p>
+
+                    <pre><code>sudo apt update
+sudo apt install openjdk-11-jdk -y
+java -version</code></pre>
+
+                    <p>Hadoop also requires SSH for its node communication. Set up passwordless SSH for localhost:</p>
+
+                    <pre><code>sudo apt install ssh -y
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+chmod 0600 ~/.ssh/authorized_keys
+ssh localhost</code></pre>
+
+                    <h3>Installing Hadoop</h3>
+
+                    <p>Download and extract Hadoop. Check the Apache Hadoop site for the latest stable version:</p>
+
+                    <pre><code>wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+tar -xzf hadoop-3.3.6.tar.gz
+sudo mv hadoop-3.3.6 /usr/local/hadoop</code></pre>
+
+                    <p>Set the environment variables. Add these to your <code>~/.bashrc</code>:</p>
+
+                    <pre><code>export HADOOP_HOME=/usr/local/hadoop
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin</code></pre>
+
+                    <p>Reload the shell:</p>
+
+                    <pre><code>source ~/.bashrc</code></pre>
+
+                    <p>Set the Java path in Hadoop's environment file:</p>
+
+                    <pre><code>nano /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+# Add: export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64</code></pre>
+
+                    <p>Format the HDFS namenode and start the cluster:</p>
+
+                    <pre><code>hdfs namenode -format
+start-dfs.sh
+start-yarn.sh</code></pre>
+
+                    <p>Verify all services are running:</p>
+
+                    <pre><code>jps
+# Should show: NameNode, DataNode, SecondaryNameNode, ResourceManager, NodeManager</code></pre>
+
+                    <p>The Hadoop web UI is available at <code>http://localhost:9870</code>.</p>
+
+                    <h3>Installing Kafka</h3>
+
+                    <p>Download and extract Kafka:</p>
+
+                    <pre><code>wget https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+tar -xzf kafka_2.13-3.7.0.tgz
+sudo mv kafka_2.13-3.7.0 /usr/local/kafka</code></pre>
+
+                    <p>Add Kafka to your PATH in <code>~/.bashrc</code>:</p>
+
+                    <pre><code>export KAFKA_HOME=/usr/local/kafka
+export PATH=$PATH:$KAFKA_HOME/bin</code></pre>
+
+                    <p>Kafka depends on ZooKeeper for cluster coordination. Start ZooKeeper first, then Kafka:</p>
+
+                    <pre><code>zookeeper-server-start.sh -daemon $KAFKA_HOME/config/zookeeper.properties
+kafka-server-start.sh -daemon $KAFKA_HOME/config/server.properties</code></pre>
+
+                    <h3>Testing Kafka</h3>
+
+                    <p>Create a topic, produce a message, and consume it to verify the installation:</p>
+
+                    <pre><code># Create a topic
+kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+# Start a producer (type messages, press Enter after each)
+kafka-console-producer.sh --topic test-topic --bootstrap-server localhost:9092
+
+# In a second terminal, start a consumer
+kafka-console-consumer.sh --topic test-topic --from-beginning --bootstrap-server localhost:9092</code></pre>
+
+                    <p>Messages you type in the producer terminal should appear in the consumer terminal.</p>
+
+                    <h3>How they work together</h3>
+
+                    <p>A common architecture is to use Kafka as the ingestion layer — applications stream events into Kafka topics — and Hadoop as the storage and batch processing layer. A Kafka consumer reads from the topics and writes the data to HDFS, where MapReduce or Spark jobs can process it. This gives you both real-time streaming capability and the ability to run large-scale historical analysis on the same data.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

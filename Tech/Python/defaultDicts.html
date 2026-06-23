@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Using Default Dictionaries in Python - a practical guide by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Using Default Dictionaries</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Using Default Dictionaries</h1>
+                        <h2 class="subheading">Stop writing if-key-not-in-dict checks forever</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>One of the most common patterns in Python is building a dictionary where each key maps to a list or a count. You have probably written something like this dozens of times:</p>
+
+                    <pre><code>groups = {}
+for item in data:
+    if item['category'] not in groups:
+        groups[item['category']] = []
+    groups[item['category']].append(item)</code></pre>
+
+                    <p>It works, but the key existence check is boilerplate you have to repeat everywhere. The <code>defaultdict</code> from Python's <code>collections</code> module eliminates it entirely.</p>
+
+                    <h3>What is a defaultdict?</h3>
+
+                    <p>A <code>defaultdict</code> is a subclass of the built-in <code>dict</code>. The difference is that it accepts a callable when you create it. Whenever you access a key that does not exist, instead of raising a <code>KeyError</code>, it calls that callable and uses the result as the default value for the new key.</p>
+
+                    <pre><code>from collections import defaultdict
+
+groups = defaultdict(list)
+for item in data:
+    groups[item['category']].append(item)</code></pre>
+
+                    <p>The <code>list</code> callable is called with no arguments, producing an empty list <code>[]</code>, which is then stored and returned. Your loop shrinks to two lines.</p>
+
+                    <h3>Common use cases</h3>
+
+                    <p><strong>Counting occurrences:</strong></p>
+
+                    <pre><code>from collections import defaultdict
+
+word_count = defaultdict(int)
+for word in text.split():
+    word_count[word] += 1</code></pre>
+
+                    <p>When you access a missing key, <code>int()</code> returns <code>0</code>, so incrementing always works without an initialization step.</p>
+
+                    <p><strong>Grouping items:</strong></p>
+
+                    <pre><code>from collections import defaultdict
+
+employees_by_dept = defaultdict(list)
+for emp in employees:
+    employees_by_dept[emp['department']].append(emp['name'])</code></pre>
+
+                    <p><strong>Building a graph as an adjacency list:</strong></p>
+
+                    <pre><code>from collections import defaultdict
+
+graph = defaultdict(set)
+for u, v in edges:
+    graph[u].add(v)
+    graph[v].add(u)</code></pre>
+
+                    <h3>Using a lambda for custom defaults</h3>
+
+                    <p>The callable does not have to be a built-in type. You can pass a <code>lambda</code> to produce any default value you want:</p>
+
+                    <pre><code>from collections import defaultdict
+
+config = defaultdict(lambda: 'N/A')
+config['host'] = 'localhost'
+
+print(config['host'])    # localhost
+print(config['timeout']) # N/A</code></pre>
+
+                    <h3>Nested defaultdicts</h3>
+
+                    <p>For multi-level grouping, you can nest them:</p>
+
+                    <pre><code>from collections import defaultdict
+
+nested = defaultdict(lambda: defaultdict(int))
+nested['python']['functions'] += 1
+nested['python']['classes'] += 3
+nested['javascript']['functions'] += 5
+
+print(nested['python'])  # defaultdict(int, {'functions': 1, 'classes': 3})</code></pre>
+
+                    <h3>One thing to watch out for</h3>
+
+                    <p>Because <code>defaultdict</code> creates a key on first access, checking for the presence of a key with <code>if key in d</code> is safe — it does not trigger the default. But accessing <code>d[key]</code> directly will create the key as a side effect. If you need to check without creating, use <code>d.get(key)</code> or <code>key in d</code> rather than direct access.</p>
+
+                    <h3>When to use it</h3>
+
+                    <p>Reach for <code>defaultdict</code> whenever your first access to a key should produce a predictable starting value. Counters, grouped collections, adjacency lists, and frequency maps are all natural fits. For simple single-value defaults where you do not want the key created automatically, <code>dict.get(key, default)</code> or <code>dict.setdefault</code> may be cleaner. But for accumulation patterns, <code>defaultdict</code> is the right tool.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

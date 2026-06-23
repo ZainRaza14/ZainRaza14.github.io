@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Using the map function in Python - a practical guide by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Using Map</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Using Map</h1>
+                        <h2 class="subheading">Apply a function to every element without writing a loop</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p><code>map()</code> is a built-in Python function that applies a function to every item in an iterable and returns an iterator of the results. It is one of the core functional programming tools in Python, alongside <code>filter()</code> and <code>reduce()</code>.</p>
+
+                    <h3>The syntax</h3>
+
+                    <pre><code>map(function, iterable)</code></pre>
+
+                    <p>It returns a map object, which is lazy — it does not compute the results until you iterate over it. Wrap it in <code>list()</code> to get all results at once.</p>
+
+                    <h3>Basic example</h3>
+
+                    <pre><code>numbers = [1, 2, 3, 4, 5]
+squares = list(map(lambda x: x ** 2, numbers))
+# [1, 4, 9, 16, 25]</code></pre>
+
+                    <p>The equivalent for loop:</p>
+
+                    <pre><code>squares = []
+for x in numbers:
+    squares.append(x ** 2)</code></pre>
+
+                    <p><code>map()</code> is more concise and often faster because it avoids the overhead of repeated <code>append()</code> calls.</p>
+
+                    <h3>Using a named function</h3>
+
+                    <p>You can pass any callable, not just a lambda. Named functions make the intent clearer when the transformation is more involved:</p>
+
+                    <pre><code>def celsius_to_fahrenheit(c):
+    return (c * 9/5) + 32
+
+temps_c = [0, 20, 37, 100]
+temps_f = list(map(celsius_to_fahrenheit, temps_c))
+# [32.0, 68.0, 98.6, 212.0]</code></pre>
+
+                    <h3>Mapping over multiple iterables</h3>
+
+                    <p><code>map()</code> accepts more than one iterable. The function receives one element from each iterable per call:</p>
+
+                    <pre><code>a = [1, 2, 3]
+b = [10, 20, 30]
+result = list(map(lambda x, y: x + y, a, b))
+# [11, 22, 33]</code></pre>
+
+                    <p>This stops at the shortest iterable, so make sure lengths match if you want all elements covered.</p>
+
+                    <h3>Practical data cleaning example</h3>
+
+                    <pre><code>raw_names = ['  alice ', 'BOB', '  Charlie  ']
+clean_names = list(map(lambda n: n.strip().title(), raw_names))
+# ['Alice', 'Bob', 'Charlie']</code></pre>
+
+                    <h3>Type conversion on lists</h3>
+
+                    <p>A very common use is converting a list of strings from user input or a CSV into numbers:</p>
+
+                    <pre><code>raw = ['1', '2', '3', '4', '5']
+numbers = list(map(int, raw))
+# [1, 2, 3, 4, 5]</code></pre>
+
+                    <p>Here <code>int</code> is the callable — <code>map()</code> calls <code>int(item)</code> for each element.</p>
+
+                    <h3>map() vs list comprehensions</h3>
+
+                    <p>In modern Python, list comprehensions are often preferred for readability:</p>
+
+                    <pre><code># map
+squares = list(map(lambda x: x ** 2, numbers))
+
+# list comprehension
+squares = [x ** 2 for x in numbers]</code></pre>
+
+                    <p>The comprehension reads more naturally in most cases. Where <code>map()</code> has an advantage is when passing an existing named function — <code>map(int, strings)</code> is cleaner than <code>[int(s) for s in strings]</code>. And because <code>map()</code> returns a lazy iterator, it can be more memory-efficient when chained with other iterators and you never need the full list at once.</p>
+
+                    <h3>Chaining map with other functions</h3>
+
+                    <pre><code>from functools import reduce
+
+numbers = [1, 2, 3, 4, 5]
+
+# Square each number, keep evens, sum them
+result = reduce(
+    lambda acc, x: acc + x,
+    filter(lambda x: x % 2 == 0, map(lambda x: x ** 2, numbers))
+)
+# squares: [1, 4, 9, 16, 25] -> evens: [4, 16] -> sum: 20</code></pre>
+
+                    <p>This pipeline style — transform, filter, reduce — is the functional programming pattern that <code>map()</code> was designed to support.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

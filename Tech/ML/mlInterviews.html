@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Machine learning interview questions and answers by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - ML Interview Questions</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>ML Interview Questions</h1>
+                        <h2 class="subheading">Core concepts every machine learning engineer should know cold</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>ML interviews test both theoretical foundations and practical judgment. The questions below cover the concepts that come up most consistently, with the kind of depth interviewers actually want to hear.</p>
+
+                    <h3>What is the bias-variance tradeoff?</h3>
+
+                    <p>Bias is the error from incorrect assumptions in the learning algorithm — a high-bias model is too simple and underfits the data. Variance is the error from sensitivity to small fluctuations in the training set — a high-variance model is too complex and overfits. The tradeoff is that reducing one typically increases the other. The goal is to find the model complexity that minimizes total error on unseen data. Regularization, cross-validation, and ensemble methods are all tools for managing this tradeoff.</p>
+
+                    <h3>What is the difference between L1 and L2 regularization?</h3>
+
+                    <p>Both add a penalty term to the loss function to discourage large weights. L2 (Ridge) adds the sum of squared weights, which shrinks all weights toward zero but rarely to exactly zero. L1 (Lasso) adds the sum of absolute values of weights, which tends to produce sparse solutions where some weights are exactly zero — effectively performing feature selection. L2 is preferred when you believe most features are relevant; L1 when you suspect many features are irrelevant and want automatic selection.</p>
+
+                    <h3>How does gradient descent work?</h3>
+
+                    <p>Gradient descent is an optimization algorithm that iteratively updates model parameters in the direction that reduces the loss function. At each step, it computes the gradient of the loss with respect to each parameter and moves the parameters by a small amount (the learning rate) in the negative gradient direction. Batch gradient descent uses the full dataset per update. Stochastic gradient descent (SGD) uses one sample. Mini-batch gradient descent — the most common variant in practice — uses a small random batch, balancing the noisy but fast updates of SGD against the stable but slow updates of full-batch.</p>
+
+                    <h3>What is overfitting and how do you prevent it?</h3>
+
+                    <p>Overfitting happens when a model learns the training data too well, including its noise, and fails to generalize to new data. Prevention strategies include: getting more training data, simplifying the model architecture, applying regularization (L1/L2 or dropout), using early stopping during training, and cross-validation to detect when validation loss starts diverging from training loss.</p>
+
+                    <h3>Explain precision, recall, and F1 score</h3>
+
+                    <p>Precision is the fraction of positive predictions that are actually positive: TP / (TP + FP). Recall is the fraction of actual positives that the model correctly identifies: TP / (TP + FN). F1 is the harmonic mean of the two: 2 * (precision * recall) / (precision + recall). Precision matters when false positives are costly (spam detection — you do not want to delete real email). Recall matters when false negatives are costly (cancer screening — you do not want to miss a case). F1 balances both and is useful when the class distribution is uneven.</p>
+
+                    <h3>What is cross-validation?</h3>
+
+                    <p>Cross-validation is a technique to estimate how well a model will generalize to an independent dataset. In k-fold cross-validation, the training data is split into k equal subsets. The model is trained k times, each time using k-1 folds for training and the remaining fold for validation. The final performance metric is averaged across all k runs. This gives a more reliable estimate than a single train-test split, especially on small datasets.</p>
+
+                    <h3>What is the difference between a generative and discriminative model?</h3>
+
+                    <p>A discriminative model learns the decision boundary between classes — it models P(y|x) directly. Logistic regression and SVMs are discriminative. A generative model learns the distribution of each class — it models P(x|y) and uses Bayes' theorem to compute P(y|x). Naive Bayes and Gaussian Mixture Models are generative. Generative models can generate new data samples; discriminative models typically cannot. Discriminative models usually achieve better classification accuracy when labeled data is sufficient.</p>
+
+                    <h3>What is the curse of dimensionality?</h3>
+
+                    <p>As the number of features increases, the volume of the feature space grows exponentially. Data becomes increasingly sparse — any fixed number of training samples covers a smaller and smaller fraction of the space. This causes distance-based algorithms like k-NN to break down because all points appear roughly equidistant in high dimensions. It also makes overfitting more likely. Principal component analysis, feature selection, and regularization are common responses.</p>
+
+                    <h3>How does a random forest work?</h3>
+
+                    <p>A random forest is an ensemble of decision trees trained on random subsets of the training data (bootstrap sampling) with a random subset of features considered at each split. The final prediction is the majority vote (classification) or average (regression) across all trees. The randomness ensures the trees are decorrelated, so their errors tend to cancel out. Random forests are robust to overfitting, handle high-dimensional data well, and provide feature importance estimates.</p>
+
+                    <h3>What is the vanishing gradient problem?</h3>
+
+                    <p>In deep neural networks trained with backpropagation, gradients are multiplied layer by layer as they flow backward through the network. When using activation functions like sigmoid or tanh, whose derivatives are at most 0.25, the gradient shrinks exponentially as it passes through layers. By the time it reaches early layers, the gradient is nearly zero and those weights stop updating — the network fails to learn long-range dependencies. ReLU activations, residual connections (ResNets), batch normalization, and careful weight initialization (He or Xavier) are all strategies developed to address this.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
