@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Running Jupyter Notebook on an AWS EC2 instance - a step by step guide by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Running Jupyter Notebook on EC2</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Running Jupyter Notebook on EC2</h1>
+                        <h2 class="subheading">Move your data work to the cloud without leaving the notebook interface</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Running Jupyter Notebook locally works fine for small datasets. But when your data does not fit in your laptop's RAM, or you need a GPU for model training, moving to an AWS EC2 instance is the natural next step. This walkthrough covers the setup from scratch.</p>
+
+                    <h3>Step 1: Launch an EC2 Instance</h3>
+
+                    <p>Log into the AWS console and navigate to EC2. Launch a new instance with Ubuntu Server as the AMI. For most data work, a <code>t3.medium</code> or <code>t3.large</code> is a reasonable starting point. If you need GPU support for deep learning, choose a <code>p3.2xlarge</code> (NVIDIA V100) or the more cost-effective <code>g4dn.xlarge</code> (T4).</p>
+
+                    <p>During setup, create or select a key pair — you will need the <code>.pem</code> file to SSH in. In the security group settings, add an inbound rule: Custom TCP, port <code>8888</code>, source <code>0.0.0.0/0</code>. This is the default Jupyter port.</p>
+
+                    <h3>Step 2: Connect and Install Dependencies</h3>
+
+                    <p>SSH into your instance:</p>
+
+                    <pre><code>chmod 400 your-key.pem
+ssh -i your-key.pem ubuntu@your-ec2-public-ip</code></pre>
+
+                    <p>Update the system and install Python and pip:</p>
+
+                    <pre><code>sudo apt update && sudo apt upgrade -y
+sudo apt install python3-pip python3-dev -y</code></pre>
+
+                    <p>Install Jupyter and any libraries you need:</p>
+
+                    <pre><code>pip3 install jupyter pandas numpy scikit-learn matplotlib</code></pre>
+
+                    <h3>Step 3: Configure Jupyter for Remote Access</h3>
+
+                    <p>Generate the Jupyter config file:</p>
+
+                    <pre><code>jupyter notebook --generate-config</code></pre>
+
+                    <p>Set a password so the notebook is not open to anyone with the IP:</p>
+
+                    <pre><code>jupyter notebook password</code></pre>
+
+                    <p>Open the config file:</p>
+
+                    <pre><code>nano ~/.jupyter/jupyter_notebook_config.py</code></pre>
+
+                    <p>Add or uncomment these lines:</p>
+
+                    <pre><code>c.NotebookApp.ip = '0.0.0.0'
+c.NotebookApp.port = 8888
+c.NotebookApp.open_browser = False</code></pre>
+
+                    <p>Setting <code>ip</code> to <code>0.0.0.0</code> tells Jupyter to listen on all network interfaces, not just localhost.</p>
+
+                    <h3>Step 4: Start Jupyter</h3>
+
+                    <pre><code>jupyter notebook</code></pre>
+
+                    <p>Open a browser on your local machine and navigate to:</p>
+
+                    <pre><code>http://your-ec2-public-ip:8888</code></pre>
+
+                    <p>Enter the password you set and you are in.</p>
+
+                    <h3>Step 5: Keep it Running with tmux</h3>
+
+                    <p>If you close your SSH connection, the Jupyter process dies. Use <code>tmux</code> to keep it running in the background:</p>
+
+                    <pre><code>sudo apt install tmux -y
+tmux new -s jupyter
+jupyter notebook
+# Press Ctrl+B then D to detach</code></pre>
+
+                    <p>To reattach later: <code>tmux attach -t jupyter</code></p>
+
+                    <h3>Cost tip</h3>
+
+                    <p>EC2 instances charge by the hour even when idle. Stop the instance from the AWS console when you are done working. Your EBS volume (and its data) persists even when the instance is stopped — you only pay the storage cost, not the compute cost. Set up a billing alarm in CloudWatch to avoid surprise charges.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Using Lambda Functions in Python - a practical guide by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Using Lambda Functions</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Using Lambda Functions</h1>
+                        <h2 class="subheading">Write concise, inline functions without the def ceremony</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>A lambda is a small anonymous function defined in a single expression. It is not a replacement for <code>def</code> — it is a tool for situations where you need a short, throwaway function and giving it a name would add more noise than clarity.</p>
+
+                    <h3>The syntax</h3>
+
+                    <pre><code>lambda arguments: expression</code></pre>
+
+                    <p>A lambda can take any number of arguments but contains only a single expression. The result of that expression is automatically returned.</p>
+
+                    <pre><code>square = lambda x: x ** 2
+print(square(5))  # 25
+
+add = lambda x, y: x + y
+print(add(3, 4))  # 7</code></pre>
+
+                    <p>Both of these are equivalent to named functions. The lambda form is only worth using when you are passing the function inline somewhere else.</p>
+
+                    <h3>Sorting with a key function</h3>
+
+                    <p>The most common real-world use for lambdas is as the <code>key</code> argument to <code>sorted()</code> or <code>list.sort()</code>.</p>
+
+                    <pre><code>students = [
+    {'name': 'Alice', 'grade': 88},
+    {'name': 'Bob', 'grade': 95},
+    {'name': 'Charlie', 'grade': 72},
+]
+
+# Sort by grade descending
+sorted_students = sorted(students, key=lambda s: s['grade'], reverse=True)
+# [{'name': 'Bob', 'grade': 95}, {'name': 'Alice', 'grade': 88}, ...]</code></pre>
+
+                    <p>Sorting by multiple fields:</p>
+
+                    <pre><code>data = [('Alice', 2), ('Bob', 1), ('Alice', 1)]
+sorted_data = sorted(data, key=lambda x: (x[0], x[1]))
+# [('Alice', 1), ('Alice', 2), ('Bob', 1)]</code></pre>
+
+                    <h3>With filter()</h3>
+
+                    <p>A lambda pairs naturally with <code>filter()</code> to keep only elements that satisfy a condition:</p>
+
+                    <pre><code>numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+evens = list(filter(lambda x: x % 2 == 0, numbers))
+# [2, 4, 6, 8, 10]</code></pre>
+
+                    <h3>With map()</h3>
+
+                    <p>To apply a transformation to every element in a sequence:</p>
+
+                    <pre><code>prices = [10.5, 20.0, 5.75, 8.99]
+discounted = list(map(lambda p: round(p * 0.9, 2), prices))
+# [9.45, 18.0, 5.17, 8.09]</code></pre>
+
+                    <h3>Conditional logic inside a lambda</h3>
+
+                    <p>You can use a ternary expression inside a lambda for simple branching:</p>
+
+                    <pre><code>classify = lambda x: 'positive' if x > 0 else ('negative' if x < 0 else 'zero')
+print(classify(5))   # positive
+print(classify(-3))  # negative
+print(classify(0))   # zero</code></pre>
+
+                    <h3>When not to use a lambda</h3>
+
+                    <p>Lambdas are meant for short, readable one-liners. If the logic requires more than a single expression, use a named function instead. PEP 8 specifically advises against assigning a lambda to a variable at module level — that is exactly what <code>def</code> is for. The goal is clarity. A lambda that requires a comment to explain is a lambda that should be a function.</p>
+
+                    <pre><code># Avoid this — too complex for a lambda
+process = lambda x: x['value'] * 1.1 if x['type'] == 'A' else x['value'] * 0.95 if x['type'] == 'B' else x['value']
+
+# Prefer this
+def apply_discount(x):
+    if x['type'] == 'A':
+        return x['value'] * 1.1
+    elif x['type'] == 'B':
+        return x['value'] * 0.95
+    return x['value']</code></pre>
+
+                    <p>Use lambdas to reduce clutter, not to create it.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

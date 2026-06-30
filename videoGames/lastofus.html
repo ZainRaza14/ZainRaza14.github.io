@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The Last of Us technical review - NPC AI, graphical fidelity, and animation systems by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - The Last of Us Review</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="../css/clean-blog.min.css?v=2" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about.html">About</a></li>
+                    <li><a href="../blogs.html">Blogs</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="intro-header" style="background-image: url('../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>The Last of Us</h1>
+                        <h2 class="subheading">A Technical Deep Dive into NPC AI and Graphical Craft</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on June 9th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post Content -->
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>When The Last of Us launched in 2013, it set a benchmark that most games still have not cleared. Not because of its story, though that story is exceptional, but because of the invisible technical machinery running underneath everything you see and do. Naughty Dog built a game where the AI behaves like something that wants to survive, the lighting reacts like real physics, and human faces carry emotional weight that was simply not possible a generation earlier. Thirteen years later, it is still worth studying in detail.</p>
+
+                    <h3>Enemy AI: Designed Around Survival Instinct</h3>
+
+                    <p>The infected in The Last of Us are divided into distinct behavioral tiers, each built on different AI architectures. Runners retain partial cognition. They can hear, orient, and call for help, and their pathfinding reflects urgency rather than precision. Stalkers occupy the most sophisticated behavioral state in the game. Unlike Runners who charge or Clickers who navigate purely by echolocation, Stalkers combine both systems. They will hide behind cover, observe your movement, and initiate an ambush only when you are isolated. They track last-known positions, update their threat assessment when you move, and reposition dynamically if their angle of approach is compromised.</p>
+
+                    <p>Clickers are technically the most interesting. Their vision is completely disabled, replaced by a cone-shaped echolocation model driven by audio propagation in the game world. The engine simulates how sound travels around geometry. If you crouch behind a concrete wall, the Clicker's acoustic model registers reduced signal strength from your direction. If you step on broken glass or knock over a bottle, the resulting audio event is inserted directly into the AI's sensory queue and processed against its current alert state. This is not a simple trigger radius check. It is a full three-dimensional sound simulation feeding into a finite state machine that governs the Clicker's behavior graph.</p>
+
+                    <p>Human enemies run on a separate but equally detailed system. FEDRA soldiers and hunters use cover-based tactical AI with genuine flanking logic. When you are pinned behind an obstacle, the enemy AI designates suppressor roles and mover roles dynamically. Suppressors hold your attention with sustained fire while movers attempt to break your sightline from an angle. If a mover is killed, a suppressor will re-evaluate and fill that role. This coordination is not scripted. It emerges from shared blackboard state where enemies communicate position, threat level, and tactical assignment through a common data structure rather than individual hardcoded behaviors.</p>
+
+                    <h3>Companion AI: Ellie and the Invisible Seams</h3>
+
+                    <p>Ellie is arguably the most technically demanding AI companion ever shipped in an action game. The problem Naughty Dog had to solve was this: in a stealth game built on tension, a companion NPC that enemies notice or that breaks immersion through robotic movement destroys the entire experience. Their solution was a layered exception system.</p>
+
+                    <p>Ellie operates in a separate AI visibility layer. She is present in the game world, moves through space realistically, and reacts to the environment, but enemies do not include her in their threat calculations unless a specific narrative trigger fires. Rather than simply making her invisible to enemy sight lines, the team gave her a dedicated movement behavior set that keeps her in the player's peripheral vision and behind cover by default. She tracks Joel's position continuously and maintains a weighted offset from him that prioritizes staying out of enemy sightlines. The result is that she feels present and alive without ever becoming the reason you get caught.</p>
+
+                    <p>Her combat AI also deserves attention. When combat breaks open, Ellie transitions from companion mode to support mode and begins making contextual decisions about target priority, ammo scavenging, and distraction throws. She will throw a brick to pull an enemy's attention if you are grappling with another. These behaviors are driven by utility scoring: each available action is assigned a value based on current game state, and the highest-scoring action is selected. The system is simple in principle but extraordinarily well-tuned. It almost never makes a decision that feels wrong.</p>
+
+                    <h3>Rendering and Lighting: Physically Grounded</h3>
+
+                    <p>The Last of Us shipped on PlayStation 3 hardware with severe memory and bandwidth constraints. What Naughty Dog achieved within those constraints is still studied in graphics programming circles. The deferred rendering pipeline the team built allowed them to place dozens of dynamic light sources in scenes that PS3 developers conventionally would have baked entirely into static lightmaps.</p>
+
+                    <p>Ambient occlusion was computed using a screen-space technique that approximated how light fails to reach corners and crevices. Combined with carefully authored environment geometry, this gave every scene a sense of physical weight. Surfaces looked like they were actually blocking light rather than receiving a uniform illumination pass. The spore-filled corridors of a collapsed hospital and the filtered sunlight in an overgrown shopping mall are lit differently not because of artistic presets but because the rendering pipeline was responding to genuinely different light source configurations.</p>
+
+                    <p>The Remastered and Part I versions escalated this significantly. The PS5 rebuild introduced ray-traced ambient occlusion and shadow rendering, replacing the screen-space approximations with physically accurate computation. The difference is most visible in how shadows terminate at the edges of objects. In the original, shadow edges feather with a soft approximation. In Part I on PS5, shadows have hard penumbra gradients that shift depending on light source distance and size, which is physically correct behavior.</p>
+
+                    <h3>Facial Animation and Motion Capture Integration</h3>
+
+                    <p>Naughty Dog developed a proprietary facial capture pipeline for The Last of Us that went beyond the standard practice of capturing gross facial movement and retargeting it to a rig. The system captured fine muscle movement and transferred it to a high-polygon face mesh with enough fidelity to reproduce the subtle asymmetries that make human expressions feel authentic rather than performed.</p>
+
+                    <p>The key technical challenge was the eyes. Eye contact in games is notoriously difficult. The cornea is a refractive surface and light passes through it differently than it does through skin. The team built a multi-layer eye shader with a specular layer for the cornea, a subsurface scattering layer for the sclera, and a dedicated wetness map that updated dynamically during emotional sequences. When Joel's eyes catch light during the prologue, what you are seeing is physically simulated refraction and scattering, not a simple highlight texture. This is why the performances land with the force they do. The technical infrastructure is creating the conditions for believable emotion.</p>
+
+                    <p>Body motion was handled with blended motion capture rather than pure keyframe animation. Character locomotion blends between captured reference animations based on velocity and directional input, with procedural adjustments for foot planting on uneven terrain. Joel does not slide on stairs or clip through rubble because the animation system is reading geometry height data in real time and adjusting his foot position through inverse kinematics. This happens at sixty times per second and is invisible when it works, which it almost always does.</p>
+
+                    <h3>Environmental Detail and World Building</h3>
+
+                    <p>The environmental artists built every location in The Last of Us to tell a story independent of cutscenes, but the technical systems underpinning those environments are equally impressive. The vegetation system that covers reclaimed buildings uses a procedural placement algorithm seeded with hand-authored distribution maps. Artists painted where plant life was densest, then the system filled in individual geometry instances within those zones using randomized scale and rotation parameters to prevent visible tiling patterns.</p>
+
+                    <p>Particle systems handled the spore clouds and dust that define the game's atmosphere. These were not billboard sprites. Each spore cloud was a volumetric simulation with buoyancy and turbulence parameters that responded to player movement and air currents defined by the geometry of each room. Moving through a spore cloud visibly disturbs it in a way that reads as physically real.</p>
+
+                    <p>Water rendering in the flooded hotel sequence used a real-time ripple simulation driven by player displacement. Every step Joel takes in shallow water generates a ripple that propagates outward and interacts with walls and obstacles using a simplified fluid dynamics model. This is computationally expensive and was one of several techniques the team had to budget carefully against the PS3's memory ceiling.</p>
+
+                    <h3>What It Adds Up To</h3>
+
+                    <p>The Last of Us is a masterclass in making technical systems serve emotional goals. The enemy AI does not just create challenge; it creates dread. The lighting does not just look good; it makes environments feel inhabited and real. The facial animation does not just render accurately; it makes you believe in people who do not exist.</p>
+
+                    <p>What Naughty Dog understood, and what separates The Last of Us from games that are merely impressive, is that technical excellence only matters when it is in service of something. Every rendering trick, every AI behavior, every animation blend was chosen to make the world feel like a place where the stakes are real. That is the hardest design problem in games, and they solved it.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/in/syed-zain-raza-ba96899b">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Theme JavaScript -->
+    <script src="../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
