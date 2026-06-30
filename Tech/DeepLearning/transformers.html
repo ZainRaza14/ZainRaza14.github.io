@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Transformers and attention mechanisms explained - the architecture behind modern language models by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Transformers and Attention</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Transformers and Attention</h1>
+                        <h2 class="subheading">The architecture behind every major language model today</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>The 2017 paper "Attention Is All You Need" by Vaswani et al. introduced the Transformer and changed the trajectory of deep learning. Every major language model today — GPT, BERT, Claude, Gemini — is built on this architecture. Understanding it means understanding the foundation of modern AI.</p>
+
+                    <h3>The Problem with RNNs</h3>
+
+                    <p>Recurrent networks process sequences one step at a time. This makes them inherently sequential — you cannot compute step t until you have computed step t-1. For long sequences, this is slow. More critically, even with LSTMs, capturing dependencies between tokens far apart in a sequence is difficult. The Transformer eliminates recurrence entirely and replaces it with attention, which can directly connect any two positions in a sequence regardless of distance.</p>
+
+                    <h3>Attention: The Core Idea</h3>
+
+                    <p>Attention asks: for each token in the sequence, which other tokens should it attend to, and how much? The answer is computed from three learned projections of the input — Queries (Q), Keys (K), and Values (V):</p>
+
+                    <pre><code>Attention(Q, K, V) = softmax(Q * K^T / sqrt(d_k)) * V</code></pre>
+
+                    <p>Intuitively: Q represents what each token is looking for. K represents what each token offers. The dot product Q * K^T computes a compatibility score between every pair of tokens. Dividing by sqrt(d_k) prevents the scores from becoming too large in high dimensions, which would push softmax into a near-zero gradient region. Softmax converts scores into a probability distribution — the attention weights. Finally, these weights are used to take a weighted sum of the Values, producing the output for each token.</p>
+
+                    <p>The result is that every token's output representation is a mixture of all other tokens' values, weighted by how relevant they are. The word "bank" in "river bank" will attend heavily to "river"; in "bank account" it will attend heavily to "account". The meaning is resolved by context, dynamically.</p>
+
+                    <h3>Multi-Head Attention</h3>
+
+                    <p>A single attention operation captures one type of relationship. Multi-head attention runs h attention operations in parallel, each with different learned Q, K, V projections. This allows the model to simultaneously attend to syntactic structure, semantic similarity, coreference, and other relationships at the same time:</p>
+
+                    <pre><code>MultiHead(Q, K, V) = Concat(head_1, ..., head_h) * W_O
+
+where head_i = Attention(Q * W_Q_i, K * W_K_i, V * W_V_i)</code></pre>
+
+                    <p>The outputs of all heads are concatenated and projected back to the model dimension. GPT-3 uses 96 attention heads; each learns to specialize in a different kind of linguistic relationship.</p>
+
+                    <h3>Positional Encoding</h3>
+
+                    <p>Attention has no built-in sense of order — the same computation is applied regardless of whether a token is first or last in the sequence. Positional encodings are added to the input embeddings to inject position information. The original Transformer used fixed sinusoidal encodings:</p>
+
+                    <pre><code>PE(pos, 2i)   = sin(pos / 10000^(2i/d_model))
+PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))</code></pre>
+
+                    <p>Modern models often use learned positional embeddings or relative position encodings (RoPE, ALiBi) that generalize better to sequence lengths not seen during training.</p>
+
+                    <h3>The Feed-Forward Layer</h3>
+
+                    <p>After the attention layer, each token's representation passes through a position-wise feed-forward network — a two-layer MLP applied independently to each token:</p>
+
+                    <pre><code>FFN(x) = ReLU(x * W_1 + b_1) * W_2 + b_2</code></pre>
+
+                    <p>This is where most of the model's factual knowledge is thought to be stored. The attention layer handles routing and mixing; the FFN handles per-token processing.</p>
+
+                    <h3>The Full Transformer Block</h3>
+
+                    <p>Each Transformer block combines multi-head attention and a feed-forward layer, each wrapped in a residual connection and layer normalization:</p>
+
+                    <pre><code>x = x + MultiHeadAttention(LayerNorm(x))
+x = x + FFN(LayerNorm(x))</code></pre>
+
+                    <p>Residual connections (adding the input back to the output) allow gradients to flow directly through the network without passing through the attention or FFN computations, enabling training of very deep models. GPT-4 is estimated to have around 120 such blocks.</p>
+
+                    <h3>Encoder vs Decoder</h3>
+
+                    <p>The original Transformer had both an encoder and decoder. The encoder processes the input with bidirectional attention — each token can attend to all others. BERT is encoder-only, making it powerful for understanding tasks (classification, question answering). The decoder uses masked (causal) attention — each token can only attend to previous tokens, enabling autoregressive generation. GPT is decoder-only. Modern frontier models like Claude and GPT-4 are all decoder-only Transformers trained to predict the next token.</p>
+
+                    <h3>Why Transformers Dominate</h3>
+
+                    <p>Three properties explain their dominance. First, parallelism: unlike RNNs, all attention computations can run simultaneously on GPU hardware, making training on massive datasets tractable. Second, direct long-range dependencies: any two tokens can interact in a single layer regardless of distance. Third, scalability: Transformer performance scales predictably with compute, data, and model size — the scaling laws discovered by Kaplan et al. showed that larger models trained on more data consistently outperform smaller ones, which drove the race to GPT-4 and beyond.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

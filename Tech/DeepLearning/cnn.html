@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Convolutional Neural Networks explained - convolutions, pooling, and feature maps by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Convolutional Neural Networks</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Convolutional Neural Networks</h1>
+                        <h2 class="subheading">How convolutions, pooling, and feature maps learn to see</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>If you flatten a 256x256 image and feed it into a fully connected neural network, the first hidden layer alone would require millions of parameters. Convolutional Neural Networks solve this by exploiting the spatial structure of images — the fact that nearby pixels are related, and the same feature (an edge, a curve, a corner) can appear anywhere in an image.</p>
+
+                    <h3>The Convolution Operation</h3>
+
+                    <p>A convolution layer slides a small filter (also called a kernel) across the input image. At each position, it computes the dot product between the filter weights and the corresponding patch of pixels, producing a single output value. Doing this across the entire image produces a feature map.</p>
+
+                    <pre><code>import numpy as np
+
+def convolve2d(image, kernel):
+    kh, kw = kernel.shape
+    ih, iw = image.shape
+    out_h = ih - kh + 1
+    out_w = iw - kw + 1
+    output = np.zeros((out_h, out_w))
+    for i in range(out_h):
+        for j in range(out_w):
+            output[i, j] = np.sum(image[i:i+kh, j:j+kw] * kernel)
+    return output</code></pre>
+
+                    <p>A 3x3 edge-detection filter applied to a 28x28 image produces a 26x26 feature map. The filter has only 9 parameters, but it is applied at every spatial location — this weight sharing is what makes CNNs so parameter-efficient compared to fully connected layers.</p>
+
+                    <h3>Multiple Filters, Multiple Feature Maps</h3>
+
+                    <p>In practice, a convolutional layer uses many filters in parallel. Each filter learns to detect a different pattern. The first layer might learn to detect horizontal edges, vertical edges, and diagonal gradients. Deeper layers combine these into more complex features: curves become shapes, shapes become object parts.</p>
+
+                    <p>A layer with 32 filters of size 3x3 applied to a single-channel input produces 32 feature maps — a 3D output volume of shape (height, width, 32). Each filter produces its own map capturing a different aspect of the input.</p>
+
+                    <h3>Padding and Stride</h3>
+
+                    <p>Without padding, each convolution reduces the spatial dimensions. Padding adds a border of zeros around the input so the output has the same spatial size as the input ("same" padding). "Valid" padding means no padding, letting dimensions shrink naturally.</p>
+
+                    <p>Stride controls how many pixels the filter moves at each step. A stride of 1 moves one pixel at a time. A stride of 2 skips every other position, halving the output size and acting like a form of downsampling.</p>
+
+                    <h3>Pooling Layers</h3>
+
+                    <p>Pooling layers reduce spatial dimensions by summarizing regions of the feature map. Max pooling takes the maximum value in each region. Average pooling takes the mean. A 2x2 max pool with stride 2 halves both height and width, discarding fine-grained spatial detail while retaining the presence of features.</p>
+
+                    <pre><code>def max_pool2d(feature_map, pool_size=2, stride=2):
+    h, w = feature_map.shape
+    out_h = (h - pool_size) // stride + 1
+    out_w = (w - pool_size) // stride + 1
+    output = np.zeros((out_h, out_w))
+    for i in range(out_h):
+        for j in range(out_w):
+            region = feature_map[i*stride:i*stride+pool_size,
+                                  j*stride:j*stride+pool_size]
+            output[i, j] = np.max(region)
+    return output</code></pre>
+
+                    <p>Pooling introduces a degree of translation invariance — a feature detected slightly to the left or right still activates the same pooled output. This is desirable for classification where you want to recognize an object regardless of its exact position.</p>
+
+                    <h3>A Typical CNN Architecture</h3>
+
+                    <p>A standard CNN stacks convolutional and pooling layers to progressively extract higher-level features at lower spatial resolution, then flattens the result and passes it through fully connected layers to produce class predictions:</p>
+
+                    <pre><code>Input (32x32x3)
+  -> Conv(32 filters, 3x3) + ReLU  -> (30x30x32)
+  -> MaxPool(2x2)                   -> (15x15x32)
+  -> Conv(64 filters, 3x3) + ReLU  -> (13x13x64)
+  -> MaxPool(2x2)                   -> (6x6x64)
+  -> Flatten                        -> (2304,)
+  -> Dense(128) + ReLU
+  -> Dense(10) + Softmax            -> class probabilities</code></pre>
+
+                    <h3>Why CNNs Work So Well for Images</h3>
+
+                    <p>Three structural properties make CNNs well-suited to visual data. Local connectivity means each neuron only looks at a small spatial region, matching the local structure of natural images. Weight sharing means the same filter is applied everywhere, drastically reducing parameters and encoding the prior that a feature detector should work the same anywhere in the image. Hierarchical composition means shallow features combine into deep features, mirroring how biological visual systems process scenes from edges to objects.</p>
+
+                    <p>Architectures like ResNet, VGG, and EfficientNet are all CNNs at their core, extended with techniques like residual connections, batch normalization, and depthwise separable convolutions to push performance further. But the fundamental mechanics — convolution, activation, pooling — remain the same as described here.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
