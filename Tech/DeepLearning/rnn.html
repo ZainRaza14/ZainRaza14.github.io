@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Recurrent Networks and LSTMs explained - sequence modeling and vanishing gradients by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Recurrent Networks and LSTMs</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Recurrent Networks and LSTMs</h1>
+                        <h2 class="subheading">Sequence modeling, vanishing gradients, and how LSTMs learned to remember</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>A standard feedforward neural network processes one input at a time with no memory of what came before. For sequential data — text, time series, audio — this is a fundamental limitation. Recurrent Neural Networks solve it by maintaining a hidden state that carries information from one step to the next.</p>
+
+                    <h3>The Recurrent Cell</h3>
+
+                    <p>At each time step t, a simple RNN cell takes two inputs: the current input x_t and the hidden state from the previous step h_{t-1}. It combines them to produce a new hidden state:</p>
+
+                    <pre><code>h_t = tanh(W_h * h_{t-1} + W_x * x_t + b)</code></pre>
+
+                    <p>This hidden state is both the output of the current step and the memory that gets passed to the next step. Unrolled over a sequence of length T, you can think of this as a very deep network where each layer corresponds to a time step and the same weights are shared across all steps.</p>
+
+                    <h3>The Vanishing Gradient Problem</h3>
+
+                    <p>Training RNNs with backpropagation through time (BPTT) requires computing gradients across all T time steps. Because the same weight matrix is multiplied at every step, the gradient either explodes (if the largest eigenvalue of W is greater than 1) or vanishes (if it is less than 1) exponentially with sequence length. In practice, vanishing gradients dominate — the network fails to learn dependencies between events separated by more than a few steps. The RNN forgets.</p>
+
+                    <p>Gradient clipping partially addresses explosion. Vanishing is harder to fix with a simple RNN, which is why LSTMs were invented.</p>
+
+                    <h3>Long Short-Term Memory (LSTM)</h3>
+
+                    <p>The LSTM, introduced by Hochreiter and Schmidhuber in 1997, adds a cell state — a separate memory channel that runs alongside the hidden state. Information flows through the cell state with only minor linear interactions, which lets gradients propagate much further back in time without vanishing.</p>
+
+                    <p>The key innovation is the gating mechanism. Three learned gates control what information enters, leaves, and persists in the cell state:</p>
+
+                    <p><strong>Forget gate:</strong> decides what to erase from the cell state.</p>
+                    <pre><code>f_t = sigmoid(W_f * [h_{t-1}, x_t] + b_f)</code></pre>
+
+                    <p><strong>Input gate:</strong> decides what new information to write.</p>
+                    <pre><code>i_t = sigmoid(W_i * [h_{t-1}, x_t] + b_i)
+g_t = tanh(W_g * [h_{t-1}, x_t] + b_g)
+C_t = f_t * C_{t-1} + i_t * g_t</code></pre>
+
+                    <p><strong>Output gate:</strong> decides what to expose from the cell state as the hidden state.</p>
+                    <pre><code>o_t = sigmoid(W_o * [h_{t-1}, x_t] + b_o)
+h_t = o_t * tanh(C_t)</code></pre>
+
+                    <p>All three gates use sigmoid activations, producing values between 0 and 1 that act as soft on/off switches. The forget gate output near 0 means "erase everything"; near 1 means "keep everything". This selective memory is what allows LSTMs to maintain relevant context across hundreds of time steps.</p>
+
+                    <h3>Gated Recurrent Unit (GRU)</h3>
+
+                    <p>The GRU simplifies the LSTM by merging the cell state and hidden state, and combining the forget and input gates into a single update gate. It has fewer parameters and trains faster, often matching LSTM performance on tasks where long-range dependencies are not extreme:</p>
+
+                    <pre><code>z_t = sigmoid(W_z * [h_{t-1}, x_t])   # update gate
+r_t = sigmoid(W_r * [h_{t-1}, x_t])   # reset gate
+h_tilde = tanh(W * [r_t * h_{t-1}, x_t])
+h_t = (1 - z_t) * h_{t-1} + z_t * h_tilde</code></pre>
+
+                    <h3>Sequence-to-Sequence Architectures</h3>
+
+                    <p>LSTMs became the dominant architecture for sequence-to-sequence tasks like machine translation. An encoder LSTM reads the input sequence and compresses it into a context vector — the final hidden state. A decoder LSTM then generates the output sequence one token at a time, conditioned on that context vector.</p>
+
+                    <p>The limitation of this approach is the bottleneck: the entire input sequence must be compressed into a single fixed-size vector, which degrades on long sequences. This limitation led directly to the invention of attention mechanisms, and eventually to the Transformer — an architecture that dropped recurrence entirely in favor of attention. But the LSTM's gating ideas remain influential and LSTMs still see use in settings where sequence length is moderate and parallelism matters less than memory efficiency.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Neural networks from scratch - weights, activations, forward pass, and backpropagation by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Neural Networks from Scratch</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Neural Networks from Scratch</h1>
+                        <h2 class="subheading">Weights, activations, forward pass, and backpropagation explained from first principles</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>A neural network is a function approximator. It takes an input, passes it through a series of mathematical transformations, and produces an output. The goal is to find transformations that map inputs to the correct outputs — and the entire machinery of deep learning is built around doing that efficiently at scale.</p>
+
+                    <h3>The Building Block: A Single Neuron</h3>
+
+                    <p>A single neuron receives a vector of inputs, multiplies each input by a corresponding weight, sums everything together, adds a bias term, and then passes the result through an activation function:</p>
+
+                    <pre><code>output = activation(w1*x1 + w2*x2 + ... + wn*xn + b)</code></pre>
+
+                    <p>The weights determine how much each input contributes. The bias shifts the output up or down independently of the inputs. The activation function introduces non-linearity — without it, stacking layers would be mathematically equivalent to a single linear transformation, no matter how many layers you add.</p>
+
+                    <h3>Activation Functions</h3>
+
+                    <p>The most widely used activation today is ReLU (Rectified Linear Unit):</p>
+
+                    <pre><code>ReLU(x) = max(0, x)</code></pre>
+
+                    <p>It is zero for negative inputs and linear for positive ones. Simple, computationally cheap, and it avoids the vanishing gradient problem that plagued earlier activations like sigmoid and tanh. Variants like Leaky ReLU and GELU address the "dying ReLU" problem where neurons output zero for all inputs and stop learning.</p>
+
+                    <p>For the output layer, the activation depends on the task. Sigmoid squashes output to (0, 1) for binary classification. Softmax converts a vector of raw scores into a probability distribution across multiple classes.</p>
+
+                    <h3>The Forward Pass</h3>
+
+                    <p>A neural network is organized into layers. The forward pass is the computation that flows from input to output:</p>
+
+                    <pre><code>import numpy as np
+
+def relu(x):
+    return np.maximum(0, x)
+
+def softmax(x):
+    e = np.exp(x - np.max(x))
+    return e / e.sum()
+
+# One hidden layer network
+def forward(X, W1, b1, W2, b2):
+    Z1 = X @ W1 + b1      # linear transform
+    A1 = relu(Z1)          # activation
+    Z2 = A1 @ W2 + b2     # output layer
+    A2 = softmax(Z2)       # probabilities
+    return A2</code></pre>
+
+                    <p>Each layer takes the previous layer's activations as input, applies a learned linear transformation, then passes the result through an activation function.</p>
+
+                    <h3>The Loss Function</h3>
+
+                    <p>After the forward pass produces a prediction, we need to measure how wrong it is. The loss function does this. For classification, cross-entropy loss is standard:</p>
+
+                    <pre><code>loss = -sum(y_true * log(y_predicted))</code></pre>
+
+                    <p>For regression, mean squared error is typical:</p>
+
+                    <pre><code>loss = mean((y_true - y_predicted) ** 2)</code></pre>
+
+                    <p>The loss is a single number. The entire goal of training is to minimize it.</p>
+
+                    <h3>Backpropagation</h3>
+
+                    <p>To minimize the loss, we need to know how each weight in the network contributed to it — specifically, how the loss changes as we adjust each weight. This is the gradient. Backpropagation computes it efficiently using the chain rule of calculus.</p>
+
+                    <p>The chain rule says that the gradient of the loss with respect to an early layer's weights is the product of gradients through all the layers that follow it. Backpropagation works by starting at the output layer, computing the gradient there, and then propagating it backward layer by layer — hence the name.</p>
+
+                    <pre><code># Gradient of loss w.r.t. output layer weights
+dL_dW2 = A1.T @ dL_dZ2
+
+# Propagate gradient back through activation
+dL_dA1 = dL_dZ2 @ W2.T
+dL_dZ1 = dL_dA1 * (Z1 > 0)  # ReLU derivative
+
+# Gradient of loss w.r.t. hidden layer weights
+dL_dW1 = X.T @ dL_dZ1</code></pre>
+
+                    <h3>Weight Updates</h3>
+
+                    <p>Once we have the gradients, we update the weights in the direction that reduces the loss. This is gradient descent:</p>
+
+                    <pre><code>W1 = W1 - learning_rate * dL_dW1
+W2 = W2 - learning_rate * dL_dW2</code></pre>
+
+                    <p>The learning rate controls how large each update step is. Too large and training overshoots and diverges. Too small and training is painfully slow. In practice, adaptive optimizers like Adam adjust the learning rate per parameter automatically, which is why they work so much better than vanilla gradient descent in most settings.</p>
+
+                    <h3>Why Depth Matters</h3>
+
+                    <p>The universal approximation theorem says that a single hidden layer network can approximate any continuous function given enough neurons. But in practice, deeper networks learn hierarchical representations that shallower networks cannot — at least not without an impractical number of neurons. Each layer in a deep network learns increasingly abstract features: edges become shapes, shapes become objects, objects become concepts. That compositional structure is what makes deep learning so powerful for tasks like vision and language.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
