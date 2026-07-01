@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="Orbit - a one-button game of gravity and timing by Syed Zain Raza. Release, fly, capture. How far can you go?">
+    <meta name="author" content="">
+
+    <title>Orbit - Syed Zain Raza</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #05070d;
+            font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        #game {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .hud {
+            position: fixed;
+            color: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #score {
+            top: 24px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 64px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-shadow: 0 0 24px rgba(43, 189, 173, 0.35);
+        }
+
+        #best {
+            top: 100px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        #back {
+            top: 20px;
+            left: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: auto;
+        }
+
+        #back a {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        #back a:hover { color: #2bbdad; }
+
+        #overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            background: rgba(5, 7, 13, 0.55);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            transition: opacity 0.35s ease;
+        }
+
+        #overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #overlay h1 {
+            color: #fff;
+            font-size: 56px;
+            font-weight: 300;
+            letter-spacing: 14px;
+            text-indent: 14px;
+            margin-bottom: 14px;
+            text-shadow: 0 0 40px rgba(43, 189, 173, 0.5);
+        }
+
+        #overlay p {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-align: center;
+            max-width: 480px;
+            padding: 0 24px;
+            line-height: 1.7;
+        }
+
+        #overlay .prompt {
+            margin-top: 34px;
+            color: #2bbdad;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+
+        #overlay .final-score {
+            color: #fff;
+            font-size: 80px;
+            font-weight: 300;
+            margin-bottom: 4px;
+            text-shadow: 0 0 32px rgba(43, 189, 173, 0.45);
+        }
+
+        #overlay .label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 26px;
+        }
+
+        #overlay .newbest {
+            color: #ffc857;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        @media (max-width: 600px) {
+            #score { font-size: 48px; }
+            #overlay h1 { font-size: 38px; letter-spacing: 9px; text-indent: 9px; }
+            #overlay .final-score { font-size: 60px; }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <canvas id="game"></canvas>
+
+    <div class="hud" id="back"><a href="../interactive.html">&larr; Interactive Space</a></div>
+    <div class="hud" id="score">0</div>
+    <div class="hud" id="best"></div>
+
+    <div id="overlay">
+        <h1>ORBIT</h1>
+        <p>You are the bright dot circling a planet.</p>
+        <p>Tap, click, or press space to let go. Fly straight and true, and the next planet's gravity will catch you. Miss, and you drift into the void.</p>
+        <p>Tight orbits are worth more. Timing is everything.</p>
+        <div class="prompt">Tap or press space to begin</div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var canvas = document.getElementById('game');
+        var ctx = canvas.getContext('2d');
+        var scoreEl = document.getElementById('score');
+        var bestEl = document.getElementById('best');
+        var overlay = document.getElementById('overlay');
+
+        var DPR = Math.min(window.devicePixelRatio || 1, 2);
+        var W = 0, H = 0;
+
+        var ACCENT = '#2bbdad';
+        var GOLD = '#ffc857';
+
+        // ---- state ----
+        var STATE_MENU = 0, STATE_PLAY = 1, STATE_DEAD = 2;
+        var state = STATE_MENU;
+
+        var score = 0;
+        var best = 0;
+        try { best = parseInt(localStorage.getItem('orbit_best') || '0', 10) || 0; } catch (e) {}
+
+        var planets = [];      // {x, y, r, ring, hue, seed}
+        var ship = null;       // see resetGame
+        var particles = [];
+        var trail = [];
+        var stars = [];
+        var camY = 0;          // camera offset (world y at top of screen region)
+        var camShake = 0;
+        var flashAlpha = 0;
+        var planetCounter = 0;
+
+        // ---- helpers ----
+        function rand(a, b) { return a + Math.random() * (b - a); }
+
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W * DPR;
+            canvas.height = H * DPR;
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            makeStars();
+        }
+
+        function makeStars() {
+            stars = [];
+            var count = Math.floor(W * H / 3800);
+            for (var i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    size: rand(0.4, 1.6),
+                    depth: rand(0.15, 0.55),   // parallax factor
+                    tw: rand(0, Math.PI * 2),  // twinkle phase
+                    tws: rand(0.5, 2.0)        // twinkle speed
+                });
+            }
+        }
+
+        // ---- planet generation ----
+        function spawnPlanet(prev) {
+            planetCounter++;
+            var r = rand(16, 30);
+            var ring = r + rand(34, 52);
+            var p;
+            if (!prev) {
+                p = { x: W / 2, y: -H * 0.28, r: r, ring: ring, id: planetCounter };
+            } else {
+                // place the next planet up and to a random side, always reachable
+                var gap = rand(190, 300) + ring;
+                var angle = rand(-Math.PI * 0.42, Math.PI * 0.42); // mostly upward
+                var nx = prev.x + Math.sin(angle) * gap;
+                var ny = prev.y - Math.cos(angle) * gap;
+                // keep on screen horizontally with margin
+                var margin = ring + 30;
+                nx = Math.max(margin, Math.min(W - margin, nx));
+                p = { x: nx, y: ny, r: r, ring: ring, id: planetCounter };
+            }
+            p.pulse = 0;
+            planets.push(p);
+            return p;
+        }
+
+        function resetGame() {
+            planets = [];
+            particles = [];
+            trail = [];
+            score = 0;
+            planetCounter = 0;
+            scoreEl.textContent = '0';
+            camY = 0;
+            camShake = 0;
+
+            var first = spawnPlanet(null);
+            spawnPlanet(first);
+            spawnPlanet(planets[planets.length - 1]);
+            camY = first.y - H * 0.62;
+
+            ship = {
+                mode: 'orbit',        // 'orbit' | 'fly'
+                planet: first,
+                angle: -Math.PI / 2,
+                dir: 1,               // 1 = clockwise
+                orbitR: first.ring,
+                speed: 2.1,           // radians/sec baseline
+                x: 0, y: 0,
+                vx: 0, vy: 0
+            };
+            positionShipOnOrbit();
+        }
+
+        function positionShipOnOrbit() {
+            ship.x = ship.planet.x + Math.cos(ship.angle) * ship.orbitR;
+            ship.y = ship.planet.y + Math.sin(ship.angle) * ship.orbitR;
+        }
+
+        // ---- input ----
+        function action() {
+            if (state === STATE_MENU) {
+                overlay.classList.add('hidden');
+                resetGame();
+                state = STATE_PLAY;
+                return;
+            }
+            if (state === STATE_DEAD) {
+                overlay.classList.add('hidden');
+                resetGame();
+                state = STATE_PLAY;
+                return;
+            }
+            if (state === STATE_PLAY && ship.mode === 'orbit') {
+                release();
+            }
+        }
+
+        function release() {
+            // fly off along the tangent
+            var flySpeed = 460; // px/sec
+            var tx = -Math.sin(ship.angle) * ship.dir;
+            var ty = Math.cos(ship.angle) * ship.dir;
+            ship.vx = tx * flySpeed;
+            ship.vy = ty * flySpeed;
+            ship.mode = 'fly';
+            burst(ship.x, ship.y, 8, ACCENT, 90);
+        }
+
+        function die() {
+            state = STATE_DEAD;
+            camShake = 14;
+            flashAlpha = 0.55;
+            burst(ship.x, ship.y, 46, '#ffffff', 260);
+            burst(ship.x, ship.y, 30, ACCENT, 180);
+
+            var isBest = score > best;
+            if (isBest) {
+                best = score;
+                try { localStorage.setItem('orbit_best', String(best)); } catch (e) {}
+            }
+            updateBestLabel();
+
+            overlay.innerHTML =
+                '<div class="final-score">' + score + '</div>' +
+                '<div class="label">planets reached</div>' +
+                (isBest && score > 0 ? '<div class="newbest">&#9733; New Best &#9733;</div>' : '') +
+                '<div class="prompt">Tap or press space to retry</div>';
+            setTimeout(function () { overlay.classList.remove('hidden'); }, 450);
+        }
+
+        // ---- particles ----
+        function burst(x, y, n, color, speed) {
+            for (var i = 0; i < n; i++) {
+                var a = Math.random() * Math.PI * 2;
+                var s = rand(speed * 0.3, speed);
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(a) * s,
+                    vy: Math.sin(a) * s,
+                    life: 1,
+                    decay: rand(0.9, 2.2),
+                    size: rand(1, 3.2),
+                    color: color
+                });
+            }
+        }
+
+        // ---- capture check ----
+        function tryCapture() {
+            for (var i = 0; i < planets.length; i++) {
+                var p = planets[i];
+                if (p === ship.planet) continue;
+                var dx = ship.x - p.x;
+                var dy = ship.y - p.y;
+                var d = Math.sqrt(dx * dx + dy * dy);
+                if (d <= p.ring) {
+                    capture(p, d, dx, dy);
+                    return;
+                }
+            }
+        }
+
+        function capture(p, d, dx, dy) {
+            ship.mode = 'orbit';
+            ship.planet = p;
+            ship.orbitR = Math.max(p.r + 12, d);
+            ship.angle = Math.atan2(dy, dx);
+
+            // preserve rotation direction from incoming velocity (cross product)
+            var cross = dx * ship.vy - dy * ship.vx;
+            ship.dir = cross >= 0 ? 1 : -1;
+
+            // tighter orbits spin faster and score more
+            var tightness = 1 - (ship.orbitR - p.r) / (p.ring - p.r); // 0 loose .. 1 tight
+            ship.speed = 1.9 + tightness * 1.4 + score * 0.012;
+
+            var points = tightness > 0.55 ? 2 : 1;
+            score += points;
+            scoreEl.textContent = String(score);
+            p.pulse = 1;
+            camShake = points === 2 ? 6 : 3;
+            burst(ship.x, ship.y, points === 2 ? 22 : 12, points === 2 ? GOLD : ACCENT, 140);
+
+            // spawn ahead, prune far behind
+            spawnPlanet(planets[planets.length - 1]);
+            while (planets.length > 6) {
+                if (planets[0] !== ship.planet) planets.shift();
+                else break;
+            }
+        }
+
+        // ---- update ----
+        function update(dt) {
+            // camera eases toward keeping the ship's planet in the lower-center
+            if (state === STATE_PLAY) {
+                var targetCam = ship.planet.y - H * 0.62;
+                camY += (targetCam - camY) * Math.min(1, dt * 3.2);
+            }
+
+            if (camShake > 0) camShake = Math.max(0, camShake - dt * 30);
+            if (flashAlpha > 0) flashAlpha = Math.max(0, flashAlpha - dt * 1.6);
+
+            if (state === STATE_PLAY) {
+                if (ship.mode === 'orbit') {
+                    ship.angle += ship.speed * ship.dir * dt;
+                    positionShipOnOrbit();
+                } else {
+                    ship.x += ship.vx * dt;
+                    ship.y += ship.vy * dt;
+                    tryCapture();
+
+                    // out of bounds relative to camera view = death
+                    var sy = ship.y - camY;
+                    if (ship.x < -40 || ship.x > W + 40 || sy < -60 || sy > H + 60) {
+                        die();
+                    }
+                }
+
+                // trail
+                trail.push({ x: ship.x, y: ship.y, life: 1 });
+                if (trail.length > 42) trail.shift();
+            }
+
+            for (var i = trail.length - 1; i >= 0; i--) {
+                trail[i].life -= dt * 1.6;
+                if (trail[i].life <= 0) trail.splice(i, 1);
+            }
+
+            for (var j = particles.length - 1; j >= 0; j--) {
+                var pt = particles[j];
+                pt.x += pt.vx * dt;
+                pt.y += pt.vy * dt;
+                pt.vx *= (1 - dt * 1.2);
+                pt.vy *= (1 - dt * 1.2);
+                pt.life -= pt.decay * dt;
+                if (pt.life <= 0) particles.splice(j, 1);
+            }
+
+            for (var k = 0; k < planets.length; k++) {
+                if (planets[k].pulse > 0) {
+                    planets[k].pulse = Math.max(0, planets[k].pulse - dt * 2.4);
+                }
+            }
+        }
+
+        // ---- render ----
+        var t = 0;
+        function render(dt) {
+            t += dt;
+
+            ctx.fillStyle = '#05070d';
+            ctx.fillRect(0, 0, W, H);
+
+            var shakeX = camShake > 0 ? rand(-camShake, camShake) * 0.4 : 0;
+            var shakeY = camShake > 0 ? rand(-camShake, camShake) * 0.4 : 0;
+
+            // stars (parallax on camera, wrap vertically)
+            for (var i = 0; i < stars.length; i++) {
+                var s = stars[i];
+                var sy = (s.y - camY * s.depth) % H;
+                if (sy < 0) sy += H;
+                var alpha = 0.35 + 0.65 * Math.abs(Math.sin(s.tw + t * s.tws));
+                ctx.globalAlpha = alpha * 0.8;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(s.x, sy, s.size, s.size);
+            }
+            ctx.globalAlpha = 1;
+
+            ctx.save();
+            ctx.translate(shakeX, -camY + shakeY);
+
+            // planets
+            for (var p2 = 0; p2 < planets.length; p2++) {
+                var p = planets[p2];
+
+                // orbit ring
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.ring, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,' + (0.10 + p.pulse * 0.35) + ')';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // pulse ripple on capture
+                if (p.pulse > 0) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.ring + (1 - p.pulse) * 26, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(43,189,173,' + (p.pulse * 0.5) + ')';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                // planet body with glow
+                var grad = ctx.createRadialGradient(p.x - p.r * 0.3, p.y - p.r * 0.3, p.r * 0.1, p.x, p.y, p.r);
+                grad.addColorStop(0, '#3b4a63');
+                grad.addColorStop(1, '#16202f');
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(120,150,190,0.35)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // trail
+            for (var tr = 0; tr < trail.length; tr++) {
+                var node = trail[tr];
+                var frac = tr / trail.length;
+                ctx.globalAlpha = node.life * frac * 0.6;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 2.4 * frac + 0.6, 0, Math.PI * 2);
+                ctx.fillStyle = ACCENT;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // particles
+            for (var pr = 0; pr < particles.length; pr++) {
+                var pt = particles[pr];
+                ctx.globalAlpha = Math.max(0, pt.life) * 0.9;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fillStyle = pt.color;
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // ship
+            if (ship && state !== STATE_DEAD) {
+                ctx.shadowColor = ACCENT;
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.arc(ship.x, ship.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#eafffb';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // aim hint while orbiting: short tangent tick
+                if (ship.mode === 'orbit') {
+                    var tx = -Math.sin(ship.angle) * ship.dir;
+                    var ty = Math.cos(ship.angle) * ship.dir;
+                    ctx.globalAlpha = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(ship.x + tx * 12, ship.y + ty * 12);
+                    ctx.lineTo(ship.x + tx * 30, ship.y + ty * 30);
+                    ctx.strokeStyle = ACCENT;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            ctx.restore();
+
+            // death flash
+            if (flashAlpha > 0) {
+                ctx.fillStyle = 'rgba(255,255,255,' + flashAlpha + ')';
+                ctx.fillRect(0, 0, W, H);
+            }
+        }
+
+        function updateBestLabel() {
+            bestEl.textContent = best > 0 ? 'best ' + best : '';
+        }
+
+        // ---- main loop ----
+        var last = 0;
+        function loop(ts) {
+            var dt = Math.min(0.033, (ts - last) / 1000 || 0.016);
+            last = ts;
+            update(dt);
+            render(dt);
+            requestAnimationFrame(loop);
+        }
+
+        // ---- events ----
+        window.addEventListener('resize', resize);
+        window.addEventListener('keydown', function (e) {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                action();
+            }
+        });
+        canvas.addEventListener('mousedown', action);
+        overlay.addEventListener('mousedown', action);
+        canvas.addEventListener('touchstart', function (e) { e.preventDefault(); action(); }, { passive: false });
+        overlay.addEventListener('touchstart', function (e) { e.preventDefault(); action(); }, { passive: false });
+
+        // ---- boot ----
+        resize();
+        resetGame();
+        state = STATE_MENU;
+        updateBestLabel();
+        requestAnimationFrame(loop);
+    })();
+    </script>
+
+</body>
+
+</html>
