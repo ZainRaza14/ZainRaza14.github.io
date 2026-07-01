@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="When to buy vs build in your GTM stack - a decision framework by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - When to Buy vs Build in Your GTM Stack</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>When to Buy vs Build in Your GTM Stack</h1>
+                        <h2 class="subheading">A framework for the most expensive decision RevOps teams keep getting wrong</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Every GTM systems team faces this decision several times a year: the business needs a capability - routing, enrichment, forecasting, quoting, attribution - and someone has to decide whether to buy a tool or build it on the platform you already own. Both directions have a graveyard. Orgs that buy everything end up with 40 tools, overlapping bills, and integration debt nobody can map. Orgs that build everything end up with a bespoke system that only one admin understands, held together by Flows nobody dares touch.</p>
+
+                    <h3>The False Comparison That Starts Most Bad Decisions</h3>
+
+                    <p>The naive math compares the vendor's annual price against the cost of building the first version. That comparison is wrong on both sides. The build side is not the build cost - it is the ownership cost: maintenance, documentation, enhancement requests, testing on every Salesforce release, and the bus factor of the person who built it. A reasonable rule of thumb is that year-one build cost is a third or less of three-year ownership cost.</p>
+
+                    <p>The buy side is not the license fee either - it is license plus implementation, plus the integration you now maintain, plus admin time in yet another tool, plus the switching cost you will pay when the vendor gets acquired, sunsets the feature, or triples the renewal. Neither number on the invoice is the real number.</p>
+
+                    <h3>The Framework: Three Questions in Order</h3>
+
+                    <p><strong>1. Is this capability differentiating or commodity?</strong> If the capability works the same way at every company - email deliverability, calendar scheduling, e-signature, data enrichment - buy it. Vendors amortize their R&D across thousands of customers and will out-execute your internal version forever. Build only where your process is genuinely different in a way that creates advantage: your unique routing logic, your pricing model, your customer lifecycle. The test: would copying a competitor's version of this hurt us? If no, it is commodity. Buy.</p>
+
+                    <p><strong>2. How close is the need to our system of record?</strong> Capabilities that are mostly reads and writes against your CRM data - scoring, routing, territory logic, deal desk workflows - lean build, because you already own the platform, the data model, and the admin skills, and every vendor solving these problems is essentially selling you a UI on top of your own data. Capabilities that require external data or infrastructure you do not have - intent data, parallel dialers, conversation intelligence - lean buy, because the vendor's moat is the part you cannot replicate.</p>
+
+                    <p><strong>3. Can we survive this being mediocre for a year?</strong> Internal builds start mediocre and improve if - and only if - they get sustained investment. If the capability is urgent and must work on day one (compliance, billing, anything customer-facing), buy the proven tool. If you can iterate quietly (an internal dashboard, a scoring model, an ops workflow), building is viable.</p>
+
+                    <h3>The Decision in One Table</h3>
+
+                    <pre><code>                        BUY                     BUILD
+Capability type         Commodity               Differentiating
+Data location           Vendor's data/infra     Your CRM data
+Urgency                 Must work day one       Can iterate
+Team                    Admin-heavy             Dev capacity exists
+Change rate             Stable requirements     Requirements evolve
+                                                with your process</code></pre>
+
+                    <h3>The Two Failure Modes to Design Against</h3>
+
+                    <p><strong>The shadow build.</strong> You bought the tool, but ops does not trust it, so someone rebuilds half of it in spreadsheets and Flows alongside. Now you are paying for both, and the two disagree. If you buy, commit: migrate the process fully and decommission the workaround, or the tool becomes shelfware with a renewal date.</p>
+
+                    <p><strong>The abandoned build.</strong> The internal tool shipped, its builder got promoted or left, and now it is load-bearing legacy nobody owns. Before any build starts, the question is not "can we build it?" - you almost always can - it is "who maintains this in year three, and is that in their job description?" No named owner, no build.</p>
+
+                    <h3>The Hybrid Most Teams Should Run</h3>
+
+                    <p>In practice the answer is usually layered: buy the engine, build the logic. Buy the enrichment provider, build your own scoring on top of its data. Buy the routing tool if your logic outgrows Flows, but keep the routing rules expressed in your own configuration, not scattered through the vendor UI - so switching vendors later is a migration, not a rebuild. The principle underneath: own the logic that encodes how your business works, rent the infrastructure that delivers it. Vendors should be replaceable; your operating model should not be trapped inside any of them.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

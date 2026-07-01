@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Flow vs Apex - a decision framework for Salesforce automation by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Flow vs Apex</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Flow vs Apex</h1>
+                        <h2 class="subheading">A decision framework for when declarative automation breaks down</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Every Salesforce admin eventually faces the question: should this automation be a Flow, or does it need Apex? The wrong answer in either direction is expensive. Flows that should have been code become unmaintainable spaghetti that times out on bulk operations. Code that should have been Flows becomes a black box only one developer can touch, and that developer left last year.</p>
+
+                    <h3>The Default: Start With Flow</h3>
+
+                    <p>Since Salesforce retired Workflow Rules and Process Builder, Flow is the declarative tool. And the default should genuinely be Flow, for reasons that have nothing to do with technical capability. A Flow is inspectable by any admin in the org. Its logic is visible in a diagram rather than buried in a class. Changes ship without a deployment pipeline. When the person who built it leaves, the next admin can open it and understand it.</p>
+
+                    <p>That maintainability advantage is worth real performance tradeoffs. An automation that is 20 percent slower but that three people on the team can debug beats a perfectly optimized trigger that nobody understands.</p>
+
+                    <h3>When Flow Breaks Down</h3>
+
+                    <p><strong>Complex loop logic over large datasets.</strong> Flows can loop, but loop-heavy logic over hundreds of records inside a transaction is where Flows hit element execution limits and become slow. If your Flow diagram has nested loops with decision elements inside them, that logic wants to be code.</p>
+
+                    <p><strong>Sophisticated queries.</strong> Flow's Get Records element handles simple filters well. But aggregations, subqueries, and dynamic query construction are painful or impossible declaratively. If you find yourself chaining multiple Get Records elements and cross-referencing collections to simulate a join, Apex with a single SOQL query is both faster and clearer.</p>
+
+                    <p><strong>Callouts with complex orchestration.</strong> Flow can make HTTP callouts now, but error handling, retry logic, response parsing beyond simple JSON, and multi-step API orchestration are all clumsy. Integration logic with real failure modes belongs in Apex where you can write proper exception handling and unit tests.</p>
+
+                    <p><strong>Anything requiring rigorous testing.</strong> This is the criterion most people underweight. Apex requires 75 percent test coverage to deploy, and good teams treat tests as the specification of the automation's behavior. Flows have no equivalent enforcement. For automation where a silent regression costs real money - quota calculations, commission logic, billing triggers - the testability of Apex is a feature, not a burden.</p>
+
+                    <h3>The Framework</h3>
+
+                    <pre><code>Choose FLOW when:
+- Logic fits in one screen of diagram without nested loops
+- The team maintaining it is admin-heavy
+- Requirements change often and speed of iteration matters
+- Failure is visible and recoverable (a task not created, an email not sent)
+
+Choose APEX when:
+- Bulk performance matters (data loads, integrations, high-volume objects)
+- Logic involves complex queries, math, or orchestration
+- Failure is silent or expensive (money, quota, compliance)
+- The logic is stable and worth the cost of a deployment pipeline</code></pre>
+
+                    <h3>The Hybrid Pattern Nobody Talks About Enough</h3>
+
+                    <p>The best answer is often both: an invocable Apex method wrapped in a Flow. The heavy lifting - the complex query, the callout, the calculation - lives in a small, well-tested Apex class exposed with <code>@InvocableMethod</code>. The orchestration - when it fires, what happens with the result, who gets notified - lives in a Flow that admins can modify.</p>
+
+                    <pre><code>public class LeadScoringService {
+    @InvocableMethod(label='Calculate Lead Score')
+    public static List&lt;Decimal&gt; calculateScores(List&lt;Id&gt; leadIds) {
+        // Complex, tested, bulk-safe logic here
+    }
+}</code></pre>
+
+                    <p>This splits the system along its natural seam: engineers own the logic that needs rigor, admins own the process that needs agility. Neither side blocks the other.</p>
+
+                    <h3>One Transaction, One Architecture</h3>
+
+                    <p>Whatever you choose, the real killer is mixing automation types on the same object without a plan. A record-triggered Flow, two legacy Process Builders, and an Apex trigger all firing on Lead update do not compose - they cascade unpredictably, re-trigger each other, and burn governor limits. Pick one automation entry point per object (a single record-triggered Flow, or a single trigger with a handler framework), and route all logic through it. The orgs that skip this rule are the orgs where every deploy is a surprise.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Designing around Salesforce API limits and governor limits by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Designing Around Salesforce API Limits</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Designing Around Salesforce API Limits</h1>
+                        <h2 class="subheading">How to architect integrations that survive governor limits and API caps</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Salesforce is a multi-tenant platform, and the limits are the fence that keeps one org's bad code from degrading everyone else's. You cannot negotiate with them; you can only architect around them. The orgs that hit limit errors in production are almost never doing more work than their limits allow - they are doing the same work inefficiently.</p>
+
+                    <h3>Know Which Limit You Are Actually Fighting</h3>
+
+                    <p>Two different limit families get conflated constantly:</p>
+
+                    <p><strong>API request limits</strong> govern inbound calls from external systems - your integrations, middleware, and tools. The daily cap is shared across ALL connected apps, which is the detail that bites: your enrichment tool, your marketing automation sync, and your BI extract are all drawing from one bucket. When the bucket empties, everything stops, and the tool that caused it is rarely the tool that visibly fails first.</p>
+
+                    <p><strong>Governor limits</strong> constrain what happens inside a single transaction on-platform: 100 SOQL queries, 150 DML statements, CPU time, heap size. These are per-transaction, not daily - hitting them means your code or Flow design is wrong, not that your org is too busy.</p>
+
+                    <h3>The Bulk Pattern: The Fix for 80 Percent of Problems</h3>
+
+                    <p>Most limit pain traces to per-record operations. One query per record, one API call per record, one DML per record. Every platform limit assumes you batch:</p>
+
+                    <pre><code>// WRONG: query inside loop - dies at 100 records
+for (Lead l : leads) {
+    Account a = [SELECT Id FROM Account
+                 WHERE Website = :l.Website];
+}
+
+// RIGHT: one query, map lookup
+Set&lt;String&gt; domains = new Set&lt;String&gt;();
+for (Lead l : leads) { domains.add(l.Website); }
+Map&lt;String, Account&gt; byDomain = new Map&lt;String, Account&gt;();
+for (Account a : [SELECT Id, Website FROM Account
+                  WHERE Website IN :domains]) {
+    byDomain.put(a.Website, a);
+}</code></pre>
+
+                    <p>The same principle applies to external integrations: use the Composite API to bundle up to 25 operations into one call, and the Bulk API 2.0 for anything over a few thousand records - it processes millions of rows for a handful of API requests. If your integration syncs 50,000 records nightly using single-record REST calls, you are spending 50,000 requests on what Bulk API does in a few dozen.</p>
+
+                    <h3>Stop Polling, Start Listening</h3>
+
+                    <p>The single most wasteful integration pattern is polling: "query Salesforce every 5 minutes to see if anything changed." That is 288 API calls a day per object, almost all of which return nothing. Change Data Capture and Platform Events invert the model - Salesforce pushes changes to your subscriber as they happen. Event-driven integrations use a fraction of the API budget, have lower latency, and eliminate the entire class of "we missed records because the poll window shifted" bugs.</p>
+
+                    <h3>Design Rules for Integration Architects</h3>
+
+                    <pre><code>1. Inventory the bucket.  List every tool with API access and its
+   daily consumption. Most orgs have at least one tool burning
+   30% of the budget for a feature nobody uses.
+
+2. One front door.  Route external writes through middleware or an
+   integration layer rather than letting 8 tools write directly.
+   One place to batch, throttle, retry, and monitor.
+
+3. Fail toward a queue.  When you approach limits, degrade to
+   queued/deferred processing - never drop data silently.
+
+4. Retry with backoff, respect the Retry-After header, and make
+   every write idempotent (upsert on external ID) so retries
+   are safe.
+
+5. Alert at 70%.  The REST API returns your remaining calls in
+   the Sforce-Limit-Info header on every response. Watch it.
+   Finding out at 100% means finding out from angry users.</code></pre>
+
+                    <h3>Async Is Your Overflow Valve</h3>
+
+                    <p>On-platform, when synchronous transaction limits pinch, move work async: Queueable Apex for chained operations, Batch Apex for large data volumes (each batch execution gets fresh governor limits), Scheduled Apex for periodic jobs. The design question to ask about any automation is "does this need to happen in the transaction, or just soon after?" Almost everything - scoring, enrichment, sync-out, notifications - is "soon after," and moving it async makes the user-facing save fast and limit-proof at the same time.</p>
+
+                    <p>The deeper principle: limits are not the enemy of good architecture, they are a forcing function for it. Systems designed around batching, events, queues, and idempotency are not just limit-compliant - they are the systems that scale, recover from failures, and stay debuggable. Salesforce is just making you build them earlier than you planned.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
