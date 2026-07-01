@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Lead routing architecture - round robin, territory-based, and account matching by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Lead Routing Architecture</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Lead Routing Architecture</h1>
+                        <h2 class="subheading">Round robin, territory-based, and account matching - and when each one breaks</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Lead routing is where marketing spend either becomes pipeline or dies quietly. A lead that sits unassigned for four hours converts at a fraction of the rate of one touched in five minutes. Yet most orgs treat routing as an afterthought - a single assignment rule written years ago that nobody fully understands anymore. Here is how to think about routing as an architecture, not a rule.</p>
+
+                    <h3>The Three Core Models</h3>
+
+                    <p><strong>Round robin</strong> is the simplest: leads are distributed evenly across a queue of reps. It is fair, easy to explain, and trivial to implement. It breaks the moment your reps are not interchangeable - when some carry enterprise deals and others handle SMB, when time zones matter, or when a lead belongs to an account someone already owns. Round robin also silently punishes your best reps: distribute leads evenly and you have optimized for fairness to reps, not for revenue.</p>
+
+                    <p><strong>Territory-based routing</strong> assigns leads by geography, industry, company size, or a combination. This aligns routing with how your sales org is actually structured. The failure mode is territory drift: the org chart changes quarterly but the routing rules change annually. Every reorg leaves behind orphaned rules routing leads to reps who changed roles six months ago. If you run territory routing, the routing logic needs an owner and a review cadence tied to sales planning cycles, or it rots.</p>
+
+                    <p><strong>Account matching (lead-to-account)</strong> is the model most B2B orgs should run and many do not. Before any assignment logic fires, check whether the lead belongs to an account you already know - an open opportunity, a customer, a named target account. If it does, route it to the account owner regardless of what round robin or territory rules say. Nothing burns trust with sales faster than an SDR cold-calling a contact at an account their teammate is actively closing.</p>
+
+                    <h3>The Architecture That Actually Works</h3>
+
+                    <p>Mature routing is a waterfall, evaluated in strict order:</p>
+
+                    <pre><code>1. Deduplication      -> Is this an existing lead or contact? Merge, don't create.
+2. Account match      -> Does this belong to a known account? Route to owner.
+3. Disqualification   -> Competitor, student, spam? Route out of sales entirely.
+4. Segmentation       -> Enterprise / mid-market / SMB by firmographics.
+5. Territory          -> Geography or vertical within the segment.
+6. Round robin        -> Final tiebreaker within the matched territory group.
+7. Escalation         -> No touch in X minutes? Reassign and notify a manager.</code></pre>
+
+                    <p>Round robin is the last step, not the first. It is the tiebreaker after every intelligent decision has been made, not the strategy itself.</p>
+
+                    <h3>The Details That Separate Good From Broken</h3>
+
+                    <p><strong>Working hours and capacity.</strong> A rep on vacation should exit the queue automatically, not accumulate a backlog of dead leads. Integrate routing with calendar or out-of-office status, and cap leads-per-rep-per-day so a demand spike does not bury one person.</p>
+
+                    <p><strong>Speed-to-lead SLAs with teeth.</strong> Routing without escalation is a suggestion. If a lead is untouched for 15 minutes, it should re-route and someone should be notified. The SLA needs to be measured from form-fill timestamp, not from assignment timestamp - the gap between those two numbers is where routing latency hides.</p>
+
+                    <p><strong>Auditability.</strong> When a rep asks "why did I get this lead?" - and they will ask weekly - you need an answer better than "the rules." Log which rule fired on every assignment. In Salesforce, a simple custom field stamped with the routing reason turns every debugging session from an hour into a minute.</p>
+
+                    <h3>The Metric That Tells You If It Is Working</h3>
+
+                    <p>Most teams measure routing by distribution fairness. The better metric is time-to-first-touch by segment, because it captures the whole system: dedup speed, assignment accuracy, rep responsiveness, and escalation. If your enterprise leads have a slower first touch than your SMB leads, your routing is optimized backward - and no amount of round robin fairness will fix that.</p>
+
+                    <p>Routing is one of the highest-leverage systems in GTM because it multiplies everything upstream of it. Marketing can double lead volume, but if routing loses 20 percent of leads to bad rules and slow escalation, you paid twice for the same pipeline.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

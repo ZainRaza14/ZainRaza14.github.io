@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CRM data hygiene at scale - the compounding cost of bad data by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - CRM Data Hygiene at Scale</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>CRM Data Hygiene at Scale</h1>
+                        <h2 class="subheading">The compounding cost of bad data and how to stop it at intake</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Bad CRM data does not fail loudly. It fails as a slow tax on everything: routing sends leads to the wrong rep, duplicate accounts split activity history so nobody sees the full picture, reports disagree with each other so leadership stops trusting any of them, and reps quietly build shadow spreadsheets because the CRM "is wrong anyway." By the time someone commissions a data cleanup project, the culture damage is already done.</p>
+
+                    <h3>Why Bad Data Compounds</h3>
+
+                    <p>A duplicate account is not one error - it is a generator of errors. Every future activity logs against one of the two records at random. Every enrichment run updates one and not the other. Every report that groups by account splits the revenue. Two years later, merging those accounts means reconciling hundreds of divergent child records. The cost of a data defect grows with every day it lives, which inverts the usual maintenance logic: prevention is not just cheaper than cleanup, it is categorically cheaper, because cleanup cost scales with time and prevention cost does not.</p>
+
+                    <h3>Stop It at Intake</h3>
+
+                    <p>Every record enters your CRM through a finite set of doors: web forms, list imports, integrations, manual entry, and enrichment tools. Data quality is won or lost at those doors.</p>
+
+                    <p><strong>Web forms:</strong> validate email syntax and block free-mail domains where your ICP is B2B, use inline enrichment to autocomplete company fields rather than asking users to type them, and run duplicate matching before the record is created - not after.</p>
+
+                    <p><strong>List imports:</strong> this is the biggest single source of duplicates in most orgs. Nobody should import a list without running it through matching rules first. Make the import path a governed process owned by ops, not a button every marketer can press on a Friday afternoon.</p>
+
+                    <p><strong>Integrations:</strong> every integration that writes to the CRM needs an explicit upsert key (email, domain, external ID). An integration that only inserts is a duplicate factory. Audit this quarterly - tools change their sync behavior in version updates and nobody reads the changelog.</p>
+
+                    <p><strong>Manual entry:</strong> require the fields you actually use, and stop requiring the ones you do not. Every required field a rep does not know the answer to becomes a field filled with garbage to dismiss the validation error. "Unknown" pollution is a direct product of over-required page layouts.</p>
+
+                    <h3>Matching Rules That Actually Match</h3>
+
+                    <p>Exact-match dedup catches almost nothing real. "Acme Corp" vs "Acme Corporation" vs "acme corp." are the same company and no exact match will say so. Effective matching normalizes before comparing: lowercase everything, strip legal suffixes (Inc, LLC, GmbH, Ltd), and match companies on website domain rather than name whenever possible - domain is the closest thing B2B data has to a natural primary key. For people, email wins; for accounts, domain wins; name matching is the fallback, never the primary.</p>
+
+                    <h3>The Operating System: Ownership and Cadence</h3>
+
+                    <p>Hygiene fails organizationally before it fails technically. The pattern that works:</p>
+
+                    <pre><code>Daily (automated):   dedup jobs on new records, enrichment refresh,
+                     validation reports to a Slack channel
+Weekly (ops):        review merge queue, fix routing misfires,
+                     triage records failing validation
+Quarterly (ops+RevOps): field usage audit - delete or archive fields
+                     nobody has filled in 6 months; re-verify
+                     integration upsert keys; territory data review
+Annually:            archive stale records; recalibrate matching rules</code></pre>
+
+                    <p>Field audits deserve emphasis: unused fields are not harmless. Every field on a page layout is cognitive load on reps, another column of nulls in reports, and another thing imports can mis-map. Orgs accumulate fields the way attics accumulate boxes; schedule the cleanup or it never happens.</p>
+
+                    <h3>Measure It Like a Product</h3>
+
+                    <p>You cannot manage hygiene by anecdote. Pick a small set of metrics and track them on a dashboard leadership actually sees: duplicate rate on new records (should be under 2 percent), fill rate on the five fields your routing and scoring actually depend on, enrichment coverage, and mean time from record creation to correct ownership. When those numbers are visible, hygiene stops being a janitorial task and becomes an operating metric - which is what it always was.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
