@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="Lightkeeper - a game about steadfastness. A girl, a lantern, and a world of living shadows. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Lightkeeper - Syed Zain Raza</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,400italic|Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #030308;
+            font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #game { display: block; width: 100%; height: 100%; }
+
+        .hud {
+            position: fixed;
+            color: rgba(255, 255, 255, 0.9);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #back {
+            top: 20px;
+            left: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: auto;
+        }
+
+        #back a {
+            color: rgba(255, 255, 255, 0.35);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        #back a:hover { color: #ffb75e; }
+
+        #stats {
+            top: 20px;
+            right: 24px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 2;
+        }
+
+        #stats .big {
+            font-size: 30px;
+            font-weight: 300;
+            color: #fff;
+            letter-spacing: 1px;
+            text-shadow: 0 0 18px rgba(255, 183, 94, 0.4);
+        }
+
+        #overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            background: rgba(3, 3, 8, 0.72);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: opacity 0.5s ease;
+            padding: 24px;
+        }
+
+        #overlay.hidden { opacity: 0; pointer-events: none; }
+
+        #overlay h1 {
+            color: #fff;
+            font-size: 46px;
+            font-weight: 300;
+            letter-spacing: 12px;
+            text-indent: 12px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 40px rgba(255, 183, 94, 0.55);
+        }
+
+        #overlay .story {
+            font-family: 'Lora', Georgia, serif;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 16px;
+            line-height: 1.9;
+            text-align: center;
+            max-width: 520px;
+            margin-bottom: 10px;
+        }
+
+        #overlay .how {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 13px;
+            line-height: 2;
+            text-align: center;
+            max-width: 520px;
+            margin-top: 14px;
+        }
+
+        #overlay .how b { color: #ffb75e; font-weight: 700; }
+
+        #overlay .prompt {
+            margin-top: 30px;
+            color: #ffb75e;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: pulse 1.9s ease-in-out infinite;
+        }
+
+        #overlay .final {
+            color: #fff;
+            font-size: 72px;
+            font-weight: 300;
+            text-shadow: 0 0 32px rgba(255, 183, 94, 0.5);
+        }
+
+        #overlay .label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            margin: 4px 0 18px;
+        }
+
+        #overlay .newbest {
+            color: #ffb75e;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        @media (max-width: 600px) {
+            #overlay h1 { font-size: 30px; letter-spacing: 7px; text-indent: 7px; }
+            #overlay .story { font-size: 14px; }
+            #overlay .final { font-size: 54px; }
+            #stats { font-size: 11px; }
+            #stats .big { font-size: 24px; }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <canvas id="game"></canvas>
+
+    <div class="hud" id="back"><a href="../interactive.html">&larr; Interactive Space</a></div>
+    <div class="hud" id="stats">
+        <div class="big" id="time">0:00</div>
+        <div id="banished">0 banished</div>
+    </div>
+
+    <div id="overlay">
+        <h1>LIGHTKEEPER</h1>
+        <p class="story">The dark came for her village, and everyone ran.<br>
+        She picked up the last lantern instead.</p>
+        <p class="how">
+            Move with <b>WASD / arrows</b> or touch-drag. Gather the falling <b>embers</b> to keep her lantern burning.<br>
+            When the shadows lunge, running feeds them - they grow faster in pursuit.<br>
+            <b>Hold SPACE</b> (or press with a second finger) to stand firm: she plants her feet<br>
+            and her light flares, burning every shadow that dares come close.
+        </p>
+        <p class="how" style="margin-top:6px;">Courage costs light. Light is life. How long can she hold the dark back?</p>
+        <div class="prompt">Tap or press space to light the lantern</div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var canvas = document.getElementById('game');
+        var ctx = canvas.getContext('2d');
+        var timeEl = document.getElementById('time');
+        var banishedEl = document.getElementById('banished');
+        var overlay = document.getElementById('overlay');
+
+        var DPR = Math.min(window.devicePixelRatio || 1, 2);
+        var W = 0, H = 0;
+
+        var WARM = '#ffb75e';
+
+        var STATE_MENU = 0, STATE_PLAY = 1, STATE_DEAD = 2;
+        var state = STATE_MENU;
+
+        var best = 0;
+        try { best = parseFloat(localStorage.getItem('lightkeeper_best') || '0') || 0; } catch (e) {}
+
+        var girl, shadows, embers, particles, ripples;
+        var survived = 0, banished = 0;
+        var spawnTimer = 0, emberTimer = 0;
+        var camShake = 0;
+        var t = 0;
+
+        var keys = {};
+        var touchMove = null;   // {x, y} target
+        var standTouch = false;
+
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
+
+        function resize() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W * DPR;
+            canvas.height = H * DPR;
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        }
+
+        function resetGame() {
+            girl = {
+                x: W / 2, y: H / 2,
+                speed: 175,
+                light: 1,             // 0..1 lantern reserve
+                radius: 0,            // computed light radius
+                standing: false,
+                flare: 0,             // 0..1 flare intensity while standing
+                step: 0,              // walk-cycle phase
+                facing: 1
+            };
+            shadows = [];
+            embers = [];
+            particles = [];
+            ripples = [];
+            survived = 0;
+            banished = 0;
+            spawnTimer = 1.6;
+            emberTimer = 0.8;
+            camShake = 0;
+            updateHud();
+        }
+
+        function updateHud() {
+            var m = Math.floor(survived / 60);
+            var s = Math.floor(survived % 60);
+            timeEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+            banishedEl.textContent = banished + ' banished';
+        }
+
+        // ---------- entities ----------
+        function spawnShadow() {
+            var edge = Math.floor(rand(0, 4));
+            var x, y;
+            if (edge === 0) { x = rand(0, W); y = -30; }
+            else if (edge === 1) { x = W + 30; y = rand(0, H); }
+            else if (edge === 2) { x = rand(0, W); y = H + 30; }
+            else { x = -30; y = rand(0, H); }
+            shadows.push({
+                x: x, y: y,
+                size: rand(11, 17),
+                speed: rand(34, 52) + Math.min(46, survived * 0.55),
+                wobble: rand(0, Math.PI * 2),
+                fade: 1
+            });
+        }
+
+        function spawnEmber() {
+            embers.push({
+                x: rand(50, W - 50),
+                y: rand(80, H - 50),
+                life: 11,       // seconds before it gutters out
+                phase: rand(0, Math.PI * 2)
+            });
+        }
+
+        function burst(x, y, n, color, speed) {
+            for (var i = 0; i < n; i++) {
+                var a = rand(0, Math.PI * 2);
+                var s = rand(speed * 0.3, speed);
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(a) * s,
+                    vy: Math.sin(a) * s,
+                    life: 1,
+                    decay: rand(0.9, 2.0),
+                    size: rand(1, 3),
+                    color: color
+                });
+            }
+        }
+
+        // ---------- flow ----------
+        function action() {
+            if (state === STATE_MENU || state === STATE_DEAD) {
+                overlay.classList.add('hidden');
+                resetGame();
+                state = STATE_PLAY;
+            }
+        }
+
+        function die() {
+            state = STATE_DEAD;
+            camShake = 16;
+            burst(girl.x, girl.y, 60, '#9db4d8', 240);
+            burst(girl.x, girl.y, 40, WARM, 160);
+
+            var isBest = survived > best;
+            if (isBest) {
+                best = survived;
+                try { localStorage.setItem('lightkeeper_best', String(best)); } catch (e) {}
+            }
+
+            var m = Math.floor(survived / 60);
+            var s = Math.floor(survived % 60);
+            var timeStr = m + ':' + (s < 10 ? '0' : '') + s;
+            var bm = Math.floor(best / 60);
+            var bs = Math.floor(best % 60);
+            var bestStr = bm + ':' + (bs < 10 ? '0' : '') + bs;
+
+            overlay.innerHTML =
+                '<div class="final">' + timeStr + '</div>' +
+                '<div class="label">she held the dark back &middot; ' + banished + ' shadows banished</div>' +
+                (isBest && survived > 3 ? '<div class="newbest">&#9733; Her bravest stand yet &#9733;</div>' : '<div class="label" style="margin-top:0">bravest stand: ' + bestStr + '</div>') +
+                '<p class="story">The lantern went out. But lanterns can be lit again.</p>' +
+                '<div class="prompt">Tap or press space to stand again</div>';
+            setTimeout(function () { overlay.classList.remove('hidden'); }, 500);
+        }
+
+        // ---------- update ----------
+        function update(dt) {
+            t += dt;
+            if (camShake > 0) camShake = Math.max(0, camShake - dt * 34);
+
+            if (state !== STATE_PLAY) return;
+
+            survived += dt;
+
+            // --- input / movement ---
+            var mvx = 0, mvy = 0;
+            if (keys['ArrowLeft'] || keys['KeyA']) mvx -= 1;
+            if (keys['ArrowRight'] || keys['KeyD']) mvx += 1;
+            if (keys['ArrowUp'] || keys['KeyW']) mvy -= 1;
+            if (keys['ArrowDown'] || keys['KeyS']) mvy += 1;
+
+            if (touchMove) {
+                var tdx = touchMove.x - girl.x;
+                var tdy = touchMove.y - girl.y;
+                var td = Math.sqrt(tdx * tdx + tdy * tdy);
+                if (td > 14) { mvx = tdx / td; mvy = tdy / td; }
+            }
+
+            girl.standing = (keys['Space'] || standTouch) && girl.light > 0.05;
+
+            if (girl.standing) {
+                mvx = 0; mvy = 0;
+                girl.flare = Math.min(1, girl.flare + dt * 5);
+                girl.light = Math.max(0, girl.light - dt * 0.16);  // courage costs light
+            } else {
+                girl.flare = Math.max(0, girl.flare - dt * 4);
+            }
+
+            var mlen = Math.sqrt(mvx * mvx + mvy * mvy);
+            if (mlen > 0) {
+                mvx /= mlen; mvy /= mlen;
+                girl.x += mvx * girl.speed * dt;
+                girl.y += mvy * girl.speed * dt;
+                girl.step += dt * 11;
+                if (mvx !== 0) girl.facing = mvx > 0 ? 1 : -1;
+            }
+            girl.x = Math.max(16, Math.min(W - 16, girl.x));
+            girl.y = Math.max(16, Math.min(H - 16, girl.y));
+
+            // --- lantern ---
+            girl.light = Math.max(0, girl.light - dt * 0.022);  // slow natural burn
+            girl.radius = 70 + girl.light * 110 + girl.flare * 55;
+            if (girl.light <= 0) { die(); return; }
+
+            // --- spawns, difficulty ramps with time ---
+            spawnTimer -= dt;
+            if (spawnTimer <= 0) {
+                spawnShadow();
+                if (survived > 45 && Math.random() < 0.5) spawnShadow();
+                spawnTimer = Math.max(0.55, 2.3 - survived * 0.024);
+            }
+            emberTimer -= dt;
+            if (emberTimer <= 0 && embers.length < 4) {
+                spawnEmber();
+                emberTimer = rand(2.6, 4.2);
+            }
+
+            // --- embers ---
+            for (var e = embers.length - 1; e >= 0; e--) {
+                var em = embers[e];
+                em.life -= dt;
+                if (em.life <= 0) { embers.splice(e, 1); continue; }
+                if (dist(em.x, em.y, girl.x, girl.y) < 22) {
+                    girl.light = Math.min(1, girl.light + 0.3);
+                    burst(em.x, em.y, 14, WARM, 120);
+                    embers.splice(e, 1);
+                }
+            }
+
+            // --- shadows ---
+            var moving = mlen > 0;
+            for (var i = shadows.length - 1; i >= 0; i--) {
+                var sh = shadows[i];
+                sh.wobble += dt * 3;
+                var dx = girl.x - sh.x;
+                var dy = girl.y - sh.y;
+                var d = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+
+                // shadows smell fear: they speed up when she runs
+                var chase = sh.speed * (moving ? 1.55 : 1);
+                sh.x += (dx / d) * chase * dt + Math.cos(sh.wobble) * 14 * dt;
+                sh.y += (dy / d) * chase * dt + Math.sin(sh.wobble * 1.3) * 14 * dt;
+
+                // the flare of a steadfast heart burns them away
+                if (girl.flare > 0.55 && d < girl.radius) {
+                    sh.fade -= dt * 3.2;
+                    if (sh.fade <= 0) {
+                        banished++;
+                        burst(sh.x, sh.y, 18, '#b9cdf2', 150);
+                        ripples.push({ x: sh.x, y: sh.y, r: 4, life: 1 });
+                        shadows.splice(i, 1);
+                        camShake = Math.max(camShake, 4);
+                        continue;
+                    }
+                } else if (d < girl.radius * 0.86) {
+                    // plain light only slows and singes them
+                    sh.x -= (dx / d) * chase * 0.62 * dt;
+                    sh.y -= (dy / d) * chase * 0.62 * dt;
+                    sh.fade = Math.min(1, sh.fade + dt);
+                } else {
+                    sh.fade = Math.min(1, sh.fade + dt * 2);
+                }
+
+                // touch = the dark takes the lantern
+                if (d < sh.size + 9) { die(); return; }
+            }
+
+            // --- particles & ripples ---
+            for (var p = particles.length - 1; p >= 0; p--) {
+                var pt = particles[p];
+                pt.x += pt.vx * dt;
+                pt.y += pt.vy * dt;
+                pt.vx *= (1 - dt * 1.4);
+                pt.vy *= (1 - dt * 1.4);
+                pt.life -= pt.decay * dt;
+                if (pt.life <= 0) particles.splice(p, 1);
+            }
+            for (var r = ripples.length - 1; r >= 0; r--) {
+                ripples[r].r += dt * 90;
+                ripples[r].life -= dt * 1.8;
+                if (ripples[r].life <= 0) ripples.splice(r, 1);
+            }
+
+            updateHud();
+        }
+
+        // ---------- render ----------
+        function render() {
+            // deep dark base
+            ctx.fillStyle = '#030308';
+            ctx.fillRect(0, 0, W, H);
+
+            var shx = camShake > 0 ? rand(-1, 1) * camShake * 0.4 : 0;
+            var shy = camShake > 0 ? rand(-1, 1) * camShake * 0.4 : 0;
+
+            ctx.save();
+            ctx.translate(shx, shy);
+
+            if (girl) {
+                var flick = 1 + Math.sin(t * 9) * 0.02 + Math.sin(t * 23) * 0.012;
+                var R = girl.radius * flick;
+
+                // lantern glow
+                var g = ctx.createRadialGradient(girl.x, girl.y, 4, girl.x, girl.y, R);
+                var warmth = girl.flare > 0.5 ? 0.55 : 0.38;
+                g.addColorStop(0, 'rgba(255, 200, 130, ' + warmth + ')');
+                g.addColorStop(0.45, 'rgba(255, 170, 90, ' + warmth * 0.45 + ')');
+                g.addColorStop(1, 'rgba(255, 150, 70, 0)');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(girl.x, girl.y, R, 0, Math.PI * 2);
+                ctx.fill();
+
+                // faint ground circle at light's edge
+                ctx.beginPath();
+                ctx.arc(girl.x, girl.y, R * 0.86, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 190, 120, 0.07)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // flare ring while standing firm
+                if (girl.flare > 0.05) {
+                    ctx.beginPath();
+                    ctx.arc(girl.x, girl.y, R * (0.94 + Math.sin(t * 6) * 0.02), 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 210, 140, ' + girl.flare * 0.5 + ')';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            // embers (visible even in the dark - faint beacons)
+            for (var e = 0; e < embers.length; e++) {
+                var em = embers[e];
+                var pulse = 0.6 + Math.abs(Math.sin(t * 2.4 + em.phase)) * 0.4;
+                var dying = Math.min(1, em.life / 3);
+                ctx.globalAlpha = pulse * dying;
+                var eg = ctx.createRadialGradient(em.x, em.y, 0, em.x, em.y, 16);
+                eg.addColorStop(0, 'rgba(255, 190, 100, 0.85)');
+                eg.addColorStop(1, 'rgba(255, 150, 60, 0)');
+                ctx.fillStyle = eg;
+                ctx.beginPath();
+                ctx.arc(em.x, em.y, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffd9a0';
+                ctx.beginPath();
+                ctx.arc(em.x, em.y - Math.sin(t * 2 + em.phase) * 2.5, 2.6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // shadows - wispy circles, visible mostly near light
+            for (var i = 0; i < shadows.length; i++) {
+                var sh = shadows[i];
+                var dToGirl = girl ? dist(sh.x, sh.y, girl.x, girl.y) : 9999;
+                var nearLight = girl ? Math.max(0, 1 - dToGirl / (girl.radius * 1.7)) : 0;
+                var vis = (0.16 + nearLight * 0.8) * sh.fade;
+
+                ctx.globalAlpha = vis;
+                var sg = ctx.createRadialGradient(sh.x, sh.y, 1, sh.x, sh.y, sh.size * 2.1);
+                sg.addColorStop(0, 'rgba(150, 170, 215, 0.9)');
+                sg.addColorStop(0.5, 'rgba(60, 70, 110, 0.55)');
+                sg.addColorStop(1, 'rgba(20, 25, 45, 0)');
+                ctx.fillStyle = sg;
+                ctx.beginPath();
+                ctx.arc(sh.x, sh.y, sh.size * 2.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // two pale eyes
+                ctx.fillStyle = 'rgba(220, 230, 255, ' + vis + ')';
+                ctx.beginPath();
+                ctx.arc(sh.x - sh.size * 0.28, sh.y - 2, 1.7, 0, Math.PI * 2);
+                ctx.arc(sh.x + sh.size * 0.28, sh.y - 2, 1.7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // ripples from banished shadows
+            for (var r = 0; r < ripples.length; r++) {
+                var rp = ripples[r];
+                ctx.globalAlpha = rp.life * 0.5;
+                ctx.beginPath();
+                ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+                ctx.strokeStyle = '#b9cdf2';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            // particles
+            for (var p = 0; p < particles.length; p++) {
+                var pt = particles[p];
+                ctx.globalAlpha = Math.max(0, pt.life) * 0.9;
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // the girl
+            if (girl && state !== STATE_DEAD) drawGirl();
+
+            ctx.restore();
+
+            // lantern reserve bar
+            if (girl && state === STATE_PLAY) {
+                var bw = Math.min(260, W * 0.5);
+                var bx = (W - bw) / 2;
+                var by = H - 34;
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.fillRect(bx, by, bw, 4);
+                var lc = girl.light > 0.3 ? WARM : '#ff6b57';
+                ctx.fillStyle = lc;
+                ctx.fillRect(bx, by, bw * girl.light, 4);
+                ctx.font = '600 10px "Open Sans", sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                ctx.textAlign = 'center';
+                ctx.fillText('L A N T E R N', W / 2, by - 8);
+            }
+        }
+
+        function drawGirl() {
+            var x = girl.x, y = girl.y;
+            var bob = girl.standing ? 0 : Math.sin(girl.step) * 1.6;
+            var f = girl.facing;
+
+            ctx.save();
+            ctx.translate(x, y + bob);
+
+            // stance widens when she stands firm
+            var stance = girl.standing ? 5 : 3;
+            var sway = girl.standing ? 0 : Math.sin(girl.step) * 2.4;
+
+            ctx.strokeStyle = '#e8e2d8';
+            ctx.fillStyle = '#e8e2d8';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+
+            // legs
+            ctx.beginPath();
+            ctx.moveTo(0, 2);
+            ctx.lineTo(-stance + sway, 12);
+            ctx.moveTo(0, 2);
+            ctx.lineTo(stance + sway * 0.5, 12);
+            ctx.stroke();
+
+            // dress (small triangle silhouette)
+            ctx.beginPath();
+            ctx.moveTo(0, -8);
+            ctx.lineTo(-5.5, 3);
+            ctx.lineTo(5.5, 3);
+            ctx.closePath();
+            ctx.fill();
+
+            // head with hair bun
+            ctx.beginPath();
+            ctx.arc(0, -12.5, 3.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-2.6 * f, -14.5, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // lantern arm - raised high when standing firm
+            var armY = girl.standing ? -13 : -6;
+            var armX = girl.standing ? 8 * f : 7 * f;
+            ctx.beginPath();
+            ctx.moveTo(0, -7);
+            ctx.lineTo(armX, armY);
+            ctx.stroke();
+
+            // the lantern itself
+            var lx = armX + 1.5 * f;
+            var ly = armY + (girl.standing ? -2 : 3);
+            ctx.strokeStyle = '#c9b89a';
+            ctx.lineWidth = 1.4;
+            ctx.strokeRect(lx - 2.6, ly - 3.4, 5.2, 6.8);
+            var flameA = 0.75 + Math.sin(t * 12) * 0.25;
+            ctx.fillStyle = 'rgba(255, 205, 120, ' + flameA + ')';
+            ctx.beginPath();
+            ctx.arc(lx, ly, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowColor = WARM;
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(lx, ly, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.restore();
+        }
+
+        // ---------- loop ----------
+        var last = 0;
+        function loop(ts) {
+            var dt = Math.min(0.033, (ts - last) / 1000 || 0.016);
+            last = ts;
+            update(dt);
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        // ---------- events ----------
+        window.addEventListener('resize', resize);
+
+        window.addEventListener('keydown', function (e) {
+            if (e.code === 'Space') e.preventDefault();
+            keys[e.code] = true;
+            if ((e.code === 'Space' || e.code === 'Enter') && state !== STATE_PLAY) action();
+        });
+        window.addEventListener('keyup', function (e) { keys[e.code] = false; });
+
+        canvas.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            if (state !== STATE_PLAY) { action(); return; }
+            if (e.touches.length >= 2) {
+                standTouch = true;
+                touchMove = null;
+            } else {
+                var tch = e.touches[0];
+                touchMove = { x: tch.clientX, y: tch.clientY };
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+            if (e.touches.length === 1 && !standTouch) {
+                var tch = e.touches[0];
+                touchMove = { x: tch.clientX, y: tch.clientY };
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function (e) {
+            e.preventDefault();
+            if (e.touches.length === 0) { touchMove = null; standTouch = false; }
+            else if (e.touches.length === 1) { standTouch = false; }
+        }, { passive: false });
+
+        canvas.addEventListener('mousedown', function () {
+            if (state !== STATE_PLAY) action();
+        });
+        overlay.addEventListener('mousedown', action);
+        overlay.addEventListener('touchstart', function (e) { e.preventDefault(); action(); }, { passive: false });
+
+        // ---------- boot ----------
+        resize();
+        resetGame();
+        requestAnimationFrame(loop);
+    })();
+    </script>
+
+</body>
+
+</html>
