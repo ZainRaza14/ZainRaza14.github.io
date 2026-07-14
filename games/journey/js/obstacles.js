@@ -27,8 +27,8 @@
             key: 'spikes', word: 'Fear', w: 46, h: 26,
             draw: function (ctx, o, t, s) {
                 // jagged dark spikes with a faint violet edge
-                ctx.fillStyle = '#0a0f22';
-                ctx.strokeStyle = 'rgba(150, 130, 220, 0.35)';
+                ctx.fillStyle = '#2a1f4d';
+                ctx.strokeStyle = 'rgba(180, 155, 255, 0.75)';
                 ctx.lineWidth = 1;
                 var n = 4;
                 for (var i = 0; i < n; i++) {
@@ -55,7 +55,7 @@
                 ctx.lineTo(o.x + o.w * s, o.baseY);
                 ctx.closePath();
                 ctx.fill();
-                ctx.strokeStyle = 'rgba(120, 90, 200, ' + (0.25 + Math.sin(t * 3 + o.seed * 9) * 0.1) + ')';
+                ctx.strokeStyle = 'rgba(170, 130, 255, ' + (0.6 + Math.sin(t * 3 + o.seed * 9) * 0.2) + ')';
                 ctx.lineWidth = 1.4;
                 ctx.beginPath();
                 ctx.moveTo(o.x, o.baseY);
@@ -77,8 +77,8 @@
                     var sway = Math.sin(t * 2.2 + o.seed * 10 + i * 1.4) * 6 * s * (0.4 + frac);
                     var r = (13 - i * 2) * s;
                     var sg = ctx.createRadialGradient(o.x + o.w * s / 2 + sway, yy, 1, o.x + o.w * s / 2 + sway, yy, r);
-                    sg.addColorStop(0, 'rgba(35, 30, 60, 0.85)');
-                    sg.addColorStop(1, 'rgba(20, 18, 40, 0)');
+                    sg.addColorStop(0, 'rgba(105, 80, 170, 0.8)');
+                    sg.addColorStop(1, 'rgba(70, 45, 130, 0)');
                     ctx.fillStyle = sg;
                     ctx.beginPath();
                     ctx.arc(o.x + o.w * s / 2 + sway, yy, r, 0, Math.PI * 2);
@@ -95,18 +95,18 @@
                 var cx = o.x + o.w * s / 2;
                 var cy = o.baseY - o.h * s * 0.45 + breathe;
                 var cg = ctx.createRadialGradient(cx, cy, 2, cx, cy, o.h * s * 0.8);
-                cg.addColorStop(0, 'rgba(40, 40, 70, 0.95)');
-                cg.addColorStop(1, 'rgba(15, 15, 35, 0)');
+                cg.addColorStop(0, 'rgba(85, 75, 145, 0.95)');
+                cg.addColorStop(1, 'rgba(40, 32, 80, 0)');
                 ctx.fillStyle = cg;
                 ctx.beginPath();
                 ctx.arc(cx, cy, o.h * s * 0.8, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#0c1020';
+                ctx.fillStyle = '#221a4a';
                 ctx.beginPath();
                 ctx.ellipse(cx, cy + 4 * s, o.w * s * 0.42, o.h * s * 0.42, 0, 0, Math.PI * 2);
                 ctx.fill();
                 // dim violet eyes
-                ctx.fillStyle = 'rgba(170, 150, 240, 0.8)';
+                ctx.fillStyle = 'rgba(200, 180, 255, 0.95)';
                 ctx.beginPath();
                 ctx.arc(cx - 4 * s, cy, 1.6 * s, 0, Math.PI * 2);
                 ctx.arc(cx + 4 * s, cy, 1.6 * s, 0, Math.PI * 2);
@@ -117,7 +117,7 @@
             key: 'thorns', word: 'Anger', w: 40, h: 34,
             draw: function (ctx, o, t, s) {
                 // curling thorn tangle
-                ctx.strokeStyle = '#141a30';
+                ctx.strokeStyle = '#472a4d';
                 ctx.lineWidth = 3 * s;
                 ctx.lineCap = 'round';
                 for (var i = 0; i < 3; i++) {
@@ -132,7 +132,7 @@
                     );
                     ctx.stroke();
                 }
-                ctx.strokeStyle = 'rgba(210, 90, 90, 0.3)';
+                ctx.strokeStyle = 'rgba(255, 110, 110, 0.7)';
                 ctx.lineWidth = 1;
                 for (var j = 0; j < 3; j++) {
                     var tx = o.x + (j + 0.5) * (o.w * s / 3);
@@ -148,11 +148,11 @@
             draw: function (ctx, o, t, s) {
                 // a tall narrow monolith, cold-lit from the moon side
                 var grad = ctx.createLinearGradient(o.x, 0, o.x + o.w * s, 0);
-                grad.addColorStop(0, '#1a2340');
-                grad.addColorStop(1, '#0a0f22');
+                grad.addColorStop(0, '#33427a');
+                grad.addColorStop(1, '#1a2450');
                 ctx.fillStyle = grad;
                 ctx.fillRect(o.x, o.baseY - o.h * s, o.w * s, o.h * s);
-                ctx.strokeStyle = 'rgba(127, 178, 255, 0.2)';
+                ctx.strokeStyle = 'rgba(150, 195, 255, 0.5)';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(o.x, o.baseY - o.h * s, o.w * s, o.h * s);
             }
@@ -167,8 +167,8 @@
                 ctx.save();
                 ctx.translate(cx, cy);
                 ctx.rotate(Math.sin(t + o.seed * 5) * 0.15);
-                ctx.fillStyle = '#10162e';
-                ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)'; // a greedy gold glint
+                ctx.fillStyle = '#2a2258';
+                ctx.strokeStyle = 'rgba(255, 205, 90, 0.8)'; // a greedy gold glint
                 ctx.lineWidth = 1.2;
                 ctx.beginPath();
                 ctx.moveTo(0, -o.h * s * 0.45);
@@ -319,11 +319,14 @@
             if (!o.active) continue;
             o.type.draw(ctx, o, t, scale);
 
-            // the struggle's name drifts faintly above the hazard
-            ctx.font = '400 italic ' + Math.round(11 * scale) + 'px Lora, Georgia, serif';
-            ctx.fillStyle = 'rgba(160, 160, 200, ' + (0.28 + Math.sin(t * 1.5 + o.seed * 9) * 0.08) + ')';
+            // the struggle's name floats above the hazard, clearly readable
+            ctx.font = '400 italic ' + Math.round(15 * scale) + 'px Lora, Georgia, serif';
             ctx.textAlign = 'center';
-            ctx.fillText(o.type.word, o.x + o.w * scale / 2, o.baseY - o.h * scale - 12 * scale);
+            ctx.shadowColor = 'rgba(190, 170, 255, 0.9)';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = 'rgba(235, 228, 255, ' + (0.85 + Math.sin(t * 1.5 + o.seed * 9) * 0.15) + ')';
+            ctx.fillText(o.type.word, o.x + o.w * scale / 2, o.baseY - o.h * scale - 14 * scale);
+            ctx.shadowBlur = 0;
         }
 
         for (i = 0; i < starPool.length; i++) {
