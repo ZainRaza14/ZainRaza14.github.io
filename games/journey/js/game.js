@@ -39,6 +39,28 @@
 
     var hazardTimer = 0;
     var starTimer = 0;
+    var newBestShown = false;
+
+    // floating score/announcement popups (pooled)
+    var popups = [];
+    for (var _pi = 0; _pi < 8; _pi++) {
+        popups.push({ text: '', x: 0, y: 0, life: 0, max: 1, color: '#fff' });
+    }
+
+    /** Show a short floating text (score gain, combo, milestone). */
+    function spawnPopup(text, x, y, color, seconds) {
+        for (var i = 0; i < popups.length; i++) {
+            if (popups[i].life <= 0) {
+                popups[i].text = text;
+                popups[i].x = x;
+                popups[i].y = y;
+                popups[i].life = seconds;
+                popups[i].max = seconds;
+                popups[i].color = color;
+                return;
+            }
+        }
+    }
 
     var sky = 'night';         // equipped sky theme, set by UI
 
@@ -132,6 +154,8 @@
         progress = 0;
         hazardTimer = 1.4;
         starTimer = 2.2;
+        newBestShown = false;
+        for (var pi = 0; pi < popups.length; pi++) popups[pi].life = 0;
 
         Player.reset(groundY, SCALE);
         Obstacles.reset();
@@ -139,7 +163,7 @@
         UI.setScore(0);
         UI.setBestHud();
         UI.setStarsHud();
-        UI.setMultiplier(false);
+        UI.setMultiplier(1);
         UI.show(null);          // hide all screens, show HUD
 
         GameAudio.unlock();
@@ -174,7 +198,7 @@
 
     function currentSpeed() {
         // +12% per 20-second level, scaled for screen size
-        return baseSpeed * SCALE * (1 + speedLevel * 0.12);
+        return baseSpeed * SCALE * (1 + speedLevel * 0.15);
     }
 
     function update(dt) {
@@ -183,19 +207,26 @@
         if (state !== STATE.PLAY) return;
 
         runTime += dt;
-        progress = Math.min(1, runTime / 180); // full brightness at ~3 minutes
+        progress = Math.min(1, runTime / 90); // full brightness at ~90 seconds
         GameAudio.setProgress(progress);
 
-        // difficulty step every 20 seconds
+        // difficulty step every 20 seconds (announced, so it feels earned)
         var newLevel = Math.floor(runTime / 20);
-        if (newLevel !== speedLevel) speedLevel = newLevel;
+        if (newLevel !== speedLevel) {
+            speedLevel = newLevel;
+            spawnPopup('the road quickens', W * 0.5, H * 0.3, '#9ecbff', 1.4);
+        }
 
         var speed = currentSpeed();
         var speedFactor = speed / (baseSpeed * SCALE);
 
-        // score: distance-based, doubled on a perfect streak
+        // score: distance-based, multiplied by the combo tier
         score += dt * 10 * speedFactor * multiplier;
         UI.setScore(score);
+        if (!newBestShown && UI.state.best > 0 && score > UI.state.best) {
+            newBestShown = true;
+            spawnPopup('new best!', W * 0.5, H * 0.24, '#ffd98a', 1.6);
+        }
 
         // player physics + animation
         Player.update(dt, groundY, speedFactor);
@@ -216,11 +247,17 @@
         }
 
         // world scroll + pass tracking (streak feeds the multiplier)
-        Obstacles.update(dt, speed, function () {
+        Obstacles.update(dt, speed, function (o) {
             streak++;
-            if (streak >= 10 && multiplier === 1) {
+            // combo tiers: x2 at 5 clean passes, x3 at 15
+            if (streak === 5) {
                 multiplier = 2;
-                UI.setMultiplier(true);
+                UI.setMultiplier(2);
+                spawnPopup('combo x2', Player.state.x, groundY - 90 * SCALE, '#ffd98a', 1.1);
+            } else if (streak === 15) {
+                multiplier = 3;
+                UI.setMultiplier(3);
+                spawnPopup('combo x3', Player.state.x, groundY - 90 * SCALE, '#ffd98a', 1.1);
             }
         });
 
@@ -230,6 +267,7 @@
             starsThisRun += got;
             score += got * 25 * multiplier;
             GameAudio.collect();
+            spawnPopup('+' + (got * 25 * multiplier), Player.state.x + 30 * SCALE, groundY - 110 * SCALE, '#ffe9b8', 0.9);
         }
 
         // collision = the run ends (gently)
@@ -255,6 +293,11 @@
                 if (flowers[f].x < -20) flowers[f].x = W + rand(0, W * 0.4);
             }
         }
+
+        // popup timers decay regardless of motion setting
+        for (var pp = 0; pp < popups.length; pp++) {
+            if (popups[pp].life > 0) popups[pp].life -= dt;
+        }
     }
 
     // -------------------- render --------------------
@@ -265,19 +308,19 @@
         var lift = progress * 0.5; // dawn approaches as she travels
 
         if (sky === 'aurora') {
-            g.addColorStop(0, '#071224');
-            g.addColorStop(0.6, '#0b1e2e');
-            g.addColorStop(1, '#10303a');
+            g.addColorStop(0, '#0c1c36');
+            g.addColorStop(0.6, '#123048');
+            g.addColorStop(1, '#1a4a56');
         } else if (sky === 'nebula') {
-            g.addColorStop(0, '#0d0a24');
-            g.addColorStop(0.6, '#180f33');
-            g.addColorStop(1, '#241242');
+            g.addColorStop(0, '#171040');
+            g.addColorStop(0.6, '#261a52');
+            g.addColorStop(1, '#3a2168');
         } else if (sky === 'crescent') {
-            g.addColorStop(0, '#050914');
-            g.addColorStop(1, '#101a33');
+            g.addColorStop(0, '#0b1226');
+            g.addColorStop(1, '#1c2c52');
         } else { // deep night
-            g.addColorStop(0, '#04070f');
-            g.addColorStop(1, '#0b1226');
+            g.addColorStop(0, '#0a1128');
+            g.addColorStop(1, '#1a2a58');
         }
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
@@ -359,9 +402,9 @@
     function drawHorizonLight() {
         var cx = W * 0.86;
         var cy = groundY - 8;
-        var base = 60 * SCALE;
+        var base = 110 * SCALE;
         var r = base + progress * W * 0.35;              // grows with progress
-        var strength = 0.14 + progress * 0.5;
+        var strength = 0.32 + progress * 0.45;
 
         var g = ctx.createRadialGradient(cx, cy, 2, cx, cy, r);
         g.addColorStop(0, 'rgba(255, 236, 190, ' + strength + ')');
@@ -381,7 +424,7 @@
                 ctx.rotate(0); // rotation folded into gradient line below
                 var len = r * 1.15;
                 var rayG = ctx.createLinearGradient(0, 0, Math.cos(ang) * len, Math.sin(ang) * len);
-                rayG.addColorStop(0, 'rgba(255, 226, 160, ' + (0.10 + progress * 0.12) + ')');
+                rayG.addColorStop(0, 'rgba(255, 226, 160, ' + (0.18 + progress * 0.14) + ')');
                 rayG.addColorStop(1, 'rgba(255, 226, 160, 0)');
                 ctx.fillStyle = rayG;
                 ctx.beginPath();
@@ -403,7 +446,7 @@
             var yBase = groundY - (l === 0 ? 8 : 2);
             var drift = (t * (l === 0 ? 6 : 14)) % W;
 
-            ctx.fillStyle = l === 0 ? 'rgba(10, 16, 34, 0.9)' : 'rgba(7, 11, 24, 0.95)';
+            ctx.fillStyle = l === 0 ? 'rgba(30, 42, 84, 0.9)' : 'rgba(20, 30, 64, 0.95)';
             ctx.beginPath();
             ctx.moveTo(0, yBase);
             var seg = layer.length - 1;
@@ -421,13 +464,13 @@
     /** Ground plane + flowers that bloom as the world brightens. */
     function drawGround() {
         var g = ctx.createLinearGradient(0, groundY, 0, H);
-        g.addColorStop(0, '#0c1330');
-        g.addColorStop(1, '#060a18');
+        g.addColorStop(0, '#1a2450');
+        g.addColorStop(1, '#0e1530');
         ctx.fillStyle = g;
         ctx.fillRect(0, groundY, W, H - groundY);
 
         // ground line catches the horizon light
-        ctx.strokeStyle = 'rgba(255, 217, 138, ' + (0.12 + progress * 0.25) + ')';
+        ctx.strokeStyle = 'rgba(255, 217, 138, ' + (0.3 + progress * 0.3) + ')';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(0, groundY);
@@ -435,7 +478,7 @@
         ctx.stroke();
 
         // flowers appear gradually: count shown scales with progress
-        var visible = Math.floor(flowers.length * progress);
+        var visible = Math.floor(flowers.length * Math.min(1, 0.2 + progress));
         for (var i = 0; i < visible; i++) {
             var f = flowers[i];
             var sway = Math.sin(t * 1.6 + f.sway) * 1.5;
@@ -457,7 +500,7 @@
     /** Soft floating motes filling the air as she nears the light. */
     function drawAirParticles() {
         if (window.JourneySettings.reducedMotion) return;
-        var visible = Math.floor(airParticles.length * (0.25 + progress * 0.75));
+        var visible = Math.floor(airParticles.length * (0.45 + progress * 0.55));
         for (var i = 0; i < visible; i++) {
             var p = airParticles[i];
             var a = 0.10 + Math.abs(Math.sin(t + p.phase)) * 0.22;
@@ -482,6 +525,25 @@
         Player.draw(ctx, t);
 
         drawAirParticles();
+        drawPopups();
+    }
+
+    /** Rising, fading announcement/score texts. */
+    function drawPopups() {
+        for (var i = 0; i < popups.length; i++) {
+            var p = popups[i];
+            if (p.life <= 0) continue;
+            var frac = p.life / p.max;
+            ctx.globalAlpha = Math.min(1, frac * 2);
+            ctx.font = '700 ' + Math.round(17 * SCALE) + 'px "Open Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 14;
+            ctx.fillStyle = p.color;
+            ctx.fillText(p.text, p.x, p.y - (1 - frac) * 34);
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+        }
     }
 
     // -------------------- main loop --------------------

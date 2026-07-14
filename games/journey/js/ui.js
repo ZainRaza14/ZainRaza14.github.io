@@ -150,7 +150,12 @@
     function setScore(v)   { el.score.textContent = Math.floor(v); }
     function setBestHud()  { el.best.textContent = Math.floor(state.best); }
     function setStarsHud() { el.stars.textContent = state.stars; }
-    function setMultiplier(on) { el.mult.classList.toggle('hidden', !on); }
+    /** Show the combo tier badge (hidden at x1). */
+    function setMultiplier(mult) {
+        var on = mult >= 2;
+        el.mult.classList.toggle('hidden', !on);
+        if (on) el.mult.innerHTML = '&#10022; combo &times;' + mult;
+    }
 
     // -------------------- run lifecycle hooks --------------------
 
