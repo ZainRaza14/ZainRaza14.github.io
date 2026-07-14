@@ -1,0 +1,373 @@
+/* ============================================================
+   Journey to the Light - styles.css
+   Dark modern UI: deep navy, glowing blue moonlight,
+   soft golden accents, subtle bloom on text.
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --navy: #060a18;
+    --navy-soft: #0b1226;
+    --moon: #7fb2ff;
+    --gold: #ffd98a;
+    --text: rgba(255, 255, 255, 0.92);
+    --text-dim: rgba(255, 255, 255, 0.5);
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--navy);
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--text);
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+#game { display: block; width: 100%; height: 100%; }
+
+.hidden { display: none !important; }
+
+/* ---------------- HUD ---------------- */
+
+#hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.hud-item {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+}
+
+.hud-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+.hud-value {
+    font-size: 30px;
+    font-weight: 300;
+    color: #fff;
+    text-shadow: 0 0 16px rgba(127, 178, 255, 0.45);
+}
+
+/* Score: top-left. Best: top-right. Stars: bottom-left. */
+#hud-score { top: 18px; left: 22px; }
+#hud-best  { top: 18px; right: 22px; text-align: right; }
+#hud-stars { bottom: 20px; left: 22px; flex-direction: row; align-items: center; gap: 8px; }
+
+#hud-stars .hud-value { font-size: 22px; }
+
+.hud-star {
+    color: var(--gold);
+    font-size: 20px;
+    text-shadow: 0 0 12px rgba(255, 217, 138, 0.7);
+}
+
+.hud-mult {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(255, 217, 138, 0.6);
+    animation: breathe 1.6s ease-in-out infinite;
+}
+
+#pause-btn {
+    position: fixed;
+    bottom: 18px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(11, 18, 38, 0.6);
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+#pause-btn:hover { color: var(--moon); border-color: var(--moon); }
+
+/* ---------------- Screens ---------------- */
+
+.screen {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 28px;
+    background: rgba(6, 10, 24, 0.72);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    text-align: center;
+    overflow-y: auto;
+}
+
+.title {
+    font-size: 52px;
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    text-shadow: 0 0 34px rgba(255, 217, 138, 0.5), 0 0 90px rgba(127, 178, 255, 0.3);
+}
+
+.subtitle {
+    font-size: 30px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    text-shadow: 0 0 24px rgba(255, 217, 138, 0.45);
+}
+
+.story {
+    font-family: 'Lora', Georgia, serif;
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.9;
+    max-width: 480px;
+}
+
+.hint {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.backlink { margin-top: 8px; }
+.backlink a {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+.backlink a:hover { color: var(--moon); }
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(280px, 80vw);
+    margin-top: 8px;
+}
+
+.btn {
+    padding: 13px 20px;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+
+.btn:hover {
+    border-color: var(--moon);
+    box-shadow: 0 0 18px rgba(127, 178, 255, 0.25);
+}
+
+.btn-primary {
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 22px rgba(255, 217, 138, 0.18);
+}
+
+.btn-primary:hover {
+    background: rgba(255, 217, 138, 0.08);
+    box-shadow: 0 0 30px rgba(255, 217, 138, 0.4);
+    border-color: var(--gold);
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.toggle input { accent-color: var(--gold); cursor: pointer; }
+
+/* ---------------- Game over ---------------- */
+
+.over-stats {
+    display: flex;
+    gap: 44px;
+    margin: 6px 0;
+}
+
+.over-stats > div { display: flex; flex-direction: column; }
+
+.over-num {
+    font-size: 46px;
+    font-weight: 300;
+    text-shadow: 0 0 22px rgba(255, 217, 138, 0.4);
+}
+
+.over-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+/* ---------------- Customize ---------------- */
+
+.wallet {
+    color: var(--gold);
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px rgba(255, 217, 138, 0.5);
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab {
+    padding: 8px 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: none;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab.active {
+    color: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 14px rgba(255, 217, 138, 0.25);
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 148px));
+    justify-content: center;
+    gap: 12px;
+    width: min(680px, 92vw);
+    max-height: 44vh;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.shop-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.shop-item:hover { border-color: var(--moon); }
+
+.shop-item.equipped {
+    border-color: var(--gold);
+    box-shadow: 0 0 16px rgba(255, 217, 138, 0.25);
+}
+
+.shop-swatch {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.2);
+}
+
+.shop-name { font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+
+.shop-price {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 1px;
+}
+
+.shop-price.owned { color: var(--text-dim); }
+
+/* ---------------- Leaderboard ---------------- */
+
+.board {
+    list-style: none;
+    width: min(340px, 84vw);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.board li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 11px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.board .rank { color: var(--text-dim); font-size: 12px; margin-right: 10px; }
+.board .pts  { font-size: 20px; font-weight: 300; text-shadow: 0 0 12px rgba(127,178,255,0.4); }
+.board .when { color: var(--text-dim); font-size: 11px; }
+.board .empty { justify-content: center; color: var(--text-dim); font-style: italic; font-size: 13px; }
+
+/* ---------------- Animations ---------------- */
+
+@keyframes breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}
+
+/* Reduced-motion preference (also mirrored by in-game toggle) */
+@media (prefers-reduced-motion: reduce) {
+    .hud-mult { animation: none; }
+    .btn, .tab, .shop-item { transition: none; }
+}
+
+/* ---------------- Small screens ---------------- */
+
+@media (max-width: 600px) {
+    .title { font-size: 34px; letter-spacing: 5px; }
+    .subtitle { font-size: 22px; }
+    .hud-value { font-size: 24px; }
+    .over-num { font-size: 36px; }
+    .shop-grid { max-height: 38vh; }
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="Journey to the Light - a peaceful one-button endless runner about perseverance and hope. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Journey to the Light - Syed Zain Raza</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,400italic|Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'>
+    <link href="styles.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <!-- Game canvas: everything in the world is drawn here -->
+    <canvas id="game"></canvas>
+
+    <!-- ======================= HUD (in-game) ======================= -->
+    <div id="hud" class="hidden">
+        <div class="hud-item" id="hud-score">
+            <span class="hud-label">Score</span>
+            <span class="hud-value" id="score-value">0</span>
+            <span class="hud-mult hidden" id="mult-badge">&#10022; perfect &times;2</span>
+        </div>
+        <div class="hud-item" id="hud-best">
+            <span class="hud-label">Best</span>
+            <span class="hud-value" id="best-value">0</span>
+        </div>
+        <div class="hud-item" id="hud-stars">
+            <span class="hud-star">&#10022;</span>
+            <span class="hud-value" id="stars-value">0</span>
+        </div>
+        <button id="pause-btn" aria-label="Pause">&#10073;&#10073;</button>
+    </div>
+
+    <!-- ======================= Screens ======================= -->
+
+    <!-- Main menu -->
+    <div id="screen-menu" class="screen">
+        <h1 class="title">Journey<br>to the Light</h1>
+        <p class="story">The night is long, and the road is dark.<br>
+        But far on the horizon, a light is waiting.<br>
+        Keep going.</p>
+        <div class="menu-buttons">
+            <button class="btn btn-primary" id="btn-play">Begin the Journey</button>
+            <button class="btn" id="btn-customize">Customize</button>
+            <button class="btn" id="btn-leaderboard">Leaderboard</button>
+        </div>
+        <p class="hint">Space / click / tap to jump &middot; that is all you need</p>
+        <label class="toggle"><input type="checkbox" id="reduced-motion"> Reduced motion</label>
+        <label class="toggle"><input type="checkbox" id="mute-audio"> Mute audio</label>
+        <p class="backlink"><a href="../../interactive.html">&larr; Interactive Space</a></p>
+    </div>
+
+    <!-- Pause -->
+    <div id="screen-pause" class="screen hidden">
+        <h2 class="subtitle">Paused</h2>
+        <p class="story">Rest. The light will wait for you.</p>
+        <div class="menu-buttons">
+            <button class="btn btn-primary" id="btn-resume">Continue</button>
+            <button class="btn" id="btn-quit">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- Game over -->
+    <div id="screen-over" class="screen hidden">
+        <h2 class="subtitle">You moved one step closer.</h2>
+        <div class="over-stats">
+            <div><span class="over-num" id="over-score">0</span><span class="over-label">score</span></div>
+            <div><span class="over-num" id="over-stars">0</span><span class="over-label">stars gathered</span></div>
+        </div>
+        <p class="story" id="over-message">Every fall is part of the road.</p>
+        <div class="menu-buttons">
+            <button class="btn btn-primary" id="btn-again">Play Again</button>
+            <button class="btn" id="btn-over-leaderboard">Leaderboard</button>
+            <button class="btn" id="btn-over-customize">Customize Character</button>
+        </div>
+    </div>
+
+    <!-- Customize -->
+    <div id="screen-customize" class="screen hidden">
+        <h2 class="subtitle">Customize</h2>
+        <p class="wallet">&#10022; <span id="wallet-stars">0</span> stars</p>
+        <div class="tabs" id="cosmetic-tabs"></div>
+        <div class="shop-grid" id="shop-grid"></div>
+        <div class="menu-buttons">
+            <button class="btn btn-primary" id="btn-customize-back">Done</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard (local) -->
+    <div id="screen-leaderboard" class="screen hidden">
+        <h2 class="subtitle">Your Brightest Journeys</h2>
+        <ol class="board" id="board-list"></ol>
+        <div class="menu-buttons">
+            <button class="btn btn-primary" id="btn-board-back">Back</button>
+        </div>
+    </div>
+
+    <!-- Module scripts: order matters (game.js boots last) -->
+    <script src="js/audio.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/obstacles.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+
+</body>
+
+</html>
