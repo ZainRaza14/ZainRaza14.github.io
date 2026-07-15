@@ -4,11 +4,19 @@
    Exposes a global `Obstacles`.
 
    Every hazard is abstract and environmental. Each type carries
-   the name of the struggle it represents; the word drifts faintly
-   above the hazard so the symbolism reads without preaching.
+   the name of the struggle it represents; the word floats above
+   the hazard so the symbolism reads without preaching.
+
+   VARIETY SYSTEM: every spawned hazard gets
+     - a structural `variant` (0..2): each type draws 2-3
+       genuinely different silhouettes, not just recolors
+     - a size `jitter` (0.85..1.3) baked into its w/h
+     - deterministic per-instance randomness via prand(seed, i)
+   and past the early game, hazards sometimes arrive as a DUO -
+   two spawns a rhythm-jump apart - so the cadence itself varies.
 
    Adding a new obstacle = add an entry to TYPES with a draw()
-   and a hitbox factory. Nothing else needs to change.
+   and optional hitbox factory. Nothing else needs to change.
    ============================================================ */
 
 (function () {
@@ -17,27 +25,42 @@
     var POOL_SIZE = 24;       // max simultaneous hazards (pooled, reused)
     var STAR_POOL_SIZE = 32;  // max simultaneous stars
 
+    /** Deterministic pseudo-random in [0,1) from an instance seed. */
+    function prand(seed, i) {
+        var v = Math.sin(seed * 127.1 + i * 311.7) * 43758.5453;
+        return v - Math.floor(v);
+    }
+
     /**
      * Obstacle catalog. All are jumpable (one-button game):
-     * heights/widths tuned against jump arc in game.js.
-     *  w/h are logical sizes at scale 1 (bounding box, feet-anchored).
+     * heights/widths tuned against the jump arc in game.js.
+     * w/h are logical sizes at scale 1 (bounding box, feet-anchored);
+     * per-instance jitter rescales them at spawn time.
      */
     var TYPES = [
         {
             key: 'spikes', word: 'Fear', w: 46, h: 26,
             draw: function (ctx, o, t, s) {
-                // jagged dark spikes with a faint violet edge
+                // jagged violet spikes; count and heights differ per instance
                 ctx.fillStyle = '#2a1f4d';
                 ctx.strokeStyle = 'rgba(180, 155, 255, 0.75)';
                 ctx.lineWidth = 1;
-                var n = 4;
+                var n = 3 + o.variant;                     // 3..5 teeth
                 for (var i = 0; i < n; i++) {
                     var sx = o.x + (i / n) * o.w * s;
                     var sw = (o.w * s) / n;
+                    var hh = 0.6 + prand(o.seed, i) * 0.4; // ragged skyline
                     ctx.beginPath();
                     ctx.moveTo(sx, o.baseY);
-                    ctx.lineTo(sx + sw / 2, o.baseY - o.h * s * (0.75 + (i % 2) * 0.25));
-                    ctx.lineTo(sx + sw, o.baseY);
+                    // variant 2 = hooked tips, curving forward
+                    if (o.variant === 2) {
+                        ctx.quadraticCurveTo(sx + sw * 0.2, o.baseY - o.h * s * hh,
+                                             sx + sw * 0.72, o.baseY - o.h * s * hh);
+                        ctx.lineTo(sx + sw, o.baseY);
+                    } else {
+                        ctx.lineTo(sx + sw / 2, o.baseY - o.h * s * hh);
+                        ctx.lineTo(sx + sw, o.baseY);
+                    }
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
@@ -47,7 +70,7 @@
         {
             key: 'crack', word: 'Doubt', w: 58, h: 12,
             draw: function (ctx, o, t, s) {
-                // a fissure in the ground, glowing faintly from below
+                // a fissure in the ground; the zigzag path is unique per crack
                 ctx.fillStyle = '#03050e';
                 ctx.beginPath();
                 ctx.moveTo(o.x, o.baseY);
@@ -55,14 +78,32 @@
                 ctx.lineTo(o.x + o.w * s, o.baseY);
                 ctx.closePath();
                 ctx.fill();
+
                 ctx.strokeStyle = 'rgba(170, 130, 255, ' + (0.6 + Math.sin(t * 3 + o.seed * 9) * 0.2) + ')';
                 ctx.lineWidth = 1.4;
                 ctx.beginPath();
                 ctx.moveTo(o.x, o.baseY);
-                ctx.lineTo(o.x + o.w * s * 0.3, o.baseY - 3 * s);
-                ctx.lineTo(o.x + o.w * s * 0.55, o.baseY + 2 * s);
-                ctx.lineTo(o.x + o.w * s, o.baseY - 1 * s);
+                var joints = 3 + o.variant;               // 3..5 zigzag joints
+                for (var i = 1; i <= joints; i++) {
+                    var jx = o.x + (i / joints) * o.w * s;
+                    var jy = o.baseY + (prand(o.seed, i) - 0.5) * 8 * s;
+                    ctx.lineTo(jx, jy);
+                }
                 ctx.stroke();
+
+                // variant 2: escaping wisps rise from the fissure
+                if (o.variant === 2) {
+                    ctx.strokeStyle = 'rgba(150, 110, 235, 0.35)';
+                    ctx.lineWidth = 1;
+                    for (var w = 0; w < 2; w++) {
+                        var wx = o.x + o.w * s * (0.3 + w * 0.4);
+                        var rise = 10 + Math.sin(t * 2 + o.seed * 7 + w * 3) * 4;
+                        ctx.beginPath();
+                        ctx.moveTo(wx, o.baseY);
+                        ctx.quadraticCurveTo(wx + 4 * s, o.baseY - rise * s * 0.6, wx - 2 * s, o.baseY - rise * s);
+                        ctx.stroke();
+                    }
+                }
             },
             // the danger is falling in: a thin trigger at ground level
             box: function (o, s) { return { x: o.x + 8 * s, y: o.baseY - 4 * s, w: o.w * s - 16 * s, h: 8 * s }; }
@@ -70,18 +111,21 @@
         {
             key: 'smoke', word: 'Anxiety', w: 34, h: 52,
             draw: function (ctx, o, t, s) {
-                // a column of dark smoke, writhing slowly
-                for (var i = 0; i < 4; i++) {
-                    var frac = i / 4;
+                // writhing violet smoke; puff count + lean vary per instance
+                var puffs = 3 + o.variant;                 // 3..5 puffs
+                var lean = (prand(o.seed, 1) - 0.5) * 14;  // column tilts
+                for (var i = 0; i < puffs; i++) {
+                    var frac = i / puffs;
                     var yy = o.baseY - frac * o.h * s;
                     var sway = Math.sin(t * 2.2 + o.seed * 10 + i * 1.4) * 6 * s * (0.4 + frac);
-                    var r = (13 - i * 2) * s;
-                    var sg = ctx.createRadialGradient(o.x + o.w * s / 2 + sway, yy, 1, o.x + o.w * s / 2 + sway, yy, r);
+                    var r = (13 - i * (8 / puffs)) * s * (0.8 + prand(o.seed, i) * 0.4);
+                    var cxp = o.x + o.w * s / 2 + sway + lean * frac * s;
+                    var sg = ctx.createRadialGradient(cxp, yy, 1, cxp, yy, r);
                     sg.addColorStop(0, 'rgba(105, 80, 170, 0.8)');
                     sg.addColorStop(1, 'rgba(70, 45, 130, 0)');
                     ctx.fillStyle = sg;
                     ctx.beginPath();
-                    ctx.arc(o.x + o.w * s / 2 + sway, yy, r, 0, Math.PI * 2);
+                    ctx.arc(cxp, yy, r, 0, Math.PI * 2);
                     ctx.fill();
                 }
             },
@@ -90,10 +134,11 @@
         {
             key: 'creature', word: 'Despair', w: 34, h: 30,
             draw: function (ctx, o, t, s) {
-                // a hunched shadow creature with dim eyes; breathes in place
+                // a shadow creature; each variant is a different silhouette
                 var breathe = Math.sin(t * 3 + o.seed * 7) * 2 * s;
                 var cx = o.x + o.w * s / 2;
                 var cy = o.baseY - o.h * s * 0.45 + breathe;
+
                 var cg = ctx.createRadialGradient(cx, cy, 2, cx, cy, o.h * s * 0.8);
                 cg.addColorStop(0, 'rgba(85, 75, 145, 0.95)');
                 cg.addColorStop(1, 'rgba(40, 32, 80, 0)');
@@ -101,44 +146,80 @@
                 ctx.beginPath();
                 ctx.arc(cx, cy, o.h * s * 0.8, 0, Math.PI * 2);
                 ctx.fill();
+
                 ctx.fillStyle = '#221a4a';
-                ctx.beginPath();
-                ctx.ellipse(cx, cy + 4 * s, o.w * s * 0.42, o.h * s * 0.42, 0, 0, Math.PI * 2);
-                ctx.fill();
-                // dim violet eyes
+                if (o.variant === 1) {
+                    // tall hooded figure with drooping horns
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy + 2 * s, o.w * s * 0.32, o.h * s * 0.55, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 5 * s, cy - o.h * s * 0.5);
+                    ctx.quadraticCurveTo(cx - 11 * s, cy - o.h * s * 0.75, cx - 8 * s, cy - o.h * s * 0.3);
+                    ctx.moveTo(cx + 5 * s, cy - o.h * s * 0.5);
+                    ctx.quadraticCurveTo(cx + 11 * s, cy - o.h * s * 0.75, cx + 8 * s, cy - o.h * s * 0.3);
+                    ctx.strokeStyle = '#221a4a';
+                    ctx.lineWidth = 2.4 * s;
+                    ctx.stroke();
+                } else if (o.variant === 2) {
+                    // low crawling mass with a ridged back
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy + 6 * s, o.w * s * 0.52, o.h * s * 0.3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    for (var rdg = 0; rdg < 3; rdg++) {
+                        var rx = cx - o.w * s * 0.3 + rdg * o.w * s * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(rx, cy + 2 * s, 4 * s, Math.PI, 0);
+                        ctx.fill();
+                    }
+                } else {
+                    // classic hunched blob
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy + 4 * s, o.w * s * 0.42, o.h * s * 0.42, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // eyes: 2 normally, 3 on the crawler
                 ctx.fillStyle = 'rgba(200, 180, 255, 0.95)';
-                ctx.beginPath();
-                ctx.arc(cx - 4 * s, cy, 1.6 * s, 0, Math.PI * 2);
-                ctx.arc(cx + 4 * s, cy, 1.6 * s, 0, Math.PI * 2);
-                ctx.fill();
+                var eyes = o.variant === 2 ? 3 : 2;
+                for (var e = 0; e < eyes; e++) {
+                    var ex = cx + (e - (eyes - 1) / 2) * 5 * s;
+                    ctx.beginPath();
+                    ctx.arc(ex, cy + (o.variant === 2 ? 4 * s : 0), 1.6 * s, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         },
         {
             key: 'thorns', word: 'Anger', w: 40, h: 34,
             draw: function (ctx, o, t, s) {
-                // curling thorn tangle
+                // curling thorn tangle; stem count + curl direction vary
                 ctx.strokeStyle = '#472a4d';
                 ctx.lineWidth = 3 * s;
                 ctx.lineCap = 'round';
-                for (var i = 0; i < 3; i++) {
-                    var bx = o.x + (i + 0.5) * (o.w * s / 3);
+                var stems = 2 + o.variant;                 // 2..4 stems
+                var flip = prand(o.seed, 2) > 0.5 ? 1 : -1;
+                for (var i = 0; i < stems; i++) {
+                    var bx = o.x + (i + 0.5) * (o.w * s / stems);
+                    var curl = (i % 2 ? 10 : -10) * flip;
                     ctx.beginPath();
                     ctx.moveTo(bx, o.baseY);
                     ctx.quadraticCurveTo(
-                        bx + (i % 2 ? 10 : -10) * s,
+                        bx + curl * s,
                         o.baseY - o.h * s * 0.6,
-                        bx + (i % 2 ? -4 : 4) * s,
-                        o.baseY - o.h * s * (0.8 + i * 0.08)
+                        bx + (i % 2 ? -4 : 4) * flip * s,
+                        o.baseY - o.h * s * (0.7 + prand(o.seed, i) * 0.3)
                     );
                     ctx.stroke();
                 }
+                // red glints
                 ctx.strokeStyle = 'rgba(255, 110, 110, 0.7)';
                 ctx.lineWidth = 1;
-                for (var j = 0; j < 3; j++) {
-                    var tx = o.x + (j + 0.5) * (o.w * s / 3);
+                for (var j = 0; j < stems; j++) {
+                    var tx = o.x + (j + 0.5) * (o.w * s / stems);
                     ctx.beginPath();
                     ctx.moveTo(tx, o.baseY - o.h * s * 0.5);
-                    ctx.lineTo(tx + 5 * s, o.baseY - o.h * s * 0.5 - 4 * s);
+                    ctx.lineTo(tx + 5 * s * flip, o.baseY - o.h * s * 0.5 - 4 * s);
                     ctx.stroke();
                 }
             }
@@ -146,39 +227,82 @@
         {
             key: 'pillar', word: 'Pride', w: 22, h: 56,
             draw: function (ctx, o, t, s) {
-                // a tall narrow monolith, cold-lit from the moon side
-                var grad = ctx.createLinearGradient(o.x, 0, o.x + o.w * s, 0);
-                grad.addColorStop(0, '#33427a');
-                grad.addColorStop(1, '#1a2450');
-                ctx.fillStyle = grad;
-                ctx.fillRect(o.x, o.baseY - o.h * s, o.w * s, o.h * s);
-                ctx.strokeStyle = 'rgba(150, 195, 255, 0.5)';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(o.x, o.baseY - o.h * s, o.w * s, o.h * s);
+                // monolith variants: whole, cracked, or a toppled pair
+                function block(bx, by, bw, bh, tilt) {
+                    ctx.save();
+                    ctx.translate(bx + bw / 2, by + bh);
+                    ctx.rotate(tilt || 0);
+                    var grad = ctx.createLinearGradient(-bw / 2, 0, bw / 2, 0);
+                    grad.addColorStop(0, '#33427a');
+                    grad.addColorStop(1, '#1a2450');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(-bw / 2, -bh, bw, bh);
+                    ctx.strokeStyle = 'rgba(150, 195, 255, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(-bw / 2, -bh, bw, bh);
+                    ctx.restore();
+                }
+
+                if (o.variant === 1) {
+                    // cracked: upper half sits offset and tilted on the lower
+                    var half = o.h * s * 0.52;
+                    block(o.x, o.baseY - half, o.w * s, half, 0);
+                    block(o.x + 3 * s, o.baseY - o.h * s, o.w * s * 0.9, half * 0.9, -0.08);
+                } else if (o.variant === 2) {
+                    // a fallen stone leaning against a standing one
+                    block(o.x, o.baseY - o.h * s * 0.9, o.w * s * 0.7, o.h * s * 0.9, 0);
+                    block(o.x + o.w * s * 0.5, o.baseY - o.h * s * 0.45, o.w * s * 0.8, o.h * s * 0.45, 0.28);
+                } else {
+                    block(o.x, o.baseY - o.h * s, o.w * s, o.h * s, 0);
+                }
             }
         },
         {
             key: 'barrier', word: 'Greed', w: 30, h: 40,
             draw: function (ctx, o, t, s) {
-                // a floating dark shard hovering just above the ground
+                // hovering shard(s) with a gold glint; single, twin, or orbiting
+                function shard(cx, cy, w, h, rot) {
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rot);
+                    ctx.fillStyle = '#2a2258';
+                    ctx.strokeStyle = 'rgba(255, 205, 90, 0.8)'; // a greedy gold glint
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -h * 0.45);
+                    ctx.lineTo(w * 0.4, 0);
+                    ctx.lineTo(0, h * 0.45);
+                    ctx.lineTo(-w * 0.4, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
                 var hover = Math.sin(t * 2.6 + o.seed * 8) * 4 * s;
                 var cx = o.x + o.w * s / 2;
                 var cy = o.baseY - o.h * s * 0.55 + hover;
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate(Math.sin(t + o.seed * 5) * 0.15);
-                ctx.fillStyle = '#2a2258';
-                ctx.strokeStyle = 'rgba(255, 205, 90, 0.8)'; // a greedy gold glint
-                ctx.lineWidth = 1.2;
-                ctx.beginPath();
-                ctx.moveTo(0, -o.h * s * 0.45);
-                ctx.lineTo(o.w * s * 0.4, 0);
-                ctx.lineTo(0, o.h * s * 0.45);
-                ctx.lineTo(-o.w * s * 0.4, 0);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-                ctx.restore();
+                var wob = Math.sin(t + o.seed * 5) * 0.15;
+
+                if (o.variant === 1) {
+                    // twin small shards stacked with a gap
+                    shard(cx, cy - o.h * s * 0.22, o.w * s * 0.7, o.h * s * 0.5, wob);
+                    shard(cx, cy + o.h * s * 0.26, o.w * s * 0.7, o.h * s * 0.5, -wob);
+                } else if (o.variant === 2) {
+                    // one shard with two glinting satellites circling it
+                    shard(cx, cy, o.w * s, o.h * s, wob);
+                    for (var sat = 0; sat < 2; sat++) {
+                        var ang = t * 2 + sat * Math.PI + o.seed * 6;
+                        var sx = cx + Math.cos(ang) * o.w * s * 0.75;
+                        var sy = cy + Math.sin(ang) * o.h * s * 0.35;
+                        ctx.fillStyle = 'rgba(255, 205, 90, 0.85)';
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, 2.2 * s, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else {
+                    shard(cx, cy, o.w * s, o.h * s, wob);
+                }
             },
             box: function (o, s) {
                 return { x: o.x + 4 * s, y: o.baseY - o.h * s * 0.95, w: o.w * s - 8 * s, h: o.h * s * 0.8 };
@@ -192,7 +316,7 @@
     var starPool = [];   // collectible star pool
 
     for (var i = 0; i < POOL_SIZE; i++) {
-        pool.push({ active: false, x: 0, baseY: 0, w: 0, h: 0, type: null, seed: 0, passed: false });
+        pool.push({ active: false, x: 0, baseY: 0, w: 0, h: 0, type: null, seed: 0, variant: 0, passed: false });
     }
     for (var j = 0; j < STAR_POOL_SIZE; j++) {
         starPool.push({ active: false, x: 0, y: 0, seed: 0, collected: 0 });
@@ -212,21 +336,37 @@
         return null;
     }
 
-    /** Spawn a random hazard just off the right edge. */
-    function spawnHazard(screenW, groundY, scale, progress) {
+    /** Place one hazard at a specific x. Applies variant + size jitter. */
+    function place(x, groundY, progress) {
         var o = obtain();
-        if (!o) return;
+        if (!o) return null;
         // later struggles appear later in the journey
         var maxIndex = Math.min(TYPES.length, 3 + Math.floor(progress * TYPES.length));
         var type = TYPES[Math.floor(Math.random() * maxIndex)];
+        var jitter = 0.85 + Math.random() * 0.45;   // 0.85..1.3 size variety
+
         o.active = true;
         o.type = type;
-        o.x = screenW + 60;
+        o.x = x;
         o.baseY = groundY;
-        o.w = type.w;
-        o.h = type.h;
+        o.w = type.w * jitter;
+        o.h = type.h * jitter;
         o.seed = Math.random();
+        o.variant = Math.floor(Math.random() * 3); // structural silhouette
         o.passed = false;
+        return o;
+    }
+
+    /**
+     * Spawn a hazard just off the right edge. Past the early game
+     * there is a growing chance of a DUO: a second hazard one
+     * rhythm-jump behind the first, so pacing stays surprising.
+     */
+    function spawnHazard(screenW, groundY, scale, progress) {
+        var first = place(screenW + 60, groundY, progress);
+        if (first && progress > 0.15 && Math.random() < 0.18 + progress * 0.15) {
+            place(screenW + 60 + (200 + Math.random() * 60) * scale, groundY, progress);
+        }
     }
 
     /** Spawn a small arc of collectible stars off the right edge. */
@@ -259,7 +399,7 @@
             o.x -= speed * dt;
             if (!o.passed && o.x + o.w < Player.state.x - 20) {
                 o.passed = true;
-                onPass(o);      // game counts this toward the perfect streak
+                onPass(o);      // game counts this toward the combo streak
             }
             if (o.x < -120) o.active = false;
         }
@@ -310,7 +450,7 @@
         return got;
     }
 
-    /** Draw hazards (with their faint symbolic words) and stars. */
+    /** Draw hazards (with their symbolic words) and stars. */
     function draw(ctx, t, scale, progress) {
         var i;
 
