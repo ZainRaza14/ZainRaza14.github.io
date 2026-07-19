@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="The Night of the Cloak - an interactive story for children about the event of Hadith al-Kisa, teaching kindness, respect, and love of family. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>The Night of the Cloak - Syed Zain Raza</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic|Open+Sans:300,400,600,700' rel='stylesheet' type='text/css'>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --night: #0a1128;
+            --night-deep: #060a1c;
+            --gold: #ffd98a;
+            --gold-soft: rgba(255, 217, 138, 0.55);
+            --green: #7fd6b2;
+            --text: rgba(255, 255, 255, 0.94);
+            --text-dim: rgba(255, 255, 255, 0.55);
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--night-deep);
+            font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: var(--text);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* background canvas: stars + light particles */
+        #bg { position: fixed; inset: 0; width: 100%; height: 100%; }
+
+        /* ---------- layout ---------- */
+
+        #stage {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+
+        /* the scene art area (cloak + lights) */
+        #scene {
+            flex: 1 1 auto;
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 0;
+            position: relative;
+        }
+
+        /* the story card */
+        #card {
+            flex: 0 0 auto;
+            width: min(680px, 94vw);
+            margin: 0 auto 14px;
+            background: rgba(10, 17, 40, 0.88);
+            border: 1px solid rgba(255, 217, 138, 0.25);
+            border-radius: 18px;
+            padding: 18px 22px 16px;
+            box-shadow: 0 0 40px rgba(255, 217, 138, 0.08);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        #speaker {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 6px;
+            min-height: 14px;
+        }
+
+        #text {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 17px;
+            line-height: 1.75;
+            min-height: 60px;
+        }
+
+        #text .ws { opacity: 0; }           /* typewriter words fade in */
+        #text .ws.on { opacity: 1; transition: opacity 0.25s; }
+
+        #choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .choice {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .choice:hover {
+            border-color: var(--gold);
+            background: rgba(255, 217, 138, 0.08);
+        }
+
+        .choice.next {
+            border-color: rgba(255, 217, 138, 0.5);
+            color: var(--gold);
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        /* ---------- HUD ---------- */
+
+        #hud {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        #hud a { pointer-events: auto; }
+
+        #back-link {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            text-decoration: none;
+        }
+        #back-link:hover { color: var(--gold); }
+
+        /* noor (light) meter */
+        #noor {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #noor .label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        #noor-bar {
+            width: 120px;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        #noor-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ffd98a, #fff3d0);
+            box-shadow: 0 0 10px var(--gold-soft);
+            transition: width 0.8s ease;
+        }
+
+        /* chapter dots */
+        #chapters {
+            display: flex;
+            gap: 7px;
+        }
+
+        .chdot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            transition: all 0.4s;
+        }
+
+        .chdot.done { background: var(--gold); box-shadow: 0 0 8px var(--gold-soft); }
+        .chdot.now  { background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.7); transform: scale(1.25); }
+
+        /* ---------- the cloak scene ---------- */
+
+        #cloak-wrap {
+            position: relative;
+            width: min(480px, 88vw);
+            height: 240px;
+            margin-bottom: 6px;
+        }
+
+        /* the cloak: a soft arc of cloth drawn with CSS */
+        #cloak {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 78%;
+            height: 74%;
+            background:
+                radial-gradient(ellipse 100% 130% at 50% 108%,
+                    rgba(83, 60, 40, 0.0) 38%,
+                    #6b4a30 40%,
+                    #55381f 62%,
+                    #3d2714 100%);
+            border-radius: 50% 50% 12px 12px / 88% 88% 8px 8px;
+            box-shadow:
+                inset 0 14px 40px rgba(255, 217, 138, 0.16),
+                0 0 60px rgba(255, 190, 110, 0.12);
+            transition: box-shadow 1.2s ease;
+        }
+
+        #cloak.glow-1 { box-shadow: inset 0 14px 60px rgba(255, 217, 138, 0.3), 0 0 80px rgba(255, 190, 110, 0.22); }
+        #cloak.glow-2 { box-shadow: inset 0 14px 80px rgba(255, 220, 150, 0.42), 0 0 110px rgba(255, 200, 120, 0.32); }
+        #cloak.glow-3 { box-shadow: inset 0 14px 100px rgba(255, 225, 160, 0.55), 0 0 150px rgba(255, 205, 130, 0.42); }
+        #cloak.glow-4 { box-shadow: inset 0 14px 130px rgba(255, 232, 175, 0.7), 0 0 200px rgba(255, 212, 140, 0.55); }
+        #cloak.glow-5 { box-shadow: inset 0 14px 170px rgba(255, 240, 195, 0.85), 0 0 280px rgba(255, 220, 150, 0.7); }
+
+        /* the five lights: luminous orbs, never faces or figures */
+        .light {
+            position: absolute;
+            bottom: 26px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            opacity: 0;
+            transform: translateY(24px) scale(0.4);
+            transition: opacity 1.1s ease, transform 1.1s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+            pointer-events: none;
+        }
+
+        .light::before {
+            content: '';
+            position: absolute;
+            inset: -16px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 236, 190, 0.55) 0%, rgba(255, 217, 138, 0) 70%);
+            animation: lightbreathe 3.2s ease-in-out infinite;
+        }
+
+        .light::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 38% 34%, #fffdf5, #ffe9b0 65%, #ffd98a);
+            box-shadow: 0 0 22px rgba(255, 224, 150, 0.9);
+        }
+
+        .light.on { opacity: 1; transform: translateY(0) scale(1); }
+
+        .light .lname {
+            position: absolute;
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-family: 'Lora', Georgia, serif;
+            font-style: italic;
+            font-size: 12px;
+            color: rgba(255, 240, 205, 0.9);
+            text-shadow: 0 0 10px rgba(255, 217, 138, 0.8);
+        }
+
+        @keyframes lightbreathe {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.75; }
+        }
+
+        /* positions of the five lights under the cloak */
+        #light-prophet { left: calc(50% - 17px); bottom: 96px; }
+        #light-hasan   { left: calc(50% - 92px); bottom: 46px; width: 26px; height: 26px; }
+        #light-husayn  { left: calc(50% + 62px); bottom: 46px; width: 26px; height: 26px; }
+        #light-ali     { left: calc(50% - 138px); bottom: 78px; }
+        #light-fatima  { left: calc(50% + 104px); bottom: 78px; }
+
+        /* gabriel's light descends from above, slightly green-white */
+        #light-gabriel {
+            left: calc(50% - 12px);
+            bottom: 190px;
+            width: 24px; height: 24px;
+        }
+        #light-gabriel::after {
+            background: radial-gradient(circle at 38% 34%, #ffffff, #d8ffe9 65%, #9fe8c6);
+            box-shadow: 0 0 22px rgba(170, 240, 205, 0.9);
+        }
+
+        /* ---------- overlays: title / badges / end ---------- */
+
+        .screen {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 28px;
+            text-align: center;
+            background: rgba(6, 10, 28, 0.82);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: opacity 0.5s ease;
+            overflow-y: auto;
+        }
+
+        .screen.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+
+        .title {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            text-shadow: 0 0 40px rgba(255, 217, 138, 0.55);
+        }
+
+        .subtitle-ar {
+            font-family: 'Lora', Georgia, serif;
+            font-style: italic;
+            color: var(--gold);
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .story-p {
+            font-family: 'Lora', Georgia, serif;
+            font-style: italic;
+            color: var(--text-dim);
+            font-size: 15px;
+            line-height: 1.9;
+            max-width: 500px;
+        }
+
+        .btn {
+            padding: 13px 30px;
+            border-radius: 26px;
+            border: 1px solid var(--gold);
+            background: rgba(255, 217, 138, 0.06);
+            color: var(--gold);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 217, 138, 0.14);
+            box-shadow: 0 0 26px rgba(255, 217, 138, 0.35);
+        }
+
+        .btn.quiet { border-color: rgba(255,255,255,0.25); color: var(--text-dim); }
+
+        /* badges */
+        #badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            max-width: 560px;
+        }
+
+        .badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 96px;
+            opacity: 0.28;
+            filter: grayscale(0.9);
+            transition: all 0.6s;
+        }
+
+        .badge.earned { opacity: 1; filter: none; }
+
+        .badge .medal {
+            width: 54px; height: 54px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: radial-gradient(circle at 35% 30%, #fff3d0, #ffd98a 60%, #c9a45a);
+            box-shadow: 0 0 18px rgba(255, 217, 138, 0.5);
+        }
+
+        .badge .bname {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .badge .bdesc { font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+
+        /* gentle reward toast */
+        #toast {
+            position: fixed;
+            top: 64px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-16px);
+            z-index: 20;
+            background: rgba(10, 17, 40, 0.92);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            border-radius: 22px;
+            padding: 10px 22px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.45s ease;
+            box-shadow: 0 0 26px rgba(255, 217, 138, 0.3);
+        }
+
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 600px) {
+            .title { font-size: 27px; letter-spacing: 4px; }
+            #text { font-size: 15px; }
+            #cloak-wrap { height: 190px; }
+            #light-ali { left: calc(50% - 118px); }
+            #light-fatima { left: calc(50% + 86px); }
+            #light-hasan { left: calc(50% - 80px); }
+            #light-husayn { left: calc(50% + 54px); }
+            #noor-bar { width: 80px; }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <canvas id="bg"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+        <a id="back-link" href="../interactive.html">&larr; Interactive Space</a>
+        <div id="chapters"></div>
+        <div id="noor">
+            <span class="label">Noor</span>
+            <div id="noor-bar"><div id="noor-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- Scene: the cloak and the lights -->
+    <div id="stage">
+        <div id="scene">
+            <div id="cloak-wrap">
+                <div class="light" id="light-gabriel"><span class="lname">Jibreel</span></div>
+                <div id="cloak"></div>
+                <div class="light" id="light-prophet"><span class="lname">The Prophet Muhammad &#65018;</span></div>
+                <div class="light" id="light-hasan"><span class="lname">Hasan</span></div>
+                <div class="light" id="light-husayn"><span class="lname">Husayn</span></div>
+                <div class="light" id="light-ali"><span class="lname">Ali</span></div>
+                <div class="light" id="light-fatima"><span class="lname">Fatima</span></div>
+            </div>
+        </div>
+
+        <!-- Story card -->
+        <div id="card">
+            <div id="speaker"></div>
+            <div id="text"></div>
+            <div id="choices"></div>
+        </div>
+    </div>
+
+    <!-- Title screen -->
+    <div class="screen" id="screen-title">
+        <div class="title">The Night<br>of the Cloak</div>
+        <div class="subtitle-ar">The story of Hadith al-Kisa, told for young hearts</div>
+        <p class="story-p">Tonight, Grandmother has a special story. It happened long ago, in a small home in Madinah, under one woolen cloak from Yemen. Listen closely, choose kindly, and watch the light grow.</p>
+        <button class="btn" id="btn-start">Begin the Story</button>
+        <p class="story-p" style="font-size:12px; max-width:420px;">Out of love and respect, the blessed family appears in this story as lights - the way their goodness appears in the world.</p>
+    </div>
+
+    <!-- Badges / end screen -->
+    <div class="screen hidden" id="screen-end">
+        <div class="title" style="font-size:30px;">Your Heart Grew Tonight</div>
+        <p class="story-p" id="end-summary"></p>
+        <div id="badges"></div>
+        <button class="btn" id="btn-replay">Hear the Story Again</button>
+        <button class="btn quiet" id="btn-home">Back to Interactive Space</button>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        /* ============================================================
+           The Night of the Cloak - an interactive retelling of
+           Hadith al-Kisa for children.
+
+           Design: a story engine (scenes -> typewriter text -> choices).
+           Kind/respectful choices earn Noor (light). Every choice
+           teaches; none punishes - wrong answers gently redirect.
+           The five blessed lights join the cloak scene one by one,
+           and the cloak's glow grows with each arrival.
+           ============================================================ */
+
+        // ---------- background canvas: stars ----------
+        var bg = document.getElementById('bg');
+        var bctx = bg.getContext('2d');
+        var stars = [];
+        var tGlobal = 0;
+
+        function sizeBg() {
+            bg.width = window.innerWidth;
+            bg.height = window.innerHeight;
+            stars = [];
+            var n = Math.floor(bg.width * bg.height / 4500);
+            for (var i = 0; i < n; i++) {
+                stars.push({
+                    x: Math.random() * bg.width,
+                    y: Math.random() * bg.height,
+                    s: 0.4 + Math.random() * 1.6,
+                    p: Math.random() * Math.PI * 2,
+                    v: 0.4 + Math.random() * 1.4
+                });
+            }
+        }
+
+        function drawBg() {
+            tGlobal += 0.016;
+            var g = bctx.createLinearGradient(0, 0, 0, bg.height);
+            g.addColorStop(0, '#060a1c');
+            g.addColorStop(1, '#101a3d');
+            bctx.fillStyle = g;
+            bctx.fillRect(0, 0, bg.width, bg.height);
+            for (var i = 0; i < stars.length; i++) {
+                var s = stars[i];
+                bctx.globalAlpha = 0.3 + Math.abs(Math.sin(s.p + tGlobal * s.v)) * 0.7;
+                bctx.fillStyle = '#ffffff';
+                bctx.fillRect(s.x, s.y, s.s, s.s);
+            }
+            bctx.globalAlpha = 1;
+            requestAnimationFrame(drawBg);
+        }
+
+        // ---------- gentle audio (Web Audio, no assets) ----------
+        var actx = null;
+        function tone(freq, dur, type, vol) {
+            try {
+                if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+                if (actx.state === 'suspended') actx.resume();
+                var o = actx.createOscillator();
+                o.type = type || 'sine';
+                o.frequency.value = freq;
+                var gn = actx.createGain();
+                gn.gain.setValueAtTime(vol || 0.06, actx.currentTime);
+                gn.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+                o.connect(gn); gn.connect(actx.destination);
+                o.start(); o.stop(actx.currentTime + dur + 0.05);
+            } catch (e) {}
+        }
+        function chimeGood() { tone(880, 0.5); setTimeout(function () { tone(1174.7, 0.6); }, 90); }
+        function chimeSoft() { tone(659.3, 0.4, 'sine', 0.04); }
+        function chimeBadge() { tone(783.9, 0.5); setTimeout(function () { tone(987.8, 0.5); }, 110); setTimeout(function () { tone(1318.5, 0.7); }, 230); }
+
+        // ---------- state ----------
+        var noor = 0;              // 0..100 light meter
+        var NOOR_PER_GOOD = 9;
+        var badges = {};           // key -> true
+        var quizRight = 0;
+        var chapterIndex = 0;
+
+        var BADGES = [
+            { key: 'kind',  icon: '&#10084;', name: 'Kindness',  desc: 'You cared for someone tired' },
+            { key: 'adab',  icon: '&#9995;', name: 'Good Manners', desc: 'You asked permission first' },
+            { key: 'salam', icon: '&#9788;', name: 'Salaam',    desc: 'You greeted with peace' },
+            { key: 'dua',   icon: '&#128591;', name: 'Dua',      desc: 'You prayed for your family' },
+            { key: 'alim',  icon: '&#11088;', name: 'Little Scholar', desc: 'You remembered the story' }
+        ];
+
+        // ---------- DOM ----------
+        var el = {
+            speaker: document.getElementById('speaker'),
+            text: document.getElementById('text'),
+            choices: document.getElementById('choices'),
+            noorFill: document.getElementById('noor-fill'),
+            chapters: document.getElementById('chapters'),
+            cloak: document.getElementById('cloak'),
+            toast: document.getElementById('toast'),
+            title: document.getElementById('screen-title'),
+            end: document.getElementById('screen-end'),
+            endSummary: document.getElementById('end-summary'),
+            badges: document.getElementById('badges')
+        };
+
+        var lights = {
+            prophet: document.getElementById('light-prophet'),
+            hasan: document.getElementById('light-hasan'),
+            husayn: document.getElementById('light-husayn'),
+            ali: document.getElementById('light-ali'),
+            fatima: document.getElementById('light-fatima'),
+            gabriel: document.getElementById('light-gabriel')
+        };
+
+        var glowLevel = 0;
+
+        function glowUp() {
+            glowLevel = Math.min(5, glowLevel + 1);
+            el.cloak.className = 'glow-' + glowLevel;
+        }
+
+        function addNoor(n) {
+            noor = Math.min(100, noor + n);
+            el.noorFill.style.width = noor + '%';
+        }
+
+        function toast(msg) {
+            el.toast.innerHTML = msg;
+            el.toast.classList.add('show');
+            setTimeout(function () { el.toast.classList.remove('show'); }, 2200);
+        }
+
+        function earnBadge(key) {
+            if (badges[key]) return;
+            badges[key] = true;
+            var b = null;
+            for (var i = 0; i < BADGES.length; i++) if (BADGES[i].key === key) b = BADGES[i];
+            if (b) { toast(b.icon + '&nbsp; Badge earned: ' + b.name + '!'); chimeBadge(); }
+        }
+
+        // ---------- story engine ----------
+
+        /**
+         * Scene shape:
+         *  { speaker, text, light?: 'hasan', glow?: true,
+         *    choices?: [{ t, good, reply, badge }],  // question scene
+         *    chapter?: n }                            // marks chapter start
+         * Scenes without choices show a single "continue" button.
+         */
+        var SCENES = [
+
+            // ---------- Chapter 1: A Knock at the Door ----------
+            { chapter: 0, speaker: 'Grandmother', text: 'Come close, little one. Tonight I will tell you about one special day in Madinah, in the small home of Lady Fatima, the daughter of the Prophet Muhammad, peace be upon him and his family.' },
+            { speaker: 'Grandmother', text: 'That day, there was a gentle knock at the door. It was the Prophet himself. He said: "Peace be upon you, my daughter." And she answered: "And upon you be peace, my father."' },
+            { speaker: 'The Story', text: 'The Prophet said, "I feel some weakness in my body today." Fatima felt worry in her heart, the way you feel when someone you love is tired.', light: 'fatima_pre' },
+            {
+                speaker: 'Grandmother', text: 'Tell me, my dear - when someone you love is tired or unwell, what does a kind heart do?',
+                choices: [
+                    { t: 'Bring them something warm and comfortable', good: true, badge: 'kind', reply: 'Yes! That is exactly what Lady Fatima did. A kind heart moves quickly to bring comfort.' },
+                    { t: 'Keep playing and wait for them to feel better', good: false, reply: 'Hmm - they might need us right away. Lady Fatima did not wait; she hurried to help her father. Let us be like her.' },
+                    { t: 'Ask them what they need', good: true, badge: 'kind', reply: 'Beautiful. Asking is caring. Lady Fatima cared for her father the moment he spoke.' }
+                ]
+            },
+            { speaker: 'The Story', text: 'The Prophet asked, "Bring me the Yemeni cloak and cover me with it." Fatima brought the cloak - soft, woven wool from Yemen - and laid it gently over him.', light: 'prophet', glow: true },
+            { speaker: 'Grandmother', text: 'And Fatima looked at her father resting under the cloak, and his face was shining like the full moon. Remember that light, little one. Our story is only beginning.' },
+
+            // ---------- Chapter 2: The Sweet Fragrance ----------
+            { chapter: 1, speaker: 'The Story', text: 'Soon, Fatima’s son Hasan came home. "Peace be upon you, mother," he said. "I smell a fragrance so sweet - like the fragrance of my grandfather!"' },
+            {
+                speaker: 'Grandmother', text: 'Hasan wanted so much to be near his grandfather. What do you think he did next?',
+                choices: [
+                    { t: 'He lifted the cloak and jumped straight in', good: false, reply: 'He loved his grandfather that much! But no - Hasan had beautiful manners. He asked first: "May I come under the cloak with you?" Asking permission shows respect.' },
+                    { t: 'He asked permission to come under the cloak', good: true, badge: 'adab', reply: 'Exactly right! Hasan said: "Peace be upon you, grandfather. May I enter the cloak with you?" And the Prophet said: "And upon you be peace. Yes, you may."' }
+                ]
+            },
+            { speaker: 'The Story', text: 'And so Hasan came under the cloak beside his grandfather. The light under the cloak grew warmer.', light: 'hasan', glow: true },
+            { speaker: 'The Story', text: 'Then came his brother Husayn. He too smelled the sweet fragrance. He too gave salaam, and he too asked: "May I enter with you?" And the answer came with love: "You may."', light: 'husayn', glow: true },
+            {
+                speaker: 'Grandmother', text: 'Did you notice, little one? Every single person began the same way. Do you remember how?',
+                choices: [
+                    { t: 'They said "Peace be upon you" - salaam - first', good: true, badge: 'salam', reply: 'Yes! Salaam first, always. A greeting of peace opens every door and warms every heart.' },
+                    { t: 'They knocked three times', good: false, reply: 'Look again, my dear - it was the greeting! Every one of them said "Peace be upon you" before anything else. Salaam is the key that opens hearts.' }
+                ]
+            },
+
+            // ---------- Chapter 3: The Family Gathers ----------
+            { chapter: 2, speaker: 'The Story', text: 'Then Ali came home - Fatima’s husband, the father of Hasan and Husayn. "I smell a beautiful fragrance," he said, "like the fragrance of my brother, the Messenger of Allah."' },
+            { speaker: 'The Story', text: 'Ali gave salaam and asked permission, and the Prophet welcomed him under the cloak with joy.', light: 'ali', glow: true },
+            { speaker: 'The Story', text: 'At last, Lady Fatima herself gave salaam and asked her father: "May I be with you under the cloak?" And he said: "And upon you be peace, my daughter, the piece of my heart. You may." Now all five were together under one cloak.', light: 'fatima', glow: true },
+            {
+                speaker: 'Grandmother', text: 'Look how the cloak glows now! One cloak, one family, gathered in love. What do you think made the light grow so strong?',
+                choices: [
+                    { t: 'The love between the family', good: true, reply: 'Yes, my dear. When a family gathers with love, respect, and peace, a light grows among them that nothing can dim.' },
+                    { t: 'The wool of the cloak was special', good: false, reply: 'The cloak was simple wool, little one. The light came from who was beneath it - a family joined in love. That is the real treasure.' },
+                    { t: 'Being together, close to each other', good: true, reply: 'Truly! Togetherness is a light of its own. The cloak simply held what their hearts already carried.' }
+                ]
+            },
+
+            // ---------- Chapter 4: The Prayer ----------
+            { chapter: 3, speaker: 'The Story', text: 'Then the Prophet took hold of the two ends of the cloak, raised his right hand toward the sky, and prayed:' },
+            { speaker: 'The Prophet’s Prayer', text: '"O Allah, these are my family, my Ahl al-Bayt. They are from me, and I am from them. Send Your blessings upon them, and purify them completely."' },
+            { speaker: 'The Story', text: 'And Allah revealed a beautiful verse: "Allah wishes only to remove impurity from you, O People of the House, and to purify you completely." The whole home filled with light.', glow: true },
+            {
+                speaker: 'Grandmother', text: 'The Prophet prayed for his family. If you raised your hands right now, what would you pray for YOUR family? There is no wrong answer, my dear.',
+                choices: [
+                    { t: 'Health and happiness for everyone at home', good: true, badge: 'dua', reply: 'Ameen! What a beautiful dua. A prayer for your family is a gift they receive even when they do not know it.' },
+                    { t: 'That we always stay close and kind to each other', good: true, badge: 'dua', reply: 'Ameen, ameen! Closeness and kindness - you have understood the whole secret of the cloak.' },
+                    { t: 'Protection and light for my parents', good: true, badge: 'dua', reply: 'Ameen! May your dua rise like the Prophet’s prayer rose that day. Praying for parents is one of the most beloved things a child can do.' }
+                ]
+            },
+
+            // ---------- Chapter 5: The Visitor from the Sky ----------
+            { chapter: 4, speaker: 'The Story', text: 'High above the skies, the angel Jibreel - Gabriel - saw the light of that gathering and asked: "O my Lord, who is under that cloak?"' },
+            { speaker: 'The Story', text: 'And the answer came: "They are the family of the Prophet." Jibreel asked permission to come down and join them - even an angel asks permission, little one! - and it was granted.', light: 'gabriel' },
+            { speaker: 'Jibreel', text: '"Peace be upon you, O family of the Prophet. Allah says: I created the heavens and the earth for the sake of love like this."' },
+            {
+                speaker: 'Grandmother', text: 'Now, my bright star, let me see what your heart remembers. How did every person enter the cloak?',
+                choices: [
+                    { t: 'With salaam and permission', good: true, quiz: true, reply: 'Perfect! Salaam first, then permission. Even Jibreel the angel did the same.' },
+                    { t: 'Quietly, without saying anything', good: false, quiz: true, reply: 'Almost, my dear - remember: each one gave salaam and asked "May I?" That is the manner of the people of the cloak.' }
+                ]
+            },
+            {
+                speaker: 'Grandmother', text: 'And who were the five under the cloak?',
+                choices: [
+                    { t: 'The Prophet, Ali, Fatima, Hasan, and Husayn', good: true, quiz: true, reply: 'Yes! The five of the cloak - Ahl al-Kisa. The Prophet, his daughter Fatima, her husband Ali, and their sons Hasan and Husayn.' },
+                    { t: 'The Prophet and four of his companions', good: false, quiz: true, reply: 'Close ones indeed, but under the cloak was his family: Ali, Fatima, Hasan, and Husayn - the Ahl al-Bayt.' }
+                ]
+            },
+            {
+                speaker: 'Grandmother', text: 'Last one, my love. What does this story ask US to do in our own home?',
+                choices: [
+                    { t: 'Care for each other, greet with peace, and stay close', good: true, quiz: true, reply: 'That is it exactly. Kindness when someone is tired, salaam at every door, permission before entering, prayer for each other, and love that gathers everyone under one warm cloak.' },
+                    { t: 'Find a cloak exactly like that one', good: false, quiz: true, reply: 'Any blanket will do, sweetheart! The cloak was never the secret. The secret is the love, the manners, and the prayer underneath it.' }
+                ]
+            },
+            { speaker: 'Grandmother', text: 'Whenever your family gathers in love - a meal together, a story at night, a dua for each other - remember the cloak, and know that such gatherings are beloved to Allah. Now sleep, my little star. May your home always glow like the cloak did.' }
+        ];
+
+        var sceneIndex = 0;
+        var typing = false;
+        var typeTimer = null;
+
+        // chapter dots
+        var CHAPTER_COUNT = 5;
+        function renderChapterDots() {
+            el.chapters.innerHTML = '';
+            for (var i = 0; i < CHAPTER_COUNT; i++) {
+                var d = document.createElement('div');
+                d.className = 'chdot' + (i < chapterIndex ? ' done' : i === chapterIndex ? ' now' : '');
+                el.chapters.appendChild(d);
+            }
+        }
+
+        /** Typewriter: words fade in one by one; click skips to full text. */
+        function typeText(text, done) {
+            typing = true;
+            el.text.innerHTML = '';
+            var words = text.split(' ');
+            var spans = [];
+            for (var i = 0; i < words.length; i++) {
+                var sp = document.createElement('span');
+                sp.className = 'ws';
+                sp.textContent = words[i] + ' ';
+                el.text.appendChild(sp);
+                spans.push(sp);
+            }
+            var wi = 0;
+            function step() {
+                if (wi < spans.length) {
+                    spans[wi].classList.add('on');
+                    if (wi % 4 === 0) chimeSoft();
+                    wi++;
+                    typeTimer = setTimeout(step, 55);
+                } else {
+                    typing = false;
+                    done();
+                }
+            }
+            // click/tap on text finishes instantly
+            el.text.onclick = function () {
+                if (!typing) return;
+                clearTimeout(typeTimer);
+                for (var k = 0; k < spans.length; k++) spans[k].classList.add('on');
+                typing = false;
+                done();
+            };
+            step();
+        }
+
+        function clearChoices() { el.choices.innerHTML = ''; }
+
+        function showScene(idx) {
+            if (idx >= SCENES.length) { finish(); return; }
+            sceneIndex = idx;
+            var sc = SCENES[idx];
+
+            if (typeof sc.chapter === 'number') {
+                chapterIndex = sc.chapter;
+                renderChapterDots();
+            }
+
+            // scene effects
+            if (sc.light && sc.light !== 'fatima_pre' && lights[sc.light]) {
+                lights[sc.light].classList.add('on');
+            }
+            if (sc.glow) glowUp();
+
+            el.speaker.textContent = sc.speaker || '';
+            clearChoices();
+
+            typeText(sc.text, function () {
+                if (sc.choices) {
+                    sc.choices.forEach(function (c) {
+                        var b = document.createElement('button');
+                        b.className = 'choice';
+                        b.textContent = c.t;
+                        b.onclick = function () { answer(c); };
+                        el.choices.appendChild(b);
+                    });
+                } else {
+                    var n = document.createElement('button');
+                    n.className = 'choice next';
+                    n.textContent = idx === SCENES.length - 1 ? 'Finish the story' : 'Continue';
+                    n.onclick = function () { chimeSoft(); showScene(sceneIndex + 1); };
+                    el.choices.appendChild(n);
+                }
+            });
+        }
+
+        /** Handle a choice: reward good, gently redirect otherwise. */
+        function answer(c) {
+            clearChoices();
+            if (c.good) {
+                addNoor(NOOR_PER_GOOD);
+                chimeGood();
+                if (c.badge) earnBadge(c.badge);
+                if (c.quiz) quizRight++;
+                toast('&#10022; Your light grew!');
+            } else {
+                chimeSoft();
+            }
+            el.speaker.textContent = 'Grandmother';
+            typeText(c.reply, function () {
+                var n = document.createElement('button');
+                n.className = 'choice next';
+                n.textContent = 'Continue';
+                n.onclick = function () { chimeSoft(); showScene(sceneIndex + 1); };
+                el.choices.appendChild(n);
+            });
+        }
+
+        // ---------- ending ----------
+        function finish() {
+            if (quizRight >= 2) earnBadge('alim');
+
+            // persist best noor + badges across visits
+            try {
+                var prev = JSON.parse(localStorage.getItem('kisa_progress') || '{}');
+                var merged = prev.badges || {};
+                Object.keys(badges).forEach(function (k) { merged[k] = true; });
+                localStorage.setItem('kisa_progress', JSON.stringify({
+                    badges: merged,
+                    bestNoor: Math.max(prev.bestNoor || 0, noor)
+                }));
+            } catch (e) {}
+
+            var earned = Object.keys(badges).length;
+            el.endSummary.innerHTML =
+                'Your Noor reached <b style="color:var(--gold)">' + noor + '</b> tonight, and you earned <b style="color:var(--gold)">' + earned + ' of 5</b> badges. ' +
+                (earned === 5 ? 'A perfect night - your grandmother is very proud.' : 'Hear the story again to find the badges you missed!');
+
+            el.badges.innerHTML = '';
+            BADGES.forEach(function (b) {
+                var d = document.createElement('div');
+                d.className = 'badge' + (badges[b.key] ? ' earned' : '');
+                d.innerHTML = '<div class="medal">' + b.icon + '</div><div class="bname">' + b.name + '</div><div class="bdesc">' + b.desc + '</div>';
+                el.badges.appendChild(d);
+            });
+
+            el.end.classList.remove('hidden');
+        }
+
+        function resetStory() {
+            noor = 0; badges = {}; quizRight = 0; glowLevel = 0; chapterIndex = 0;
+            el.noorFill.style.width = '0%';
+            el.cloak.className = '';
+            Object.keys(lights).forEach(function (k) { lights[k].classList.remove('on'); });
+            el.end.classList.add('hidden');
+            renderChapterDots();
+            showScene(0);
+        }
+
+        // ---------- boot ----------
+        document.getElementById('btn-start').onclick = function () {
+            el.title.classList.add('hidden');
+            chimeGood();
+            resetStory();
+        };
+        document.getElementById('btn-replay').onclick = function () { chimeSoft(); resetStory(); };
+        document.getElementById('btn-home').onclick = function () { window.location.href = '../interactive.html'; };
+
+        window.addEventListener('resize', sizeBg);
+        sizeBg();
+        drawBg();
+        renderChapterDots();
+    })();
+    </script>
+
+</body>
+
+</html>
