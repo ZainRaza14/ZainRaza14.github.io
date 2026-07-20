@@ -7,9 +7,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-    --navy: #060a18;
-    --navy-soft: #0b1226;
-    --moon: #7fb2ff;
+    --navy: #1c0e20;
+    --navy-soft: #2a1438;
+    --moon: #ff9d5c;          /* savanna accent (was moonlight blue) */
     --gold: #ffd98a;
     --text: rgba(255, 255, 255, 0.92);
     --text-dim: rgba(255, 255, 255, 0.5);
@@ -360,6 +360,40 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
     .hud-mult { animation: none; }
     .btn, .tab, .shop-item { transition: none; }
+}
+
+/* ---------------- Touch controls ---------------- */
+
+#touch-controls {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    display: none;                 /* shown on coarse pointers below */
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 16px 70px;
+    pointer-events: none;
+}
+
+#touch-controls button {
+    pointer-events: auto;
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 217, 138, 0.4);
+    background: rgba(42, 20, 56, 0.55);
+    color: var(--gold);
+    font-size: 22px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#touch-controls button:active {
+    background: rgba(255, 217, 138, 0.18);
+}
+
+.tc-left { display: flex; gap: 14px; }
+
+@media (pointer: coarse) {
+    #touch-controls { display: flex; }
 }
 
 /* ---------------- Small screens ---------------- */
