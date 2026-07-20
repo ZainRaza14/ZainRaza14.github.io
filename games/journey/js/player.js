@@ -1,38 +1,55 @@
 /* ============================================================
-   Journey to the Light - player.js
+   Journey to the Light - player.js  (platformer edition)
    The runner: a modestly dressed girl in a flowing hijab,
    drawn as an elegant near-silhouette with canvas paths.
    Exposes a global `Player`.
 
-   Cosmetics are injected by ui.js/game.js via setCosmetics():
-     { hijab, outfit, trail, lantern }  (color strings / style keys)
+   Mario-style movement:
+   - left/right acceleration with ground friction
+   - variable-height jump (release early = shorter hop)
+   - coyote time (jump grace after walking off a ledge)
+   - jump buffering (press just before landing still fires)
+   All positions are WORLD coordinates; game.js owns the camera.
    ============================================================ */
 
 (function () {
     'use strict';
 
     // Physics tuning (world units are CSS pixels; scaled by game)
-    var GRAVITY = 2350;        // px/s^2
-    var JUMP_VELOCITY = -860;  // px/s, negative = up
+    var GRAVITY = 2350;         // px/s^2
+    var JUMP_VELOCITY = -820;   // px/s
+    var JUMP_CUT = 0.45;        // velocity multiplier when jump released early
     var MAX_FALL = 1400;
+    var RUN_ACCEL = 1500;       // horizontal acceleration
+    var RUN_MAX = 285;          // max horizontal speed
+    var FRICTION = 1400;        // deceleration with no input
+    var AIR_CONTROL = 0.6;      // fraction of accel available mid-air
+    var COYOTE = 0.10;          // seconds of jump grace off a ledge
+    var BUFFER = 0.12;          // seconds a jump press stays buffered
 
     var player = {
-        x: 0,                  // set by game on layout
-        y: 0,                  // feet position (baseline)
-        vy: 0,
+        x: 0, y: 0,             // world position; y = feet baseline
+        vx: 0, vy: 0,
         grounded: true,
-        jumpQueued: false,     // input buffering: press slightly early still jumps
-        runPhase: 0,           // drives leg/hijab animation
-        scale: 1,              // responsive scaling from game
-        stepTimer: 0,          // footstep sound cadence
+        facing: 1,              // 1 right, -1 left
+        runPhase: 0,
+        scale: 1,
+        stepTimer: 0,
 
-        // cosmetics (defaults; overwritten from saved equip state)
+        // input intents, set by game.js each frame
+        moveDir: 0,             // -1 / 0 / +1
+        jumpHeld: false,
+
+        // timers
+        coyoteTimer: 0,
+        bufferTimer: 0,
+
+        // cosmetics
         hijab: '#cfd8ea',
         outfit: '#1d2740',
         trail: 'none',
         lantern: 'classic',
 
-        // trail particle ring buffer (object pooling: fixed size, reused)
         trailPool: [],
         trailIndex: 0
     };
@@ -42,71 +59,126 @@
         player.trailPool.push({ x: 0, y: 0, life: 0, seed: Math.random() });
     }
 
-    /** Reset for a new run. Called by game.reset(). */
-    function reset(groundY, scale) {
+    /** Reset for a new run. */
+    function reset(startX, groundY, scale) {
+        player.x = startX;
         player.y = groundY;
+        player.vx = 0;
         player.vy = 0;
         player.grounded = true;
-        player.jumpQueued = false;
+        player.facing = 1;
         player.runPhase = 0;
         player.scale = scale;
+        player.moveDir = 0;
+        player.jumpHeld = false;
+        player.coyoteTimer = 0;
+        player.bufferTimer = 0;
         for (var i = 0; i < player.trailPool.length; i++) player.trailPool[i].life = 0;
     }
 
-    /** Request a jump. Buffered so a press just before landing still fires. */
-    function requestJump() {
-        if (player.grounded) {
-            player.vy = JUMP_VELOCITY * player.scale;
-            player.grounded = false;
-            GameAudio.jump();
-        } else {
-            player.jumpQueued = true; // consume on next landing
-        }
+    /** Called on jump press: buffered so early presses still fire. */
+    function pressJump() {
+        player.bufferTimer = BUFFER;
+        player.jumpHeld = true;
     }
 
-    /** Physics + animation update. dt in seconds. */
-    function update(dt, groundY, speedFactor) {
-        // vertical physics
-        if (!player.grounded) {
-            player.vy += GRAVITY * player.scale * dt;
-            if (player.vy > MAX_FALL * player.scale) player.vy = MAX_FALL * player.scale;
-            player.y += player.vy * dt;
+    /** Called on jump release: cuts velocity for variable jump height. */
+    function releaseJump() {
+        player.jumpHeld = false;
+        if (player.vy < 0) player.vy *= JUMP_CUT;
+    }
 
-            if (player.y >= groundY) {   // landing
-                player.y = groundY;
-                player.vy = 0;
-                player.grounded = true;
-                if (player.jumpQueued) { // buffered input fires immediately
-                    player.jumpQueued = false;
-                    requestJump();
+    function doJump() {
+        player.vy = JUMP_VELOCITY * player.scale;
+        player.grounded = false;
+        player.coyoteTimer = 0;
+        player.bufferTimer = 0;
+        GameAudio.jump();
+    }
+
+    /**
+     * Physics update. `solids` = array of {x, y, w} platform tops in
+     * world coords (y is the surface). Returns nothing; game.js reads
+     * player.y to detect falling into a pit.
+     */
+    function update(dt, solids) {
+        var s = player.scale;
+
+        // ---- horizontal movement ----
+        var accel = RUN_ACCEL * s * (player.grounded ? 1 : AIR_CONTROL);
+        if (player.moveDir !== 0) {
+            player.vx += player.moveDir * accel * dt;
+            var max = RUN_MAX * s;
+            if (player.vx > max) player.vx = max;
+            if (player.vx < -max) player.vx = -max;
+            player.facing = player.moveDir;
+        } else if (player.grounded) {
+            // friction
+            if (player.vx > 0) player.vx = Math.max(0, player.vx - FRICTION * s * dt);
+            else if (player.vx < 0) player.vx = Math.min(0, player.vx + FRICTION * s * dt);
+        }
+        player.x += player.vx * dt;
+        if (player.x < 20) { player.x = 20; player.vx = 0; } // world's left wall
+
+        // ---- vertical physics ----
+        var wasGrounded = player.grounded;
+        player.vy += GRAVITY * s * dt;
+        if (player.vy > MAX_FALL * s) player.vy = MAX_FALL * s;
+        var prevY = player.y;
+        player.y += player.vy * dt;
+
+        // land on any solid whose top we crossed this frame (falling only)
+        player.grounded = false;
+        if (player.vy >= 0) {
+            for (var i = 0; i < solids.length; i++) {
+                var p = solids[i];
+                if (player.x < p.x || player.x > p.x + p.w) continue;
+                if (prevY <= p.y + 1 && player.y >= p.y) {
+                    player.y = p.y;
+                    player.vy = 0;
+                    player.grounded = true;
+                    break;
                 }
             }
         }
 
-        // run cycle speeds up with the world
-        if (player.grounded) {
-            player.runPhase += dt * 11 * speedFactor;
+        // ---- coyote + buffer ----
+        if (player.grounded) player.coyoteTimer = COYOTE;
+        else player.coyoteTimer = Math.max(0, player.coyoteTimer - dt);
+        player.bufferTimer = Math.max(0, player.bufferTimer - dt);
+
+        if (player.bufferTimer > 0 && (player.grounded || player.coyoteTimer > 0)) {
+            doJump();
+        }
+
+        // ---- animation + footsteps ----
+        var speedFrac = Math.abs(player.vx) / (RUN_MAX * s);
+        if (player.grounded && speedFrac > 0.05) {
+            player.runPhase += dt * 13 * speedFrac;
             player.stepTimer -= dt;
             if (player.stepTimer <= 0) {
                 GameAudio.footstep();
-                player.stepTimer = 0.34 / speedFactor;
+                player.stepTimer = 0.34 / Math.max(0.4, speedFrac);
             }
         }
 
-        // emit trail particles (skipped when trail is 'none' or reduced motion)
-        if (player.trail !== 'none' && !window.JourneySettings.reducedMotion) {
-            var p = player.trailPool[player.trailIndex];
+        // ---- trail particles ----
+        if (player.trail !== 'none' && !window.JourneySettings.reducedMotion && speedFrac > 0.15) {
+            var tp = player.trailPool[player.trailIndex];
             player.trailIndex = (player.trailIndex + 1) % player.trailPool.length;
-            p.x = player.x - 8 * player.scale;
-            p.y = player.y - 26 * player.scale + Math.sin(player.runPhase) * 3;
-            p.life = 1;
+            tp.x = player.x - player.facing * 8 * s;
+            tp.y = player.y - 26 * s + Math.sin(player.runPhase) * 3;
+            tp.life = 1;
         }
-        for (var i = 0; i < player.trailPool.length; i++) {
-            if (player.trailPool[i].life > 0) player.trailPool[i].life -= dt * 1.4;
+        for (var k = 0; k < player.trailPool.length; k++) {
+            if (player.trailPool[k].life > 0) player.trailPool[k].life -= dt * 1.4;
         }
+
+        // landing puff hook for game.js juice
+        return !wasGrounded && player.grounded;
     }
 
-    /** The player's collision box (slightly forgiving vs. the drawing). */
+    /** Collision box in world coords (slightly forgiving). */
     function hitbox() {
         var s = player.scale;
         return {
@@ -117,15 +189,13 @@
         };
     }
 
-    /** Draw trail behind her (varies by equipped trail style). */
+    /** Trail, drawn in world space (game translates by camera). */
     function drawTrail(ctx) {
         if (player.trail === 'none') return;
         for (var i = 0; i < player.trailPool.length; i++) {
             var p = player.trailPool[i];
             if (p.life <= 0) continue;
-            var a = p.life * 0.55;
-            ctx.globalAlpha = a;
-
+            ctx.globalAlpha = p.life * 0.55;
             if (player.trail === 'stardust') {
                 ctx.fillStyle = '#ffd98a';
                 var tw = 1 + p.seed * 2;
@@ -135,8 +205,8 @@
                 ctx.beginPath();
                 ctx.ellipse(p.x, p.y + (1 - p.life) * 14, 2.6, 1.4, p.seed * 6, 0, Math.PI * 2);
                 ctx.fill();
-            } else { // 'glow'
-                ctx.fillStyle = '#7fb2ff';
+            } else { // glow
+                ctx.fillStyle = '#ffb46b';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 2.4 * p.life, 0, Math.PI * 2);
                 ctx.fill();
@@ -146,25 +216,23 @@
     }
 
     /**
-     * Draw the girl. She reads as an elegant silhouette:
-     * flowing hijab (animated bezier tail), long modest dress,
-     * subtle leg movement beneath the hem, and a small lantern.
+     * Draw the girl (world coords). Designed facing right; the whole
+     * body is mirrored with scale() when she faces left.
      */
     function draw(ctx, t) {
         var s = player.scale;
-        var x = player.x;
-        var y = player.y; // feet baseline
-
         var airborne = !player.grounded;
-        var bob = airborne ? 0 : Math.abs(Math.sin(player.runPhase)) * 2.2 * s;
-        var lean = airborne ? 0.10 : 0.05; // slight forward lean
+        var speedFrac = Math.abs(player.vx) / (RUN_MAX * s);
+        var bob = airborne ? 0 : Math.abs(Math.sin(player.runPhase)) * 2.2 * s * speedFrac;
+        var lean = (airborne ? 0.10 : 0.05 + speedFrac * 0.06);
 
         ctx.save();
-        ctx.translate(x, y - bob);
+        ctx.translate(player.x, player.y - bob);
+        ctx.scale(player.facing, 1);       // mirror for left-facing
         ctx.rotate(lean);
 
-        // ---- legs: hinted beneath the hem ----
-        var legSwing = airborne ? 0.6 : Math.sin(player.runPhase);
+        // ---- legs ----
+        var legSwing = airborne ? 0.6 : Math.sin(player.runPhase) * Math.max(0.25, speedFrac);
         ctx.strokeStyle = player.outfit;
         ctx.lineWidth = 3.4 * s;
         ctx.lineCap = 'round';
@@ -175,28 +243,26 @@
         ctx.lineTo(1 * s - legSwing * 7 * s, 0);
         ctx.stroke();
 
-        // ---- dress: long, modest, flaring gently at the hem ----
-        var hemSway = airborne ? 4 * s : Math.sin(player.runPhase * 0.5) * 2.5 * s;
+        // ---- dress ----
+        var hemSway = airborne ? 4 * s : Math.sin(player.runPhase * 0.5) * 2.5 * s * speedFrac;
         ctx.fillStyle = player.outfit;
         ctx.beginPath();
-        ctx.moveTo(0, -40 * s);                                     // shoulders
-        ctx.bezierCurveTo(-9 * s, -34 * s, -11 * s, -18 * s, -12 * s - hemSway, -6 * s); // left side
-        ctx.lineTo(11 * s - hemSway * 0.5, -6 * s);                 // hem
-        ctx.bezierCurveTo(10 * s, -20 * s, 8 * s, -34 * s, 0, -40 * s); // right side
+        ctx.moveTo(0, -40 * s);
+        ctx.bezierCurveTo(-9 * s, -34 * s, -11 * s, -18 * s, -12 * s - hemSway, -6 * s);
+        ctx.lineTo(11 * s - hemSway * 0.5, -6 * s);
+        ctx.bezierCurveTo(10 * s, -20 * s, 8 * s, -34 * s, 0, -40 * s);
         ctx.closePath();
         ctx.fill();
 
-        // ---- hijab: frames the face, then flows behind her ----
-        var flow = airborne ? 1.5 : 1;
+        // ---- hijab ----
+        var flow = airborne ? 1.5 : 1 + speedFrac * 0.4;
         var w1 = Math.sin(t * 6 + 1) * 3 * s * flow;
         var w2 = Math.sin(t * 5) * 5 * s * flow;
 
         ctx.fillStyle = player.hijab;
-        // head wrap
         ctx.beginPath();
         ctx.arc(2 * s, -47 * s, 6.4 * s, 0, Math.PI * 2);
         ctx.fill();
-        // flowing tail (two layered bezier ribbons for depth)
         ctx.beginPath();
         ctx.moveTo(0, -51 * s);
         ctx.bezierCurveTo(-8 * s, -50 * s + w1, -16 * s, -42 * s + w2, -22 * s * flow, -32 * s + w2);
@@ -212,7 +278,7 @@
         ctx.fill();
         ctx.globalAlpha = 1;
 
-        // ---- face: a small warm crescent, kept abstract ----
+        // ---- face crescent ----
         ctx.fillStyle = '#e8ceb8';
         ctx.beginPath();
         ctx.arc(4.4 * s, -46.5 * s, 3.4 * s, -Math.PI * 0.45, Math.PI * 0.55);
@@ -230,11 +296,10 @@
         ctx.restore();
     }
 
-    /** Lantern styles: classic (framed), orb (bare glow), star (pointed). */
+    /** Lantern styles: classic (framed), orb, star. */
     function drawLantern(ctx, lx, ly, s, t) {
         var flicker = 0.7 + Math.sin(t * 11) * 0.3;
 
-        // outer glow shared by all styles
         var g = ctx.createRadialGradient(lx, ly, 1, lx, ly, 22 * s);
         g.addColorStop(0, 'rgba(255, 217, 138, ' + (0.5 * flicker) + ')');
         g.addColorStop(1, 'rgba(255, 217, 138, 0)');
@@ -254,7 +319,7 @@
             ctx.translate(lx, ly);
             ctx.rotate(t * 0.8);
             ctx.beginPath();
-            for (var i = 0; i < 8; i++) {  // 4-point star via alternating radii
+            for (var i = 0; i < 8; i++) {
                 var r = (i % 2 === 0) ? 4.6 * s : 1.8 * s;
                 var a = (i / 8) * Math.PI * 2;
                 ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
@@ -262,7 +327,7 @@
             ctx.closePath();
             ctx.fill();
             ctx.restore();
-        } else { // 'classic' - small framed lantern
+        } else {
             ctx.strokeStyle = '#c9b89a';
             ctx.lineWidth = 1.3 * s;
             ctx.strokeRect(lx - 3 * s, ly - 4 * s, 6 * s, 8 * s);
@@ -273,7 +338,7 @@
         }
     }
 
-    /** Apply equipped cosmetics (called whenever equipment changes). */
+    /** Apply equipped cosmetics. */
     function setCosmetics(c) {
         if (c.hijab) player.hijab = c.hijab;
         if (c.outfit) player.outfit = c.outfit;
@@ -281,11 +346,11 @@
         if (c.lantern) player.lantern = c.lantern;
     }
 
-    // Public API
     window.Player = {
         state: player,
         reset: reset,
-        requestJump: requestJump,
+        pressJump: pressJump,
+        releaseJump: releaseJump,
         update: update,
         hitbox: hitbox,
         draw: draw,

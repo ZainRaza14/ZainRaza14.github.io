@@ -37,6 +37,15 @@
             <span class="hud-value" id="stars-value">0</span>
         </div>
         <button id="pause-btn" aria-label="Pause">&#10073;&#10073;</button>
+
+        <!-- touch controls (shown on coarse pointers via CSS) -->
+        <div id="touch-controls">
+            <div class="tc-left">
+                <button id="touch-left" aria-label="Move left">&#9664;</button>
+                <button id="touch-right" aria-label="Move right">&#9654;</button>
+            </div>
+            <button id="touch-jump" aria-label="Jump">&#10514;</button>
+        </div>
     </div>
 
     <!-- ======================= Screens ======================= -->
@@ -44,15 +53,15 @@
     <!-- Main menu -->
     <div id="screen-menu" class="screen">
         <h1 class="title">Journey<br>to the Light</h1>
-        <p class="story">The night is long, and the road is dark.<br>
-        But far on the horizon, a light is waiting.<br>
-        Keep going.</p>
+        <p class="story">The dusk is deep over the savanna,<br>
+        but the sun is waiting beyond the acacia trees.<br>
+        Run, leap, and climb toward the light.</p>
         <div class="menu-buttons">
             <button class="btn btn-primary" id="btn-play">Begin the Journey</button>
             <button class="btn" id="btn-customize">Customize</button>
             <button class="btn" id="btn-leaderboard">Leaderboard</button>
         </div>
-        <p class="hint">Space / click / tap to jump &middot; that is all you need</p>
+        <p class="hint">Arrows / WASD to move &middot; Space to jump (hold for higher) &middot; touch buttons on mobile</p>
         <label class="toggle"><input type="checkbox" id="reduced-motion"> Reduced motion</label>
         <label class="toggle"><input type="checkbox" id="mute-audio"> Mute audio</label>
         <p class="backlink"><a href="../../interactive.html">&larr; Interactive Space</a></p>

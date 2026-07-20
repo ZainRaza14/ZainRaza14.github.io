@@ -58,10 +58,10 @@
         sky: {
             label: 'Sky',
             items: [
-                { key: 'sky_night',    name: 'Deep Night', value: 'night',    cost: 0 },
-                { key: 'sky_crescent', name: 'Crescent',   value: 'crescent', cost: 60 },
-                { key: 'sky_aurora',   name: 'Aurora',     value: 'aurora',   cost: 100 },
-                { key: 'sky_nebula',   name: 'Nebula',     value: 'nebula',   cost: 150 }
+                { key: 'sky_night',    name: 'Dusk',         value: 'night',    cost: 0 },
+                { key: 'sky_crescent', name: 'Sunset Blaze', value: 'crescent', cost: 60 },
+                { key: 'sky_aurora',   name: 'Emerald Veld', value: 'aurora',   cost: 100 },
+                { key: 'sky_nebula',   name: 'Violet Night', value: 'nebula',   cost: 150 }
             ]
         }
     };
@@ -70,7 +70,7 @@
     var SWATCH_HINTS = {
         trail_none: '#39415c', trail_stardust: '#ffd98a', trail_petals: '#ff9aa8', trail_glow: '#7fb2ff',
         lantern_classic: '#c9b89a', lantern_orb: '#ffe7b4', lantern_star: '#fff1cc',
-        sky_night: '#0b1226', sky_crescent: '#cfd8ea', sky_aurora: '#6fd6a8', sky_nebula: '#b79df2'
+        sky_night: '#c85a34', sky_crescent: '#e8703a', sky_aurora: '#1e5548', sky_nebula: '#a84470'
     };
 
     // -------------------- persisted state --------------------
