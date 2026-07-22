@@ -20,7 +20,7 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: var(--navy);
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif;
     color: var(--text);
     -webkit-user-select: none;
     user-select: none;
@@ -139,7 +139,7 @@ html, body {
 }
 
 .story {
-    font-family: 'Lora', Georgia, serif;
+    font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif;
     font-style: italic;
     color: var(--text-dim);
     font-size: 15px;

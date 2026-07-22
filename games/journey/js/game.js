@@ -569,7 +569,7 @@
             if (p.life <= 0) continue;
             var frac = p.life / p.max;
             ctx.globalAlpha = Math.min(1, frac * 2);
-            ctx.font = '700 ' + Math.round(17 * SCALE) + 'px "Open Sans", sans-serif';
+            ctx.font = '700 ' + Math.round(17 * SCALE) + 'px "Trebuchet MS", "Segoe UI", Tahoma, sans-serif';
             ctx.textAlign = 'center';
             ctx.shadowColor = p.color;
             ctx.shadowBlur = 14;
