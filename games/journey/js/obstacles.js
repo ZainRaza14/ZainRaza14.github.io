@@ -408,7 +408,7 @@
 
             o.type.draw(ctx, o, t, scale);
 
-            ctx.font = '400 italic ' + Math.round(15 * scale) + 'px Lora, Georgia, serif';
+            ctx.font = '400 italic ' + Math.round(15 * scale) + 'px "Trebuchet MS", "Segoe UI", Tahoma, sans-serif';
             ctx.textAlign = 'center';
             ctx.shadowColor = 'rgba(255, 190, 150, 0.9)';
             ctx.shadowBlur = 10;
