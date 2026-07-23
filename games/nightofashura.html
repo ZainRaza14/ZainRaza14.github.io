@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="description" content="The Lantern of Sabr - a reverent interactive scene of Lady Zainab (peace be upon her) gathering the children of the camp to the light on the night of Ashura. A game about patience through pain. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>The Lantern of Sabr - Syed Zain Raza</title>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --gold: #ffcf87;
+            --gold-soft: rgba(255, 207, 135, 0.55);
+            --text: rgba(255, 255, 255, 0.94);
+            --text-dim: rgba(255, 255, 255, 0.55);
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #05060b;
+            font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #game { display: block; width: 100%; height: 100%; }
+
+        /* ---------------- HUD ---------------- */
+        .hud { position: fixed; z-index: 10; pointer-events: none; }
+
+        #back {
+            top: 18px; left: 20px;
+            font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            pointer-events: auto;
+        }
+        #back a { color: rgba(255,255,255,0.35); text-decoration: none; transition: color 0.2s; }
+        #back a:hover { color: var(--gold); }
+
+        #meta {
+            top: 16px; right: 22px; text-align: right;
+        }
+        #timer { font-size: 26px; font-weight: 300; color: #fff; text-shadow: 0 0 16px var(--gold-soft); }
+        #saved-label {
+            font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--text-dim); margin-top: 2px;
+        }
+        #saved-label b { color: var(--gold); }
+
+        /* narration line, lower third, cinematic */
+        #narration {
+            bottom: 92px; left: 0; right: 0; text-align: center; padding: 0 26px;
+        }
+        #narration span {
+            display: inline-block;
+            max-width: 640px;
+            font-size: 18px;
+            font-style: italic;
+            line-height: 1.6;
+            color: rgba(255, 244, 225, 0.92);
+            text-shadow: 0 2px 18px rgba(0,0,0,0.9), 0 0 30px rgba(255,180,110,0.25);
+            opacity: 0;
+            transition: opacity 1.1s ease;
+        }
+        #narration span.show { opacity: 1; }
+
+        /* sabr (patience) meter, bottom center */
+        #sabr-wrap {
+            bottom: 46px; left: 50%; transform: translateX(-50%);
+            width: min(300px, 62vw); text-align: center;
+        }
+        #sabr-label {
+            font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
+            color: var(--text-dim); margin-bottom: 6px;
+        }
+        #sabr-bar {
+            width: 100%; height: 6px; border-radius: 3px;
+            background: rgba(255,255,255,0.1); overflow: hidden;
+        }
+        #sabr-fill {
+            height: 100%; width: 0%; border-radius: 3px;
+            background: linear-gradient(90deg, #d98a4a, #ffcf87, #fff2d8);
+            box-shadow: 0 0 12px var(--gold-soft);
+            transition: width 0.5s ease;
+        }
+
+        /* ---------------- overlays ---------------- */
+        .screen {
+            position: fixed; inset: 0; z-index: 20;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 14px; padding: 30px; text-align: center;
+            background: rgba(5, 6, 12, 0.8);
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+            transition: opacity 0.6s ease;
+            overflow-y: auto;
+        }
+        .screen.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+
+        .title {
+            font-size: 40px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase;
+            text-shadow: 0 0 42px rgba(255, 207, 135, 0.5);
+        }
+        .arabic { color: var(--gold); font-size: 17px; letter-spacing: 1px; }
+        .story {
+            font-style: italic; color: var(--text-dim);
+            font-size: 15px; line-height: 1.9; max-width: 540px;
+        }
+        .how {
+            color: var(--text-dim); font-size: 13px; line-height: 1.95; max-width: 540px; margin-top: 6px;
+        }
+        .how b { color: var(--gold); font-weight: 700; }
+        .respect { font-size: 12px; color: rgba(255,255,255,0.4); max-width: 460px; line-height: 1.7; margin-top: 6px; }
+
+        .btn {
+            padding: 13px 30px; border-radius: 26px;
+            border: 1px solid var(--gold); background: rgba(255, 207, 135, 0.06);
+            color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 700;
+            letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer;
+            transition: all 0.25s; margin-top: 8px;
+        }
+        .btn:hover { background: rgba(255, 207, 135, 0.14); box-shadow: 0 0 28px rgba(255, 207, 135, 0.35); }
+        .btn.quiet { border-color: rgba(255,255,255,0.25); color: var(--text-dim); }
+
+        .prompt {
+            margin-top: 22px; color: var(--gold);
+            font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
+            animation: pulse 1.9s ease-in-out infinite;
+        }
+        .final-num { font-size: 66px; font-weight: 300; color: #fff; text-shadow: 0 0 30px var(--gold-soft); }
+        .final-label { font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        @media (max-width: 600px) {
+            .title { font-size: 27px; letter-spacing: 4px; }
+            #narration span { font-size: 15px; }
+            .final-num { font-size: 50px; }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <canvas id="game"></canvas>
+
+    <!-- HUD -->
+    <div class="hud" id="back"><a href="../spiritual.html">&larr; Spiritual Space</a></div>
+    <div class="hud" id="meta">
+        <div id="timer">1:00</div>
+        <div id="saved-label"><b id="saved-count">0</b> of <span id="total-count">6</span> brought to the light</div>
+    </div>
+    <div class="hud" id="narration"><span id="narration-text"></span></div>
+    <div class="hud" id="sabr-wrap">
+        <div id="sabr-label">Sabr &mdash; Patience</div>
+        <div id="sabr-bar"><div id="sabr-fill"></div></div>
+    </div>
+
+    <!-- Title -->
+    <div class="screen" id="screen-title">
+        <div class="title">The Lantern of Sabr</div>
+        <div class="arabic">&#1588;&#1614;&#1575;&#1605;&#1616; &#1575;&#1604;&#1594;&#1614;&#1585;&#1610;&#1576;&#1614;&#1575;&#1606; &middot; The Night of the Strangers</div>
+        <p class="story">The fires have gone cold. On the night after Ashura, the camp lies in darkness, and the children are scattered and afraid. Lady Zainab, peace be upon her, takes up a lantern and goes into the dark to gather them, one by one, to the light.</p>
+        <p class="how">
+            Move with <b>arrows / WASD</b>, or hold and drag on a touch screen.<br>
+            Bring your <b>lantern</b> close to a frightened child and hold it there until their fear softens. They will follow you.<br>
+            <b>Do not rush.</b> Fear cannot be outrun &mdash; only calmed. Move too fast and those behind you are lost to the dark again. Walk with patience, and lead them all to the safe tent's glow.
+        </p>
+        <p class="respect">Out of love and reverence, Lady Zainab and the children are shown only as veiled figures of light and shadow. May peace be upon her and the family of the Prophet.</p>
+        <button class="btn" id="btn-start">Take up the Lantern</button>
+    </div>
+
+    <!-- End / reflection -->
+    <div class="screen hidden" id="screen-end">
+        <div class="final-num" id="end-num">0</div>
+        <div class="final-label" id="end-label">brought to the light</div>
+        <div class="title" style="font-size:24px; letter-spacing:3px;" id="end-title">Peace be upon the patient.</div>
+        <p class="story" id="end-message"></p>
+        <button class="btn" id="btn-again">Walk the Night Again</button>
+        <button class="btn quiet" id="btn-home">Back to Spiritual Space</button>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        /* ============================================================
+           The Lantern of Sabr
+           A reverent, non-violent scene of the night of Ashura
+           (Shaam-e-Ghareeban). The player, as Lady Zainab (peace be
+           upon her) shown only as a veiled figure of light, walks the
+           dark camp gathering frightened children and leading them to
+           the safe tent's glow.
+
+           Core mechanic = SABR (patience):
+           - Hold your lantern near a scared child to comfort them; they
+             then follow you in a gentle chain.
+           - Followers have their own (slightly slower) pace. Rush ahead
+             and the gap grows; if you leave them too far, too long,
+             their fear returns and they must be comforted again.
+           - Only steady, patient movement keeps the chain whole.
+           A ~60 second scene, storytelling through narration beats.
+           ============================================================ */
+
+        var canvas = document.getElementById('game');
+        var ctx = canvas.getContext('2d');
+
+        var DPR = Math.min(window.devicePixelRatio || 1, 2);
+        var W = 0, H = 0, S = 1;   // S = responsive scale
+
+        // ---- DOM ----
+        var elTimer = document.getElementById('timer');
+        var elSaved = document.getElementById('saved-count');
+        var elTotal = document.getElementById('total-count');
+        var elSabr = document.getElementById('sabr-fill');
+        var elNarr = document.getElementById('narration-text');
+        var scTitle = document.getElementById('screen-title');
+        var scEnd = document.getElementById('screen-end');
+
+        // ---- state ----
+        var STATE = { TITLE: 0, PLAY: 1, END: 2 };
+        var state = STATE.TITLE;
+
+        var TOTAL = 6;
+        var DURATION = 60;         // one-minute scene
+        var timeLeft = DURATION;
+        var saved = 0;
+        var sabr = 0;              // 0..1 patience meter
+        var t = 0;                 // global clock
+
+        // world entities
+        var zainab, kids, safeZone, tents, ash, embers, motes;
+        var lanternR = 150;        // lantern comfort radius (scaled at reset)
+
+        // input
+        var keys = {};
+        var touchTarget = null;    // {x,y} point-to-move on touch
+
+        // narration beats: { at: secondsElapsed, text, once }
+        var beats, beatIndex;
+
+        function rand(a, b) { return a + Math.random() * (b - a); }
+        function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
+        function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+
+        // deterministic noise for ground speckle
+        function hash(x, y) {
+            var n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            return n - Math.floor(n);
+        }
+
+        // ---------- gentle synthesized audio ----------
+        var actx = null;
+        function ensureAudio() {
+            if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+            if (actx && actx.state === 'suspended') actx.resume();
+        }
+        function tone(freq, dur, type, vol, delay) {
+            if (!actx) return;
+            var o = actx.createOscillator(), g = actx.createGain();
+            o.type = type || 'sine'; o.frequency.value = freq;
+            var start = actx.currentTime + (delay || 0);
+            g.gain.setValueAtTime(vol || 0.05, start);
+            g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+            o.connect(g); g.connect(actx.destination);
+            o.start(start); o.stop(start + dur + 0.05);
+        }
+        var windNode = null;
+        function startWind() {
+            if (!actx || windNode) return;
+            // soft filtered-noise wind bed for atmosphere
+            var len = Math.floor(actx.sampleRate * 2);
+            var buf = actx.createBuffer(1, len, actx.sampleRate);
+            var d = buf.getChannelData(0);
+            for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+            var src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+            var bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 320; bp.Q.value = 0.5;
+            var g = actx.createGain(); g.gain.value = 0.02;
+            src.connect(bp); bp.connect(g); g.connect(actx.destination);
+            src.start();
+            windNode = src;
+        }
+        function comfortChime() { tone(659.3, 0.5, 'sine', 0.06); tone(987.8, 0.6, 'sine', 0.04, 0.08); }
+        function safeChime() { tone(783.9, 0.5, 'sine', 0.06); tone(1174.7, 0.7, 'sine', 0.045, 0.1); }
+        function fearTone() { tone(196, 0.5, 'triangle', 0.04); }
+
+        // ---------- layout ----------
+        function resize() {
+            W = window.innerWidth; H = window.innerHeight;
+            canvas.width = W * DPR; canvas.height = H * DPR;
+            canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            S = Math.max(0.72, Math.min(1.3, Math.min(W / 960, H / 620)));
+            lanternR = 150 * S;
+        }
+
+        // ---------- scene setup ----------
+        function setup() {
+            timeLeft = DURATION; saved = 0; sabr = 0;
+            elTotal.textContent = TOTAL;
+            elSaved.textContent = '0';
+            elSabr.style.width = '0%';
+
+            // Zainab starts on the left
+            zainab = {
+                x: W * 0.16, y: H * 0.6,
+                vx: 0, vy: 0,
+                speed: 158 * S,
+                phase: 0,           // walk cycle
+                facing: 1,
+                breath: 0,
+                path: []            // breadcrumb history for chain following
+            };
+
+            // safe tent glow on the right - the gathering place
+            safeZone = { x: W * 0.86, y: H * 0.42, r: 84 * S };
+
+            // scattered tents (burnt/collapsed silhouettes) + the standing safe tent
+            tents = [];
+            var tentSpots = [
+                { x: W * 0.34, y: H * 0.34, sc: 1.0, burnt: true },
+                { x: W * 0.52, y: H * 0.7, sc: 1.15, burnt: true },
+                { x: W * 0.66, y: H * 0.28, sc: 0.85, burnt: true },
+                { x: W * 0.24, y: H * 0.78, sc: 0.95, burnt: true },
+                { x: W * 0.78, y: H * 0.72, sc: 1.0, burnt: true },
+                { x: safeZone.x, y: safeZone.y + 14 * S, sc: 1.25, burnt: false }
+            ];
+            for (var i = 0; i < tentSpots.length; i++) {
+                var sp = tentSpots[i];
+                tents.push({ x: sp.x, y: sp.y, sc: sp.sc * S, burnt: sp.burnt, seed: Math.random() });
+            }
+
+            // the frightened children, scattered in the dark
+            kids = [];
+            var placed = 0, guard = 0;
+            while (placed < TOTAL && guard < 400) {
+                guard++;
+                var kx = rand(W * 0.28, W * 0.74);
+                var ky = rand(H * 0.24, H * 0.82);
+                if (dist(kx, ky, zainab.x, zainab.y) < 150 * S) continue;
+                if (dist(kx, ky, safeZone.x, safeZone.y) < 150 * S) continue;
+                var ok = true;
+                for (var k = 0; k < kids.length; k++) if (dist(kx, ky, kids[k].x, kids[k].y) < 90 * S) { ok = false; break; }
+                if (!ok) continue;
+                kids.push({
+                    x: kx, y: ky, hx: kx, hy: ky,     // hx/hy = home hiding spot
+                    st: 'scared',                     // scared | comforting | following | safe
+                    comfort: 0,                       // 0..1 while being comforted
+                    morale: 1,                        // drops when left behind
+                    order: -1,                        // position in following chain
+                    seed: Math.random(),
+                    small: rand(0.82, 1.05),
+                    tremble: 0,
+                    vx: 0, vy: 0
+                });
+                placed++;
+            }
+
+            // ambient particles
+            ash = [];
+            for (var a = 0; a < 60; a++) ash.push({ x: Math.random() * W, y: Math.random() * H, s: rand(0.6, 1.9), vy: rand(6, 16), vx: rand(-10, -3), ph: rand(0, 6.28) });
+            motes = [];
+            for (var m = 0; m < 26; m++) motes.push({ x: Math.random() * W, y: Math.random() * H, s: rand(0.5, 1.6), ph: rand(0, 6.28), sp: rand(0.4, 1.2) });
+
+            // narration beats
+            beats = [
+                { at: 0.4, text: 'The fires have died. The night of Ashura falls cold and dark over the camp.' },
+                { at: 5.5, text: 'In the darkness, the children weep &mdash; scattered, lost, and afraid.' },
+                { at: 12, text: '&ldquo;Come, little ones. Stay close to my lantern. Do not be afraid.&rdquo;' },
+                { at: 24, text: 'She does not run. Fear cannot be outrun &mdash; it can only be calmed.' },
+                { at: 40, text: 'One by one, she carries the light to them, though her own heart breaks.' }
+            ];
+            beatIndex = 0;
+            chain = [];
+        }
+
+        var chain = [];   // ordered list of following kids (chain[0] follows Zainab)
+
+        // ---------- flow ----------
+        function startPlay() {
+            ensureAudio(); startWind();
+            scTitle.classList.add('hidden');
+            scEnd.classList.add('hidden');
+            setup();
+            state = STATE.PLAY;
+        }
+
+        function endScene() {
+            state = STATE.END;
+            document.getElementById('end-num').textContent = saved;
+            var title = document.getElementById('end-title');
+            var msg = document.getElementById('end-message');
+            if (saved >= TOTAL) {
+                title.textContent = 'She left no one in the dark.';
+                msg.innerHTML = 'Every child was gathered to the light. This is sabr: to hold others up when your own heart is breaking. Peace be upon Zainab, the patient, who kept the light of the camp alive that night.';
+                safeChime();
+            } else if (saved > 0) {
+                title.textContent = 'Peace be upon the patient.';
+                msg.innerHTML = 'You carried the light to <b style="color:var(--gold)">' + saved + '</b> of them through the long dark. Patience is not measured by how fast we move, but by how faithfully we return for those still afraid. Walk again, and gather them all.';
+            } else {
+                title.textContent = 'The night is long.';
+                msg.innerHTML = 'Fear cannot be rushed. Move slowly, hold your lantern near each frightened heart until it steadies, and never leave the ones behind you too far in the dark.';
+            }
+            setTimeout(function () { scEnd.classList.remove('hidden'); }, 500);
+        }
+
+        // ---------- update ----------
+        function update(dt) {
+            t += dt;
+
+            // ambient particles always drift
+            for (var i = 0; i < ash.length; i++) {
+                var p = ash[i];
+                p.x += p.vx * dt; p.y += p.vy * dt;
+                p.ph += dt;
+                if (p.y > H + 6 || p.x < -6) { p.x = rand(0, W + 40); p.y = -6; }
+            }
+
+            if (state !== STATE.PLAY) return;
+
+            timeLeft -= dt;
+            if (timeLeft <= 0) { timeLeft = 0; updateHud(); endScene(); return; }
+
+            // narration beats
+            if (beatIndex < beats.length && (DURATION - timeLeft) >= beats[beatIndex].at) {
+                showNarration(beats[beatIndex].text);
+                beatIndex++;
+            }
+
+            // ---- Zainab movement (deliberate) ----
+            var mx = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+            var my = (keys.up ? -1 : 0) + (keys.down ? 1 : 0);
+            if (touchTarget) {
+                var tdx = touchTarget.x - zainab.x, tdy = touchTarget.y - zainab.y;
+                var td = Math.sqrt(tdx * tdx + tdy * tdy);
+                if (td > 8 * S) { mx = tdx / td; my = tdy / td; } else { mx = 0; my = 0; }
+            }
+            var ml = Math.sqrt(mx * mx + my * my);
+            var moving = ml > 0.01;
+            if (moving) {
+                mx /= ml; my /= ml;
+                zainab.vx = mx * zainab.speed;
+                zainab.vy = my * zainab.speed;
+                zainab.x = clamp(zainab.x + zainab.vx * dt, 30 * S, W - 30 * S);
+                zainab.y = clamp(zainab.y + zainab.vy * dt, H * 0.2, H - 30 * S);
+                zainab.phase += dt * 6.5;
+                if (Math.abs(mx) > 0.02) zainab.facing = mx > 0 ? 1 : -1;
+            } else {
+                zainab.vx = zainab.vy = 0;
+            }
+            zainab.breath += dt;
+
+            // breadcrumb path for the following chain
+            zainab.path.push({ x: zainab.x, y: zainab.y });
+            if (zainab.path.length > 260) zainab.path.shift();
+
+            // ---- kids ----
+            var chainWhole = true;
+            for (var c = 0; c < kids.length; c++) {
+                var kid = kids[c];
+
+                if (kid.st === 'scared' || kid.st === 'comforting') {
+                    // gentle trembling in place
+                    kid.tremble = 0.6 + Math.sin(t * 14 + kid.seed * 20) * 0.4;
+                    var within = dist(zainab.x, zainab.y, kid.x, kid.y) < lanternR * 0.82;
+                    if (within) {
+                        kid.st = 'comforting';
+                        kid.comfort += dt / 1.3;        // ~1.3s of steady light to comfort
+                        if (kid.comfort >= 1) {
+                            kid.st = 'following';
+                            kid.order = chain.length;
+                            chain.push(kid);
+                            comfortChime();
+                        }
+                    } else {
+                        // fear creeps back if the light leaves before it is done
+                        kid.comfort = Math.max(0, kid.comfort - dt * 0.5);
+                        if (kid.st === 'comforting' && kid.comfort <= 0) kid.st = 'scared';
+                    }
+                } else if (kid.st === 'following') {
+                    // target = the node ahead in the chain (Zainab or previous kid)
+                    var idx = chain.indexOf(kid);
+                    var ahead = idx === 0 ? zainab : chain[idx - 1];
+                    var spacing = 40 * S;
+                    var dx = ahead.x - kid.x, dy = ahead.y - kid.y;
+                    var d = Math.sqrt(dx * dx + dy * dy) || 0.001;
+
+                    // followers have their own, slightly slower pace -> rushing leaves them behind
+                    var followSpeed = zainab.speed * 0.92;
+                    if (d > spacing) {
+                        var step = Math.min(followSpeed * dt, d - spacing);
+                        kid.x += (dx / d) * step;
+                        kid.y += (dy / d) * step;
+                        kid.phase = (kid.phase || 0) + dt * 6;
+                    }
+
+                    // morale: drops when the gap grows too large for too long
+                    var gap = d;
+                    if (gap > 130 * S) {
+                        kid.morale -= dt * 0.55;
+                        chainWhole = false;
+                        if (kid.morale <= 0) {
+                            // fear returns: leave the chain, become scared where they stand
+                            kid.st = 'scared';
+                            kid.comfort = 0;
+                            kid.morale = 1;
+                            kid.hx = kid.x; kid.hy = kid.y;
+                            removeFromChain(kid);
+                            fearTone();
+                            showNarration('&ldquo;Patience &mdash; do not leave them behind. Turn back, gather them again.&rdquo;', true);
+                        }
+                    } else {
+                        kid.morale = Math.min(1, kid.morale + dt * 0.4);
+                    }
+
+                    // reached the safe tent's glow?
+                    if (dist(kid.x, kid.y, safeZone.x, safeZone.y) < safeZone.r) {
+                        kid.st = 'safe';
+                        // settle at a gentle spot within the glow
+                        var ang = rand(0, 6.28), rr = rand(0.3, 0.85) * safeZone.r;
+                        kid.sx = safeZone.x + Math.cos(ang) * rr;
+                        kid.sy = safeZone.y + Math.sin(ang) * rr * 0.7;
+                        removeFromChain(kid);
+                        saved++;
+                        safeChime();
+                        updateHud();
+                        if (saved >= TOTAL) { showNarration('All are gathered to the light. Peace be upon the patient.'); setTimeout(endScene, 1800); }
+                    }
+                } else if (kid.st === 'safe') {
+                    kid.x += ((kid.sx || kid.x) - kid.x) * Math.min(1, dt * 4);
+                    kid.y += ((kid.sy || kid.y) - kid.y) * Math.min(1, dt * 4);
+                }
+            }
+
+            // ---- sabr meter: rises when the chain is whole and you move with care ----
+            if (chain.length > 0 && chainWhole) sabr = Math.min(1, sabr + dt * 0.12);
+            else if (!chainWhole) sabr = Math.max(0, sabr - dt * 0.25);
+            // also credit simply being present and comforting
+            elSabr.style.width = (sabr * 100) + '%';
+
+            updateHudTimer();
+        }
+
+        function removeFromChain(kid) {
+            var i = chain.indexOf(kid);
+            if (i >= 0) chain.splice(i, 1);
+            for (var j = 0; j < chain.length; j++) chain[j].order = j;
+        }
+
+        // ---------- HUD ----------
+        function updateHudTimer() {
+            var s = Math.ceil(timeLeft);
+            var m = Math.floor(s / 60);
+            var ss = s % 60;
+            elTimer.textContent = m + ':' + (ss < 10 ? '0' : '') + ss;
+        }
+        function updateHud() { elSaved.textContent = saved; updateHudTimer(); }
+
+        var narrTimer = 0, narrLock = false;
+        function showNarration(html, brief) {
+            elNarr.innerHTML = html;
+            elNarr.classList.add('show');
+            narrTimer = brief ? 3.4 : 6.5;
+        }
+        // fade narration out on its own timer
+        setInterval(function () {
+            if (narrTimer > 0) { narrTimer -= 0.2; if (narrTimer <= 0) elNarr.classList.remove('show'); }
+        }, 200);
+
+        // ============================================================
+        //  RENDER  (atmospheric, layered for a realistic night feel)
+        // ============================================================
+
+        function render() {
+            // ---- night sky ----
+            var sky = ctx.createLinearGradient(0, 0, 0, H);
+            sky.addColorStop(0, '#04050c');
+            sky.addColorStop(0.55, '#0a0b18');
+            sky.addColorStop(1, '#15100f');
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, W, H);
+
+            drawStars();
+            drawMoon();
+
+            // ---- ground plane ----
+            var horizon = H * 0.34;
+            var grd = ctx.createLinearGradient(0, horizon, 0, H);
+            grd.addColorStop(0, '#12100f');
+            grd.addColorStop(1, '#080706');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, horizon, W, H - horizon);
+            drawGroundSpeckle(horizon);
+
+            // faint far ember-glow along the horizon (the dead fires)
+            var hg = ctx.createLinearGradient(0, horizon - 30 * S, 0, horizon + 60 * S);
+            hg.addColorStop(0, 'rgba(180, 80, 30, 0)');
+            hg.addColorStop(0.5, 'rgba(150, 60, 25, 0.16)');
+            hg.addColorStop(1, 'rgba(120, 45, 20, 0)');
+            ctx.fillStyle = hg;
+            ctx.fillRect(0, horizon - 30 * S, W, 90 * S);
+
+            // ---- collect drawable entities and sort by y for depth ----
+            var drawables = [];
+            for (var i = 0; i < tents.length; i++) drawables.push({ y: tents[i].y, kind: 'tent', ref: tents[i] });
+            for (var k = 0; k < kids.length; k++) drawables.push({ y: kids[k].y, kind: 'kid', ref: kids[k] });
+            drawables.push({ y: zainab.y, kind: 'zainab', ref: zainab });
+            drawables.sort(function (a, b) { return a.y - b.y; });
+
+            // safe tent glow drawn under everything near it
+            drawSafeGlow();
+
+            // draw shadows first (soft, on the ground)
+            for (var s1 = 0; s1 < drawables.length; s1++) {
+                var dd = drawables[s1];
+                if (dd.kind === 'kid') drawShadow(dd.ref.x, dd.ref.y, 15 * S * (dd.ref.small || 1));
+                else if (dd.kind === 'zainab') drawShadow(dd.ref.x, dd.ref.y, 22 * S);
+            }
+
+            // the lantern light pool cast on the ground (screen-blended)
+            drawLanternPool();
+
+            // draw entities back-to-front
+            for (var d = 0; d < drawables.length; d++) {
+                var e = drawables[d];
+                if (e.kind === 'tent') drawTent(e.ref);
+                else if (e.kind === 'kid') drawKid(e.ref);
+                else drawZainab(e.ref);
+            }
+
+            drawAsh();
+
+            // ---- darkness: heavy vignette the lantern must cut through ----
+            drawDarkness();
+
+            // lantern bloom on top (screen) so it glows through the dark
+            drawLanternBloom();
+        }
+
+        function drawStars() {
+            for (var i = 0; i < motes.length; i++) {
+                // reuse motes as stars in the sky band
+                var m = motes[i];
+                if (m.y > H * 0.36) continue;
+                var a = 0.3 + Math.abs(Math.sin(m.ph + t * m.sp)) * 0.7;
+                ctx.globalAlpha = a * 0.8;
+                ctx.fillStyle = '#fff4e6';
+                ctx.fillRect(m.x, m.y, m.s, m.s);
+            }
+            // a few brighter fixed stars
+            ctx.globalAlpha = 1;
+        }
+
+        function drawMoon() {
+            var mx = W * 0.2, my = H * 0.15, r = 26 * S;
+            var g = ctx.createRadialGradient(mx, my, 2, mx, my, r * 4);
+            g.addColorStop(0, 'rgba(200, 210, 235, 0.16)');
+            g.addColorStop(1, 'rgba(200, 210, 235, 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(mx, my, r * 4, 0, 6.2832); ctx.fill();
+            // thin crescent
+            ctx.fillStyle = 'rgba(226, 232, 245, 0.85)';
+            ctx.beginPath(); ctx.arc(mx, my, r, 0, 6.2832); ctx.fill();
+            ctx.fillStyle = '#0a0b18';
+            ctx.beginPath(); ctx.arc(mx + r * 0.45, my - r * 0.2, r * 0.92, 0, 6.2832); ctx.fill();
+        }
+
+        function drawGroundSpeckle(horizon) {
+            // sparse deterministic speckle for sandy texture (cheap, static)
+            ctx.globalAlpha = 0.5;
+            var step = 46;
+            for (var y = horizon; y < H; y += step) {
+                for (var x = 0; x < W; x += step) {
+                    var h = hash(Math.floor(x / step), Math.floor(y / step));
+                    if (h > 0.6) {
+                        var px = x + h * step, py = y + hash(x, y) * step;
+                        var shade = 20 + Math.floor(h * 26);
+                        ctx.fillStyle = 'rgb(' + shade + ',' + (shade - 4) + ',' + (shade - 8) + ')';
+                        ctx.fillRect(px, py, 2, 1.4);
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawShadow(x, y, r) {
+            var g = ctx.createRadialGradient(x, y, 1, x, y, r);
+            g.addColorStop(0, 'rgba(0,0,0,0.5)');
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.ellipse(x, y, r, r * 0.4, 0, 0, 6.2832);
+            ctx.fill();
+        }
+
+        function drawSafeGlow() {
+            var z = safeZone;
+            var pulse = 0.85 + Math.sin(t * 1.6) * 0.15;
+            var g = ctx.createRadialGradient(z.x, z.y, 4, z.x, z.y, z.r * 1.7);
+            g.addColorStop(0, 'rgba(255, 214, 150, ' + (0.4 * pulse) + ')');
+            g.addColorStop(0.5, 'rgba(255, 185, 110, ' + (0.16 * pulse) + ')');
+            g.addColorStop(1, 'rgba(255, 170, 90, 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(z.x, z.y, z.r * 1.7, 0, 6.2832); ctx.fill();
+            // warm ground disc
+            ctx.fillStyle = 'rgba(255, 200, 130, 0.06)';
+            ctx.beginPath(); ctx.ellipse(z.x, z.y + 10 * S, z.r, z.r * 0.5, 0, 0, 6.2832); ctx.fill();
+        }
+
+        function drawLanternPool() {
+            // warm lit disc on the ground around Zainab (screen blend)
+            var lx = zainab.x + zainab.facing * 14 * S;
+            var ly = zainab.y - 6 * S;
+            var flick = 0.9 + Math.sin(t * 13) * 0.06 + Math.sin(t * 27) * 0.04;
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            var g = ctx.createRadialGradient(lx, ly, 6 * S, lx, ly, lanternR * flick);
+            g.addColorStop(0, 'rgba(255, 206, 140, 0.34)');
+            g.addColorStop(0.4, 'rgba(240, 160, 90, 0.16)');
+            g.addColorStop(1, 'rgba(200, 120, 60, 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(lx, ly, lanternR * flick, 0, 6.2832); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawLanternBloom() {
+            var lx = zainab.x + zainab.facing * 15 * S;
+            var ly = zainab.y - 40 * S;
+            var flick = 0.9 + Math.sin(t * 15) * 0.08;
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            var g = ctx.createRadialGradient(lx, ly, 1, lx, ly, 46 * S * flick);
+            g.addColorStop(0, 'rgba(255, 236, 190, 0.9)');
+            g.addColorStop(0.35, 'rgba(255, 200, 130, 0.5)');
+            g.addColorStop(1, 'rgba(255, 180, 100, 0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(lx, ly, 46 * S * flick, 0, 6.2832); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawDarkness() {
+            // radial vignette centered on Zainab so her lantern is the eye of light
+            var g = ctx.createRadialGradient(zainab.x, zainab.y - 10 * S, lanternR * 0.5,
+                                              zainab.x, zainab.y - 10 * S, Math.max(W, H) * 0.85);
+            g.addColorStop(0, 'rgba(3, 4, 9, 0)');
+            g.addColorStop(0.55, 'rgba(3, 4, 9, 0.55)');
+            g.addColorStop(1, 'rgba(2, 3, 7, 0.93)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        // ---- tents ----
+        function drawTent(tn) {
+            var s = tn.sc;
+            var x = tn.x, y = tn.y;
+            if (tn.burnt) {
+                // collapsed, charred tent silhouette
+                ctx.fillStyle = '#0c0a09';
+                ctx.beginPath();
+                ctx.moveTo(x - 40 * s, y);
+                ctx.lineTo(x - 10 * s, y - 30 * s);
+                ctx.lineTo(x + 8 * s, y - 14 * s);
+                ctx.lineTo(x + 34 * s, y - 24 * s);
+                ctx.lineTo(x + 44 * s, y);
+                ctx.closePath();
+                ctx.fill();
+                // charred poles
+                ctx.strokeStyle = '#1a1512'; ctx.lineWidth = 2 * s;
+                ctx.beginPath();
+                ctx.moveTo(x - 10 * s, y); ctx.lineTo(x - 6 * s, y - 34 * s);
+                ctx.moveTo(x + 30 * s, y); ctx.lineTo(x + 34 * s, y - 26 * s);
+                ctx.stroke();
+                // glowing embers at the base
+                var eb = 0.55 + Math.sin(t * 4 + tn.seed * 10) * 0.35;
+                for (var e = 0; e < 4; e++) {
+                    var ex = x - 20 * s + e * 14 * s + Math.sin(tn.seed * 9 + e) * 4;
+                    var eg = ctx.createRadialGradient(ex, y - 2 * s, 0, ex, y - 2 * s, 12 * s);
+                    eg.addColorStop(0, 'rgba(255, 120, 40, ' + (0.5 * eb) + ')');
+                    eg.addColorStop(1, 'rgba(255, 90, 30, 0)');
+                    ctx.fillStyle = eg;
+                    ctx.beginPath(); ctx.arc(ex, y - 2 * s, 12 * s, 0, 6.2832); ctx.fill();
+                    ctx.fillStyle = 'rgba(255, 190, 120, ' + (0.7 * eb) + ')';
+                    ctx.beginPath(); ctx.arc(ex, y - 2 * s, 1.6 * s, 0, 6.2832); ctx.fill();
+                }
+                // rising smoke plume (layered translucent puffs)
+                for (var p = 0; p < 5; p++) {
+                    var fr = p / 5;
+                    var sy = y - 10 * s - fr * 90 * s;
+                    var sx = x + 6 * s + Math.sin(t * 0.9 + tn.seed * 8 + p) * (8 + fr * 16) * s;
+                    var sr = (8 + p * 5) * s;
+                    ctx.fillStyle = 'rgba(40, 36, 40, ' + (0.16 * (1 - fr)) + ')';
+                    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 6.2832); ctx.fill();
+                }
+            } else {
+                // the standing safe tent - upright, warm interior
+                ctx.fillStyle = '#1a1410';
+                ctx.beginPath();
+                ctx.moveTo(x - 46 * s, y);
+                ctx.lineTo(x, y - 58 * s);
+                ctx.lineTo(x + 46 * s, y);
+                ctx.closePath();
+                ctx.fill();
+                // warm doorway glow
+                var dg = ctx.createLinearGradient(x, y - 40 * s, x, y);
+                dg.addColorStop(0, 'rgba(255, 210, 140, 0.9)');
+                dg.addColorStop(1, 'rgba(255, 170, 90, 0.2)');
+                ctx.fillStyle = dg;
+                ctx.beginPath();
+                ctx.moveTo(x - 11 * s, y);
+                ctx.lineTo(x, y - 30 * s);
+                ctx.lineTo(x + 11 * s, y);
+                ctx.closePath();
+                ctx.fill();
+                // rim light on the tent edges
+                ctx.strokeStyle = 'rgba(255, 200, 130, 0.4)'; ctx.lineWidth = 1.5 * s;
+                ctx.beginPath();
+                ctx.moveTo(x - 46 * s, y); ctx.lineTo(x, y - 58 * s); ctx.lineTo(x + 46 * s, y);
+                ctx.stroke();
+            }
+        }
+
+        // ---- Zainab: a veiled figure of light and shadow (no face) ----
+        function drawZainab(z) {
+            var s = S;
+            var x = z.x, y = z.y;
+            var moving = (z.vx * z.vx + z.vy * z.vy) > 1;
+            var bob = moving ? Math.abs(Math.sin(z.phase)) * 2.4 * s : Math.sin(z.breath * 1.4) * 1.2 * s;
+            var f = z.facing;
+
+            ctx.save();
+            ctx.translate(x, y - bob);
+
+            // hem shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(0, 2 * s, 20 * s, 6 * s, 0, 0, 6.2832); ctx.fill();
+
+            // full chador: a tall teardrop robe with a soft gradient (lit on lantern side)
+            var robe = ctx.createLinearGradient(-22 * s, 0, 26 * s, 0);
+            if (f > 0) {
+                robe.addColorStop(0, '#0e0d16');
+                robe.addColorStop(0.6, '#1a1826');
+                robe.addColorStop(1, '#39312e');   // warm-lit edge toward lantern
+            } else {
+                robe.addColorStop(0, '#39312e');
+                robe.addColorStop(0.4, '#1a1826');
+                robe.addColorStop(1, '#0e0d16');
+            }
+            ctx.fillStyle = robe;
+            var sway = moving ? Math.sin(z.phase * 0.5) * 3 * s : 0;
+            ctx.beginPath();
+            ctx.moveTo(0, -64 * s);                                   // crown of the veil
+            ctx.bezierCurveTo(-20 * s, -58 * s, -24 * s, -26 * s, -22 * s + sway, 0);   // left drape to hem
+            ctx.quadraticCurveTo(0, 6 * s, 22 * s - sway, 0);         // hem
+            ctx.bezierCurveTo(24 * s, -26 * s, 20 * s, -58 * s, 0, -64 * s);            // right drape
+            ctx.closePath();
+            ctx.fill();
+
+            // inner veil fold suggesting a bowed, patient head (still no face)
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.beginPath();
+            ctx.ellipse(f * 2 * s, -52 * s, 8.5 * s, 10 * s, 0, 0, 6.2832);
+            ctx.fill();
+
+            // warm rim light along the lantern-facing edge of the veil
+            ctx.strokeStyle = 'rgba(255, 210, 150, 0.5)';
+            ctx.lineWidth = 1.6 * s;
+            ctx.beginPath();
+            ctx.moveTo(f * 18 * s, -58 * s);
+            ctx.bezierCurveTo(f * 23 * s, -40 * s, f * 22 * s, -18 * s, f * 20 * s, -2 * s);
+            ctx.stroke();
+
+            // outstretched arm + lantern
+            ctx.strokeStyle = '#241f1c'; ctx.lineWidth = 3 * s; ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(f * 8 * s, -40 * s);
+            ctx.lineTo(f * 20 * s, -38 * s);
+            ctx.stroke();
+            drawLantern(ctx, f * 22 * s, -40 * s, s);
+
+            ctx.restore();
+        }
+
+        function drawLantern(ctx, lx, ly, s) {
+            var flick = 0.75 + Math.sin(t * 14) * 0.25;
+            // metal frame
+            ctx.strokeStyle = '#7a6a4a'; ctx.lineWidth = 1.4 * s;
+            ctx.strokeRect(lx - 4 * s, ly - 5 * s, 8 * s, 11 * s);
+            ctx.beginPath(); ctx.moveTo(lx, ly - 5 * s); ctx.lineTo(lx, ly - 9 * s); ctx.stroke();
+            // flame core
+            ctx.fillStyle = 'rgba(255, 232, 180, ' + flick + ')';
+            ctx.beginPath(); ctx.arc(lx, ly, 2.6 * s, 0, 6.2832); ctx.fill();
+        }
+
+        // ---- child: a small cloaked figure (no face) ----
+        function drawKid(kid) {
+            var s = S * (kid.small || 1);
+            var x = kid.x, y = kid.y;
+            var lit = dist(zainab.x, zainab.y, x, y) < lanternR;   // warm if in the lantern
+            var scared = kid.st === 'scared' || (kid.st === 'comforting' && kid.comfort < 0.6);
+
+            var jitter = scared ? Math.sin(t * 16 + kid.seed * 30) * 1.4 * s * (kid.tremble || 1) : 0;
+            var crouch = scared ? 8 * s : (kid.st === 'safe' ? 2 * s : 4 * s);
+
+            ctx.save();
+            ctx.translate(x + jitter, y);
+
+            // cloak body (crouched when scared, taller when comforted)
+            var bodyH = 30 * s - crouch;
+            var col;
+            if (kid.st === 'safe') col = '#2e2822';
+            else if (lit && !scared) col = '#2a2420';
+            else col = '#15131a';                       // cold and dim in the dark
+
+            var g = ctx.createLinearGradient(-10 * s, 0, 10 * s, 0);
+            var litSide = zainab.x > x ? 1 : -1;
+            g.addColorStop(litSide > 0 ? 0 : 1, col);
+            g.addColorStop(0.5, col);
+            g.addColorStop(litSide > 0 ? 1 : 0, lit ? '#4a3d30' : col);
+            ctx.fillStyle = g;
+
+            ctx.beginPath();
+            ctx.moveTo(0, -bodyH - 6 * s);                       // hooded head top
+            ctx.bezierCurveTo(-11 * s, -bodyH, -12 * s, -6 * s, -10 * s, 0);
+            ctx.quadraticCurveTo(0, 4 * s, 10 * s, 0);
+            ctx.bezierCurveTo(12 * s, -6 * s, 11 * s, -bodyH, 0, -bodyH - 6 * s);
+            ctx.closePath();
+            ctx.fill();
+
+            // a soft comforted glow / warm rim once following or safe
+            if (kid.st === 'following' || kid.st === 'safe' || (kid.st === 'comforting' && kid.comfort > 0.6)) {
+                ctx.strokeStyle = 'rgba(255, 205, 140, 0.4)';
+                ctx.lineWidth = 1.2 * s;
+                ctx.beginPath();
+                ctx.moveTo(litSide * 8 * s, -bodyH + 2 * s);
+                ctx.quadraticCurveTo(litSide * 11 * s, -bodyH * 0.5, litSide * 9 * s, -2 * s);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            // comforting progress: a gentle ring filling around a scared child
+            if (kid.st === 'comforting') {
+                ctx.strokeStyle = 'rgba(255, 214, 150, 0.7)';
+                ctx.lineWidth = 2 * S;
+                ctx.beginPath();
+                ctx.arc(x, y - 14 * s, 20 * s, -Math.PI / 2, -Math.PI / 2 + kid.comfort * 6.2832);
+                ctx.stroke();
+            }
+
+            // a small teardrop of light above a still-scared child, to help find them
+            if (kid.st === 'scared') {
+                var tw = 0.4 + Math.abs(Math.sin(t * 2 + kid.seed * 12)) * 0.6;
+                ctx.globalAlpha = tw * (lit ? 0.9 : 0.5);
+                ctx.fillStyle = '#8fb2d8';
+                ctx.beginPath(); ctx.arc(x, y - 34 * s, 1.8 * S, 0, 6.2832); ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawAsh() {
+            for (var i = 0; i < ash.length; i++) {
+                var p = ash[i];
+                var near = dist(p.x, p.y, zainab.x, zainab.y) < lanternR;
+                ctx.globalAlpha = (near ? 0.5 : 0.22) * (0.6 + Math.sin(p.ph) * 0.4);
+                ctx.fillStyle = near ? '#e8c9a0' : '#5a5550';
+                ctx.fillRect(p.x, p.y, p.s, p.s);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // ---------- main loop ----------
+        var last = 0;
+        function loop(ts) {
+            var dt = Math.min(0.033, (ts - last) / 1000 || 0.016);
+            last = ts;
+            update(dt);
+            render();
+            requestAnimationFrame(loop);
+        }
+
+        // ---------- input ----------
+        window.addEventListener('keydown', function (e) {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.up = true;
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.down = true;
+            if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(e.code) >= 0) e.preventDefault();
+        });
+        window.addEventListener('keyup', function (e) {
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.up = false;
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.down = false;
+        });
+
+        function touchAt(e) {
+            var tch = e.touches && e.touches[0];
+            if (!tch) return;
+            touchTarget = { x: tch.clientX, y: tch.clientY };
+        }
+        canvas.addEventListener('touchstart', function (e) { e.preventDefault(); ensureAudio(); touchAt(e); }, { passive: false });
+        canvas.addEventListener('touchmove', function (e) { e.preventDefault(); touchAt(e); }, { passive: false });
+        canvas.addEventListener('touchend', function (e) { e.preventDefault(); if (!e.touches.length) touchTarget = null; }, { passive: false });
+        // mouse (desktop) point-to-move as an alternative to keys
+        canvas.addEventListener('mousedown', function (e) { ensureAudio(); touchTarget = { x: e.clientX, y: e.clientY }; });
+        canvas.addEventListener('mousemove', function (e) { if (touchTarget) touchTarget = { x: e.clientX, y: e.clientY }; });
+        window.addEventListener('mouseup', function () { touchTarget = null; });
+
+        // ---------- buttons ----------
+        document.getElementById('btn-start').addEventListener('click', startPlay);
+        document.getElementById('btn-again').addEventListener('click', startPlay);
+        document.getElementById('btn-home').addEventListener('click', function () { window.location.href = '../spiritual.html'; });
+
+        // ---------- boot ----------
+        window.addEventListener('resize', function () { resize(); });
+        resize();
+        // a quiet standing scene behind the title
+        zainab = { x: W * 0.16, y: H * 0.6, vx: 0, vy: 0, speed: 0, phase: 0, facing: 1, breath: 0, path: [] };
+        safeZone = { x: W * 0.86, y: H * 0.42, r: 84 * S };
+        tents = []; kids = []; ash = []; motes = [];
+        for (var a = 0; a < 40; a++) ash.push({ x: Math.random() * W, y: Math.random() * H, s: rand(0.6, 1.9), vy: rand(6, 16), vx: rand(-10, -3), ph: rand(0, 6.28) });
+        for (var m = 0; m < 26; m++) motes.push({ x: Math.random() * W, y: Math.random() * H * 0.35, s: rand(0.5, 1.6), ph: rand(0, 6.28), sp: rand(0.4, 1.2) });
+        requestAnimationFrame(loop);
+    })();
+    </script>
+
+</body>
+
+</html>
