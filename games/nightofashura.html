@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta name="description" content="The Lantern of Sabr - a reverent interactive scene of Lady Zainab (peace be upon her) gathering the children of the camp to the light on the night of Ashura. A game about patience through pain. By Syed Zain Raza.">
+    <meta name="description" content="The Lantern of Sabr - a cinematic, reverent scene of Lady Zainab (peace be upon her) gathering the children of the camp to the light on the night of Ashura. A game about patience through pain. By Syed Zain Raza.">
     <meta name="author" content="">
 
     <title>The Lantern of Sabr - Syed Zain Raza</title>
@@ -22,128 +22,72 @@
         }
 
         html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #05060b;
+            width: 100%; height: 100%; overflow: hidden;
+            background: #000;
             font-family: 'Trebuchet MS', 'Segoe UI', Tahoma, Helvetica, Arial, sans-serif;
             color: var(--text);
-            -webkit-user-select: none;
-            user-select: none;
-            touch-action: none;
+            -webkit-user-select: none; user-select: none; touch-action: none;
         }
 
         #game { display: block; width: 100%; height: 100%; }
 
-        /* ---------------- HUD ---------------- */
         .hud { position: fixed; z-index: 10; pointer-events: none; }
 
-        #back {
-            top: 18px; left: 20px;
-            font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-            pointer-events: auto;
-        }
-        #back a { color: rgba(255,255,255,0.35); text-decoration: none; transition: color 0.2s; }
+        #back { top: 22px; left: 24px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; pointer-events: auto; }
+        #back a { color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; text-shadow: 0 1px 6px #000; }
         #back a:hover { color: var(--gold); }
 
-        #meta {
-            top: 16px; right: 22px; text-align: right;
-        }
-        #timer { font-size: 26px; font-weight: 300; color: #fff; text-shadow: 0 0 16px var(--gold-soft); }
-        #saved-label {
-            font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-            color: var(--text-dim); margin-top: 2px;
-        }
+        #meta { top: 20px; right: 26px; text-align: right; }
+        #timer { font-size: 26px; font-weight: 300; color: #fff; text-shadow: 0 0 16px var(--gold-soft), 0 2px 8px #000; }
+        #saved-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-top: 2px; text-shadow: 0 1px 6px #000; }
         #saved-label b { color: var(--gold); }
 
-        /* narration line, lower third, cinematic */
-        #narration {
-            bottom: 92px; left: 0; right: 0; text-align: center; padding: 0 26px;
-        }
+        #narration { bottom: 96px; left: 0; right: 0; text-align: center; padding: 0 26px; }
         #narration span {
-            display: inline-block;
-            max-width: 640px;
-            font-size: 18px;
-            font-style: italic;
-            line-height: 1.6;
-            color: rgba(255, 244, 225, 0.92);
-            text-shadow: 0 2px 18px rgba(0,0,0,0.9), 0 0 30px rgba(255,180,110,0.25);
-            opacity: 0;
-            transition: opacity 1.1s ease;
+            display: inline-block; max-width: 660px;
+            font-size: 19px; font-style: italic; line-height: 1.6;
+            color: rgba(255, 246, 230, 0.95);
+            text-shadow: 0 2px 22px rgba(0,0,0,0.95), 0 0 34px rgba(255,180,110,0.28);
+            opacity: 0; transition: opacity 1.2s ease; letter-spacing: 0.3px;
         }
         #narration span.show { opacity: 1; }
 
-        /* sabr (patience) meter, bottom center */
-        #sabr-wrap {
-            bottom: 46px; left: 50%; transform: translateX(-50%);
-            width: min(300px, 62vw); text-align: center;
-        }
-        #sabr-label {
-            font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
-            color: var(--text-dim); margin-bottom: 6px;
-        }
-        #sabr-bar {
-            width: 100%; height: 6px; border-radius: 3px;
-            background: rgba(255,255,255,0.1); overflow: hidden;
-        }
-        #sabr-fill {
-            height: 100%; width: 0%; border-radius: 3px;
-            background: linear-gradient(90deg, #d98a4a, #ffcf87, #fff2d8);
-            box-shadow: 0 0 12px var(--gold-soft);
-            transition: width 0.5s ease;
-        }
+        #sabr-wrap { bottom: 50px; left: 50%; transform: translateX(-50%); width: min(300px, 62vw); text-align: center; }
+        #sabr-label { font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; text-shadow: 0 1px 6px #000; }
+        #sabr-bar { width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.09); overflow: hidden; box-shadow: 0 1px 4px #000 inset; }
+        #sabr-fill { height: 100%; width: 0%; border-radius: 3px; background: linear-gradient(90deg, #d98a4a, #ffcf87, #fff2d8); box-shadow: 0 0 12px var(--gold-soft); transition: width 0.5s ease; }
 
-        /* ---------------- overlays ---------------- */
         .screen {
             position: fixed; inset: 0; z-index: 20;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 14px; padding: 30px; text-align: center;
-            background: rgba(5, 6, 12, 0.8);
-            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-            transition: opacity 0.6s ease;
-            overflow-y: auto;
+            background: rgba(4, 5, 10, 0.82);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            transition: opacity 0.7s ease; overflow-y: auto;
         }
         .screen.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
 
-        .title {
-            font-size: 40px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase;
-            text-shadow: 0 0 42px rgba(255, 207, 135, 0.5);
-        }
+        .title { font-size: 42px; font-weight: 300; letter-spacing: 7px; text-transform: uppercase; text-shadow: 0 0 46px rgba(255, 207, 135, 0.5); }
         .arabic { color: var(--gold); font-size: 17px; letter-spacing: 1px; }
-        .story {
-            font-style: italic; color: var(--text-dim);
-            font-size: 15px; line-height: 1.9; max-width: 540px;
-        }
-        .how {
-            color: var(--text-dim); font-size: 13px; line-height: 1.95; max-width: 540px; margin-top: 6px;
-        }
+        .story { font-style: italic; color: var(--text-dim); font-size: 15px; line-height: 1.9; max-width: 560px; }
+        .how { color: var(--text-dim); font-size: 13px; line-height: 1.95; max-width: 560px; margin-top: 6px; }
         .how b { color: var(--gold); font-weight: 700; }
-        .respect { font-size: 12px; color: rgba(255,255,255,0.4); max-width: 460px; line-height: 1.7; margin-top: 6px; }
+        .respect { font-size: 12px; color: rgba(255,255,255,0.42); max-width: 470px; line-height: 1.7; margin-top: 6px; }
 
-        .btn {
-            padding: 13px 30px; border-radius: 26px;
-            border: 1px solid var(--gold); background: rgba(255, 207, 135, 0.06);
-            color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 700;
-            letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer;
-            transition: all 0.25s; margin-top: 8px;
-        }
-        .btn:hover { background: rgba(255, 207, 135, 0.14); box-shadow: 0 0 28px rgba(255, 207, 135, 0.35); }
+        .btn { padding: 13px 30px; border-radius: 26px; border: 1px solid var(--gold); background: rgba(255, 207, 135, 0.06); color: var(--gold); font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; transition: all 0.25s; margin-top: 8px; }
+        .btn:hover { background: rgba(255, 207, 135, 0.14); box-shadow: 0 0 30px rgba(255, 207, 135, 0.4); }
         .btn.quiet { border-color: rgba(255,255,255,0.25); color: var(--text-dim); }
 
-        .prompt {
-            margin-top: 22px; color: var(--gold);
-            font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase;
-            animation: pulse 1.9s ease-in-out infinite;
-        }
-        .final-num { font-size: 66px; font-weight: 300; color: #fff; text-shadow: 0 0 30px var(--gold-soft); }
+        .prompt { margin-top: 22px; color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; animation: pulse 1.9s ease-in-out infinite; }
+        .final-num { font-size: 70px; font-weight: 300; color: #fff; text-shadow: 0 0 34px var(--gold-soft); }
         .final-label { font-size: 12px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
 
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         @media (max-width: 600px) {
-            .title { font-size: 27px; letter-spacing: 4px; }
+            .title { font-size: 28px; letter-spacing: 4px; }
             #narration span { font-size: 15px; }
-            .final-num { font-size: 50px; }
+            .final-num { font-size: 52px; }
         }
     </style>
 
@@ -153,7 +97,6 @@
 
     <canvas id="game"></canvas>
 
-    <!-- HUD -->
     <div class="hud" id="back"><a href="../spiritual.html">&larr; Spiritual Space</a></div>
     <div class="hud" id="meta">
         <div id="timer">1:00</div>
@@ -165,7 +108,6 @@
         <div id="sabr-bar"><div id="sabr-fill"></div></div>
     </div>
 
-    <!-- Title -->
     <div class="screen" id="screen-title">
         <div class="title">The Lantern of Sabr</div>
         <div class="arabic">&#1588;&#1614;&#1575;&#1605;&#1616; &#1575;&#1604;&#1594;&#1614;&#1585;&#1610;&#1576;&#1614;&#1575;&#1606; &middot; The Night of the Strangers</div>
@@ -179,7 +121,6 @@
         <button class="btn" id="btn-start">Take up the Lantern</button>
     </div>
 
-    <!-- End / reflection -->
     <div class="screen hidden" id="screen-end">
         <div class="final-num" id="end-num">0</div>
         <div class="final-label" id="end-label">brought to the light</div>
@@ -194,30 +135,37 @@
         'use strict';
 
         /* ============================================================
-           The Lantern of Sabr
-           A reverent, non-violent scene of the night of Ashura
-           (Shaam-e-Ghareeban). The player, as Lady Zainab (peace be
-           upon her) shown only as a veiled figure of light, walks the
-           dark camp gathering frightened children and leading them to
-           the safe tent's glow.
+           The Lantern of Sabr - cinematic edition.
+           A reverent, non-violent scene of Shaam-e-Ghareeban. The
+           gameplay (patience: comfort each child with steady light,
+           never leave the chain behind) is unchanged; this version
+           adds a full post-processing pipeline for a filmic look:
 
-           Core mechanic = SABR (patience):
-           - Hold your lantern near a scared child to comfort them; they
-             then follow you in a gentle chain.
-           - Followers have their own (slightly slower) pace. Rush ahead
-             and the gap grows; if you leave them too far, too long,
-             their fear returns and they must be comforted again.
-           - Only steady, patient movement keeps the chain whole.
-           A ~60 second scene, storytelling through narration beats.
+             - offscreen scene buffer + bloom (blurred bright pass)
+             - volumetric god-rays from lantern and moon
+             - drifting layered fog, depth-of-field on the far layer
+             - parallax camera with handheld sway
+             - flowing cloth veil (verlet chain) on the figure
+             - film grain, teal/amber color grade, vignette, letterbox
            ============================================================ */
 
         var canvas = document.getElementById('game');
         var ctx = canvas.getContext('2d');
 
-        var DPR = Math.min(window.devicePixelRatio || 1, 2);
-        var W = 0, H = 0, S = 1;   // S = responsive scale
+        // offscreen buffers for the post pipeline
+        var scene = document.createElement('canvas');   // full-res scene
+        var sctx = scene.getContext('2d');
+        var bloom = document.createElement('canvas');    // half-res bloom
+        var bctx = bloom.getContext('2d');
+        var grain = document.createElement('canvas');    // static noise tile
+        var supportsFilter = (typeof sctx.filter !== 'undefined');
 
-        // ---- DOM ----
+        var DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+        var W = 0, H = 0, S = 1;
+        var WW = 0;                 // world width (wider than screen for parallax)
+        var letterbox = 0;          // cinematic bar height
+
+        // DOM
         var elTimer = document.getElementById('timer');
         var elSaved = document.getElementById('saved-count');
         var elTotal = document.getElementById('total-count');
@@ -226,179 +174,163 @@
         var scTitle = document.getElementById('screen-title');
         var scEnd = document.getElementById('screen-end');
 
-        // ---- state ----
         var STATE = { TITLE: 0, PLAY: 1, END: 2 };
         var state = STATE.TITLE;
 
-        var TOTAL = 6;
-        var DURATION = 60;         // one-minute scene
-        var timeLeft = DURATION;
-        var saved = 0;
-        var sabr = 0;              // 0..1 patience meter
-        var t = 0;                 // global clock
+        var TOTAL = 6, DURATION = 60;
+        var timeLeft = DURATION, saved = 0, sabr = 0, t = 0;
 
-        // world entities
-        var zainab, kids, safeZone, tents, ash, embers, motes;
-        var lanternR = 150;        // lantern comfort radius (scaled at reset)
+        var zainab, kids, safeZone, tents, dunes, ash, embers, motes, fog, chain = [];
+        var lanternR = 155;
+        var cam = { x: 0, y: 0, sway: 0 };
+        var flick = 1;              // shared lantern flicker
 
-        // input
         var keys = {};
-        var touchTarget = null;    // {x,y} point-to-move on touch
+        var pointer = null;         // point-to-move target (screen coords)
 
-        // narration beats: { at: secondsElapsed, text, once }
         var beats, beatIndex;
 
         function rand(a, b) { return a + Math.random() * (b - a); }
         function dist(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return Math.sqrt(dx * dx + dy * dy); }
         function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+        function hash(x, y) { var n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453; return n - Math.floor(n); }
 
-        // deterministic noise for ground speckle
-        function hash(x, y) {
-            var n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
-            return n - Math.floor(n);
-        }
-
-        // ---------- gentle synthesized audio ----------
+        // ---------- audio (synth, no assets) ----------
         var actx = null;
-        function ensureAudio() {
-            if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
-            if (actx && actx.state === 'suspended') actx.resume();
-        }
+        function ensureAudio() { if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (actx && actx.state === 'suspended') actx.resume(); }
         function tone(freq, dur, type, vol, delay) {
             if (!actx) return;
             var o = actx.createOscillator(), g = actx.createGain();
             o.type = type || 'sine'; o.frequency.value = freq;
-            var start = actx.currentTime + (delay || 0);
-            g.gain.setValueAtTime(vol || 0.05, start);
-            g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-            o.connect(g); g.connect(actx.destination);
-            o.start(start); o.stop(start + dur + 0.05);
+            var s = actx.currentTime + (delay || 0);
+            g.gain.setValueAtTime(vol || 0.05, s);
+            g.gain.exponentialRampToValueAtTime(0.0001, s + dur);
+            o.connect(g); g.connect(actx.destination); o.start(s); o.stop(s + dur + 0.05);
         }
-        var windNode = null;
+        var windStarted = false;
         function startWind() {
-            if (!actx || windNode) return;
-            // soft filtered-noise wind bed for atmosphere
+            if (!actx || windStarted) return; windStarted = true;
             var len = Math.floor(actx.sampleRate * 2);
             var buf = actx.createBuffer(1, len, actx.sampleRate);
             var d = buf.getChannelData(0);
             for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
             var src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
-            var bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 320; bp.Q.value = 0.5;
-            var g = actx.createGain(); g.gain.value = 0.02;
-            src.connect(bp); bp.connect(g); g.connect(actx.destination);
-            src.start();
-            windNode = src;
+            var bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 300; bp.Q.value = 0.5;
+            var g = actx.createGain(); g.gain.value = 0.022;
+            // slow wandering filter for a living wind
+            var lfo = actx.createOscillator(); lfo.frequency.value = 0.06;
+            var lg = actx.createGain(); lg.gain.value = 120; lfo.connect(lg); lg.connect(bp.frequency);
+            src.connect(bp); bp.connect(g); g.connect(actx.destination); src.start(); lfo.start();
         }
         function comfortChime() { tone(659.3, 0.5, 'sine', 0.06); tone(987.8, 0.6, 'sine', 0.04, 0.08); }
         function safeChime() { tone(783.9, 0.5, 'sine', 0.06); tone(1174.7, 0.7, 'sine', 0.045, 0.1); }
-        function fearTone() { tone(196, 0.5, 'triangle', 0.04); }
+        function fearTone() { tone(174.6, 0.6, 'triangle', 0.045); }
 
         // ---------- layout ----------
+        function makeGrain() {
+            grain.width = 128; grain.height = 128;
+            var g = grain.getContext('2d');
+            var img = g.createImageData(128, 128);
+            for (var i = 0; i < img.data.length; i += 4) {
+                var v = 110 + Math.floor(Math.random() * 145);
+                img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+                img.data[i + 3] = 255;
+            }
+            g.putImageData(img, 0, 0);
+        }
+
         function resize() {
             W = window.innerWidth; H = window.innerHeight;
             canvas.width = W * DPR; canvas.height = H * DPR;
             canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
             ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-            S = Math.max(0.72, Math.min(1.3, Math.min(W / 960, H / 620)));
-            lanternR = 150 * S;
+
+            scene.width = W * DPR; scene.height = H * DPR;
+            sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+            bloom.width = Math.max(1, Math.floor(W * DPR * 0.5));
+            bloom.height = Math.max(1, Math.floor(H * DPR * 0.5));
+
+            S = Math.max(0.72, Math.min(1.4, Math.min(W / 960, H / 620)));
+            lanternR = 155 * S;
+            WW = W * 1.7;
+            letterbox = Math.round(Math.min(64, H * 0.075));
         }
 
         // ---------- scene setup ----------
         function setup() {
-            timeLeft = DURATION; saved = 0; sabr = 0;
-            elTotal.textContent = TOTAL;
-            elSaved.textContent = '0';
-            elSabr.style.width = '0%';
+            timeLeft = DURATION; saved = 0; sabr = 0; chain = [];
+            elTotal.textContent = TOTAL; elSaved.textContent = '0'; elSabr.style.width = '0%';
 
-            // Zainab starts on the left
+            var groundY = H * 0.62;
             zainab = {
-                x: W * 0.16, y: H * 0.6,
-                vx: 0, vy: 0,
-                speed: 158 * S,
-                phase: 0,           // walk cycle
-                facing: 1,
-                breath: 0,
-                path: []            // breadcrumb history for chain following
+                x: W * 0.24, y: groundY, vx: 0, vy: 0,
+                speed: 156 * S, phase: 0, facing: 1, breath: 0, path: [],
+                veil: []   // flowing cloth points
             };
+            for (var v = 0; v < 7; v++) zainab.veil.push({ x: zainab.x, y: zainab.y - 40 * S, px: zainab.x, py: zainab.y - 40 * S });
 
-            // safe tent glow on the right - the gathering place
-            safeZone = { x: W * 0.86, y: H * 0.42, r: 84 * S };
+            safeZone = { x: WW - W * 0.14, y: groundY - 6 * S, r: 92 * S };
 
-            // scattered tents (burnt/collapsed silhouettes) + the standing safe tent
-            tents = [];
-            var tentSpots = [
-                { x: W * 0.34, y: H * 0.34, sc: 1.0, burnt: true },
-                { x: W * 0.52, y: H * 0.7, sc: 1.15, burnt: true },
-                { x: W * 0.66, y: H * 0.28, sc: 0.85, burnt: true },
-                { x: W * 0.24, y: H * 0.78, sc: 0.95, burnt: true },
-                { x: W * 0.78, y: H * 0.72, sc: 1.0, burnt: true },
-                { x: safeZone.x, y: safeZone.y + 14 * S, sc: 1.25, burnt: false }
-            ];
-            for (var i = 0; i < tentSpots.length; i++) {
-                var sp = tentSpots[i];
-                tents.push({ x: sp.x, y: sp.y, sc: sp.sc * S, burnt: sp.burnt, seed: Math.random() });
+            // parallax dune silhouettes (far layer, depth-of-field blurred)
+            dunes = [];
+            for (var l = 0; l < 3; l++) {
+                var pts = [];
+                var seg = 16;
+                for (var i = 0; i <= seg; i++) pts.push(rand(0.3, 1));
+                dunes.push({ depth: 0.2 + l * 0.22, pts: pts, h: (70 - l * 14) * S, tone: l });
             }
 
-            // the frightened children, scattered in the dark
+            // tents across the world
+            tents = [];
+            var spots = [
+                { x: WW * 0.20, y: groundY - 4 * S, sc: 1.0, burnt: true },
+                { x: WW * 0.33, y: groundY + 30 * S, sc: 1.2, burnt: true },
+                { x: WW * 0.44, y: groundY - 20 * S, sc: 0.85, burnt: true },
+                { x: WW * 0.55, y: groundY + 44 * S, sc: 1.05, burnt: true },
+                { x: WW * 0.68, y: groundY - 8 * S, sc: 0.95, burnt: true },
+                { x: WW * 0.78, y: groundY + 34 * S, sc: 1.1, burnt: true },
+                { x: safeZone.x, y: safeZone.y + 12 * S, sc: 1.35, burnt: false }
+            ];
+            for (var s = 0; s < spots.length; s++) tents.push({ x: spots[s].x, y: spots[s].y, sc: spots[s].sc * S, burnt: spots[s].burnt, seed: Math.random() });
+
+            // the frightened children
             kids = [];
             var placed = 0, guard = 0;
-            while (placed < TOTAL && guard < 400) {
+            while (placed < TOTAL && guard < 600) {
                 guard++;
-                var kx = rand(W * 0.28, W * 0.74);
-                var ky = rand(H * 0.24, H * 0.82);
-                if (dist(kx, ky, zainab.x, zainab.y) < 150 * S) continue;
-                if (dist(kx, ky, safeZone.x, safeZone.y) < 150 * S) continue;
+                var kx = rand(W * 0.42, WW - W * 0.24);
+                var ky = groundY + rand(-40 * S, 46 * S);
+                if (dist(kx, ky, safeZone.x, safeZone.y) < 170 * S) continue;
                 var ok = true;
-                for (var k = 0; k < kids.length; k++) if (dist(kx, ky, kids[k].x, kids[k].y) < 90 * S) { ok = false; break; }
+                for (var k = 0; k < kids.length; k++) if (Math.abs(kx - kids[k].x) < 110 * S) { ok = false; break; }
                 if (!ok) continue;
-                kids.push({
-                    x: kx, y: ky, hx: kx, hy: ky,     // hx/hy = home hiding spot
-                    st: 'scared',                     // scared | comforting | following | safe
-                    comfort: 0,                       // 0..1 while being comforted
-                    morale: 1,                        // drops when left behind
-                    order: -1,                        // position in following chain
-                    seed: Math.random(),
-                    small: rand(0.82, 1.05),
-                    tremble: 0,
-                    vx: 0, vy: 0
-                });
+                kids.push({ x: kx, y: ky, st: 'scared', comfort: 0, morale: 1, seed: Math.random(), small: rand(0.82, 1.04), tremble: 0, phase: 0 });
                 placed++;
             }
 
-            // ambient particles
-            ash = [];
-            for (var a = 0; a < 60; a++) ash.push({ x: Math.random() * W, y: Math.random() * H, s: rand(0.6, 1.9), vy: rand(6, 16), vx: rand(-10, -3), ph: rand(0, 6.28) });
-            motes = [];
-            for (var m = 0; m < 26; m++) motes.push({ x: Math.random() * W, y: Math.random() * H, s: rand(0.5, 1.6), ph: rand(0, 6.28), sp: rand(0.4, 1.2) });
+            ash = []; for (var a = 0; a < 90; a++) ash.push({ x: rand(0, WW), y: rand(0, H), s: rand(0.6, 2), vy: rand(5, 15), vx: rand(-12, -3), ph: rand(0, 6.28) });
+            embers = [];
+            motes = []; for (var m = 0; m < 34; m++) motes.push({ x: rand(0, WW), y: rand(0, H), s: rand(0.5, 1.7), ph: rand(0, 6.28), sp: rand(0.4, 1.2) });
+            fog = []; for (var f = 0; f < 7; f++) fog.push({ x: rand(0, WW), y: groundY + rand(-30, 60) * S, r: rand(120, 240) * S, sp: rand(4, 12), ph: rand(0, 6.28), a: rand(0.04, 0.09) });
 
-            // narration beats
             beats = [
                 { at: 0.4, text: 'The fires have died. The night of Ashura falls cold and dark over the camp.' },
-                { at: 5.5, text: 'In the darkness, the children weep &mdash; scattered, lost, and afraid.' },
-                { at: 12, text: '&ldquo;Come, little ones. Stay close to my lantern. Do not be afraid.&rdquo;' },
-                { at: 24, text: 'She does not run. Fear cannot be outrun &mdash; it can only be calmed.' },
-                { at: 40, text: 'One by one, she carries the light to them, though her own heart breaks.' }
+                { at: 6, text: 'In the darkness, the children weep &mdash; scattered, lost, and afraid.' },
+                { at: 13, text: '&ldquo;Come, little ones. Stay close to my lantern. Do not be afraid.&rdquo;' },
+                { at: 26, text: 'She does not run. Fear cannot be outrun &mdash; it can only be calmed.' },
+                { at: 42, text: 'One by one, she carries the light to them, though her own heart breaks.' }
             ];
             beatIndex = 0;
-            chain = [];
+            cam.x = clamp(zainab.x - W * 0.42, 0, WW - W);
+            cam.y = 0;
         }
 
-        var chain = [];   // ordered list of following kids (chain[0] follows Zainab)
-
-        // ---------- flow ----------
-        function startPlay() {
-            ensureAudio(); startWind();
-            scTitle.classList.add('hidden');
-            scEnd.classList.add('hidden');
-            setup();
-            state = STATE.PLAY;
-        }
+        function startPlay() { ensureAudio(); startWind(); scTitle.classList.add('hidden'); scEnd.classList.add('hidden'); setup(); state = STATE.PLAY; }
 
         function endScene() {
             state = STATE.END;
             document.getElementById('end-num').textContent = saved;
-            var title = document.getElementById('end-title');
-            var msg = document.getElementById('end-message');
+            var title = document.getElementById('end-title'), msg = document.getElementById('end-message');
             if (saved >= TOTAL) {
                 title.textContent = 'She left no one in the dark.';
                 msg.innerHTML = 'Every child was gathered to the light. This is sabr: to hold others up when your own heart is breaking. Peace be upon Zainab, the patient, who kept the light of the camp alive that night.';
@@ -410,130 +342,96 @@
                 title.textContent = 'The night is long.';
                 msg.innerHTML = 'Fear cannot be rushed. Move slowly, hold your lantern near each frightened heart until it steadies, and never leave the ones behind you too far in the dark.';
             }
-            setTimeout(function () { scEnd.classList.remove('hidden'); }, 500);
+            setTimeout(function () { scEnd.classList.remove('hidden'); }, 600);
         }
 
         // ---------- update ----------
         function update(dt) {
             t += dt;
+            flick = 0.86 + Math.sin(t * 13) * 0.09 + Math.sin(t * 29) * 0.05;
 
-            // ambient particles always drift
             for (var i = 0; i < ash.length; i++) {
-                var p = ash[i];
-                p.x += p.vx * dt; p.y += p.vy * dt;
-                p.ph += dt;
-                if (p.y > H + 6 || p.x < -6) { p.x = rand(0, W + 40); p.y = -6; }
+                var p = ash[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.ph += dt;
+                if (p.y > H + 6) { p.x = rand(cam.x, cam.x + WW); p.y = -6; }
+            }
+            for (var f = 0; f < fog.length; f++) { fog[f].x -= fog[f].sp * dt; fog[f].ph += dt * 0.3; if (fog[f].x < -300 * S) fog[f].x = WW + 200 * S; }
+            for (var e = embers.length - 1; e >= 0; e--) {
+                var em = embers[e]; em.x += em.vx * dt; em.y += em.vy * dt; em.vy -= 12 * dt * em.rise; em.life -= dt;
+                if (em.life <= 0) embers.splice(e, 1);
             }
 
-            if (state !== STATE.PLAY) return;
+            if (state !== STATE.PLAY) { cam.sway += dt; return; }
 
             timeLeft -= dt;
             if (timeLeft <= 0) { timeLeft = 0; updateHud(); endScene(); return; }
 
-            // narration beats
-            if (beatIndex < beats.length && (DURATION - timeLeft) >= beats[beatIndex].at) {
-                showNarration(beats[beatIndex].text);
-                beatIndex++;
-            }
+            if (beatIndex < beats.length && (DURATION - timeLeft) >= beats[beatIndex].at) { showNarration(beats[beatIndex].text); beatIndex++; }
 
-            // ---- Zainab movement (deliberate) ----
+            // movement
             var mx = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
             var my = (keys.up ? -1 : 0) + (keys.down ? 1 : 0);
-            if (touchTarget) {
-                var tdx = touchTarget.x - zainab.x, tdy = touchTarget.y - zainab.y;
-                var td = Math.sqrt(tdx * tdx + tdy * tdy);
-                if (td > 8 * S) { mx = tdx / td; my = tdy / td; } else { mx = 0; my = 0; }
+            if (pointer) {
+                var wx = pointer.x + cam.x, wy = pointer.y + cam.y;
+                var tdx = wx - zainab.x, tdy = wy - zainab.y, td = Math.sqrt(tdx * tdx + tdy * tdy);
+                if (td > 10 * S) { mx = tdx / td; my = tdy / td; } else { mx = 0; my = 0; }
             }
-            var ml = Math.sqrt(mx * mx + my * my);
-            var moving = ml > 0.01;
+            var ml = Math.sqrt(mx * mx + my * my), moving = ml > 0.01;
+            var groundY = H * 0.62;
             if (moving) {
                 mx /= ml; my /= ml;
-                zainab.vx = mx * zainab.speed;
-                zainab.vy = my * zainab.speed;
-                zainab.x = clamp(zainab.x + zainab.vx * dt, 30 * S, W - 30 * S);
-                zainab.y = clamp(zainab.y + zainab.vy * dt, H * 0.2, H - 30 * S);
-                zainab.phase += dt * 6.5;
+                zainab.vx = mx * zainab.speed; zainab.vy = my * zainab.speed * 0.5;
+                zainab.x = clamp(zainab.x + zainab.vx * dt, 30 * S, WW - 30 * S);
+                zainab.y = clamp(zainab.y + zainab.vy * dt, groundY - 46 * S, groundY + 52 * S);
+                zainab.phase += dt * 6.2;
                 if (Math.abs(mx) > 0.02) zainab.facing = mx > 0 ? 1 : -1;
-            } else {
-                zainab.vx = zainab.vy = 0;
-            }
+            } else { zainab.vx = zainab.vy = 0; }
             zainab.breath += dt;
 
-            // breadcrumb path for the following chain
-            zainab.path.push({ x: zainab.x, y: zainab.y });
-            if (zainab.path.length > 260) zainab.path.shift();
+            // flowing veil (verlet cloth trailing from the shoulder)
+            updateVeil(dt);
 
-            // ---- kids ----
+            zainab.path.push({ x: zainab.x, y: zainab.y });
+            if (zainab.path.length > 300) zainab.path.shift();
+
+            // camera follow + handheld sway
+            cam.sway += dt;
+            var tcx = clamp(zainab.x - W * 0.42, 0, WW - W);
+            var tcy = clamp(zainab.y - H * 0.56, -20 * S, 30 * S);
+            cam.x += (tcx - cam.x) * Math.min(1, dt * 3.2);
+            cam.y += (tcy - cam.y) * Math.min(1, dt * 3.2);
+
+            // kids
             var chainWhole = true;
             for (var c = 0; c < kids.length; c++) {
                 var kid = kids[c];
-
                 if (kid.st === 'scared' || kid.st === 'comforting') {
-                    // gentle trembling in place
                     kid.tremble = 0.6 + Math.sin(t * 14 + kid.seed * 20) * 0.4;
-                    var within = dist(zainab.x, zainab.y, kid.x, kid.y) < lanternR * 0.82;
+                    var within = dist(zainab.x, zainab.y, kid.x, kid.y) < lanternR * 0.8;
                     if (within) {
                         kid.st = 'comforting';
-                        kid.comfort += dt / 1.3;        // ~1.3s of steady light to comfort
-                        if (kid.comfort >= 1) {
-                            kid.st = 'following';
-                            kid.order = chain.length;
-                            chain.push(kid);
-                            comfortChime();
-                        }
+                        kid.comfort += dt / 1.3;
+                        if (kid.comfort >= 1) { kid.st = 'following'; chain.push(kid); comfortChime(); spawnEmbers(kid.x, kid.y - 20 * S, 8, 0.5); }
                     } else {
-                        // fear creeps back if the light leaves before it is done
                         kid.comfort = Math.max(0, kid.comfort - dt * 0.5);
                         if (kid.st === 'comforting' && kid.comfort <= 0) kid.st = 'scared';
                     }
                 } else if (kid.st === 'following') {
-                    // target = the node ahead in the chain (Zainab or previous kid)
                     var idx = chain.indexOf(kid);
                     var ahead = idx === 0 ? zainab : chain[idx - 1];
-                    var spacing = 40 * S;
-                    var dx = ahead.x - kid.x, dy = ahead.y - kid.y;
-                    var d = Math.sqrt(dx * dx + dy * dy) || 0.001;
-
-                    // followers have their own, slightly slower pace -> rushing leaves them behind
+                    var spacing = 42 * S;
+                    var dx = ahead.x - kid.x, dy = ahead.y - kid.y, d = Math.sqrt(dx * dx + dy * dy) || 0.001;
                     var followSpeed = zainab.speed * 0.92;
-                    if (d > spacing) {
-                        var step = Math.min(followSpeed * dt, d - spacing);
-                        kid.x += (dx / d) * step;
-                        kid.y += (dy / d) * step;
-                        kid.phase = (kid.phase || 0) + dt * 6;
-                    }
-
-                    // morale: drops when the gap grows too large for too long
-                    var gap = d;
-                    if (gap > 130 * S) {
-                        kid.morale -= dt * 0.55;
-                        chainWhole = false;
-                        if (kid.morale <= 0) {
-                            // fear returns: leave the chain, become scared where they stand
-                            kid.st = 'scared';
-                            kid.comfort = 0;
-                            kid.morale = 1;
-                            kid.hx = kid.x; kid.hy = kid.y;
-                            removeFromChain(kid);
-                            fearTone();
-                            showNarration('&ldquo;Patience &mdash; do not leave them behind. Turn back, gather them again.&rdquo;', true);
-                        }
-                    } else {
-                        kid.morale = Math.min(1, kid.morale + dt * 0.4);
-                    }
-
-                    // reached the safe tent's glow?
+                    if (d > spacing) { var step = Math.min(followSpeed * dt, d - spacing); kid.x += (dx / d) * step; kid.y += (dy / d) * step; kid.phase += dt * 6; }
+                    if (d > 132 * S) {
+                        kid.morale -= dt * 0.55; chainWhole = false;
+                        if (kid.morale <= 0) { kid.st = 'scared'; kid.comfort = 0; kid.morale = 1; removeFromChain(kid); fearTone(); showNarration('&ldquo;Patience &mdash; do not leave them behind. Turn back, gather them again.&rdquo;', true); }
+                    } else kid.morale = Math.min(1, kid.morale + dt * 0.4);
                     if (dist(kid.x, kid.y, safeZone.x, safeZone.y) < safeZone.r) {
                         kid.st = 'safe';
-                        // settle at a gentle spot within the glow
                         var ang = rand(0, 6.28), rr = rand(0.3, 0.85) * safeZone.r;
-                        kid.sx = safeZone.x + Math.cos(ang) * rr;
-                        kid.sy = safeZone.y + Math.sin(ang) * rr * 0.7;
-                        removeFromChain(kid);
-                        saved++;
-                        safeChime();
-                        updateHud();
-                        if (saved >= TOTAL) { showNarration('All are gathered to the light. Peace be upon the patient.'); setTimeout(endScene, 1800); }
+                        kid.sx = safeZone.x + Math.cos(ang) * rr; kid.sy = safeZone.y + Math.sin(ang) * rr * 0.6;
+                        removeFromChain(kid); saved++; safeChime(); spawnEmbers(kid.x, kid.y - 20 * S, 14, 0.7); updateHud();
+                        if (saved >= TOTAL) { showNarration('All are gathered to the light. Peace be upon the patient.'); setTimeout(endScene, 1900); }
                     }
                 } else if (kid.st === 'safe') {
                     kid.x += ((kid.sx || kid.x) - kid.x) * Math.min(1, dt * 4);
@@ -541,451 +439,471 @@
                 }
             }
 
-            // ---- sabr meter: rises when the chain is whole and you move with care ----
             if (chain.length > 0 && chainWhole) sabr = Math.min(1, sabr + dt * 0.12);
             else if (!chainWhole) sabr = Math.max(0, sabr - dt * 0.25);
-            // also credit simply being present and comforting
             elSabr.style.width = (sabr * 100) + '%';
 
             updateHudTimer();
         }
 
-        function removeFromChain(kid) {
-            var i = chain.indexOf(kid);
-            if (i >= 0) chain.splice(i, 1);
-            for (var j = 0; j < chain.length; j++) chain[j].order = j;
+        function updateVeil(dt) {
+            var s = S, f = zainab.facing;
+            // anchor at the back shoulder, opposite the lantern
+            var ax = zainab.x - f * 8 * s, ay = zainab.y - 46 * s;
+            var prev = { x: ax, y: ay };
+            for (var i = 0; i < zainab.veil.length; i++) {
+                var v = zainab.veil[i];
+                // verlet integration with gravity + drag
+                var vx = (v.x - v.px) * 0.86, vy = (v.y - v.py) * 0.86;
+                v.px = v.x; v.py = v.y;
+                v.x += vx; v.y += vy + 26 * s * dt;
+                // constrain to segment length behind previous point
+                var dx = v.x - prev.x, dy = v.y - prev.y, d = Math.sqrt(dx * dx + dy * dy) || 0.001;
+                var rest = 9 * s;
+                var diff = (d - rest) / d;
+                v.x -= dx * diff; v.y -= dy * diff;
+                prev = v;
+            }
         }
+
+        function spawnEmbers(x, y, n, rise) {
+            for (var i = 0; i < n; i++) embers.push({ x: x + rand(-8, 8) * S, y: y + rand(-6, 6) * S, vx: rand(-18, 18), vy: rand(-30, -8), life: rand(0.8, 1.8), rise: rise, seed: Math.random() });
+        }
+        function removeFromChain(kid) { var i = chain.indexOf(kid); if (i >= 0) chain.splice(i, 1); }
 
         // ---------- HUD ----------
-        function updateHudTimer() {
-            var s = Math.ceil(timeLeft);
-            var m = Math.floor(s / 60);
-            var ss = s % 60;
-            elTimer.textContent = m + ':' + (ss < 10 ? '0' : '') + ss;
-        }
+        function updateHudTimer() { var s = Math.ceil(timeLeft), m = Math.floor(s / 60), ss = s % 60; elTimer.textContent = m + ':' + (ss < 10 ? '0' : '') + ss; }
         function updateHud() { elSaved.textContent = saved; updateHudTimer(); }
-
-        var narrTimer = 0, narrLock = false;
-        function showNarration(html, brief) {
-            elNarr.innerHTML = html;
-            elNarr.classList.add('show');
-            narrTimer = brief ? 3.4 : 6.5;
-        }
-        // fade narration out on its own timer
-        setInterval(function () {
-            if (narrTimer > 0) { narrTimer -= 0.2; if (narrTimer <= 0) elNarr.classList.remove('show'); }
-        }, 200);
+        var narrTimer = 0;
+        function showNarration(html, brief) { elNarr.innerHTML = html; elNarr.classList.add('show'); narrTimer = brief ? 3.4 : 6.5; }
+        setInterval(function () { if (narrTimer > 0) { narrTimer -= 0.2; if (narrTimer <= 0) elNarr.classList.remove('show'); } }, 200);
 
         // ============================================================
-        //  RENDER  (atmospheric, layered for a realistic night feel)
+        //  RENDER  (draws the world to `scene`, then post to `canvas`)
         // ============================================================
 
         function render() {
-            // ---- night sky ----
-            var sky = ctx.createLinearGradient(0, 0, 0, H);
-            sky.addColorStop(0, '#04050c');
-            sky.addColorStop(0.55, '#0a0b18');
-            sky.addColorStop(1, '#15100f');
-            ctx.fillStyle = sky;
-            ctx.fillRect(0, 0, W, H);
+            var g = sctx;                     // draw the world into the scene buffer
+            g.setTransform(DPR, 0, 0, DPR, 0, 0);
+            g.clearRect(0, 0, W, H);
 
-            drawStars();
-            drawMoon();
+            drawSky(g);
+            drawMoon(g);
+            drawStars(g);
 
-            // ---- ground plane ----
-            var horizon = H * 0.34;
-            var grd = ctx.createLinearGradient(0, horizon, 0, H);
-            grd.addColorStop(0, '#12100f');
-            grd.addColorStop(1, '#080706');
-            ctx.fillStyle = grd;
-            ctx.fillRect(0, horizon, W, H - horizon);
-            drawGroundSpeckle(horizon);
+            // ---- world space (camera) ----
+            var swayX = Math.sin(cam.sway * 0.7) * 2.2 + Math.sin(cam.sway * 1.9) * 1.1;
+            var swayY = Math.cos(cam.sway * 0.9) * 1.6;
+            g.save();
+            g.translate(-cam.x + swayX, -cam.y + swayY);
 
-            // faint far ember-glow along the horizon (the dead fires)
-            var hg = ctx.createLinearGradient(0, horizon - 30 * S, 0, horizon + 60 * S);
-            hg.addColorStop(0, 'rgba(180, 80, 30, 0)');
-            hg.addColorStop(0.5, 'rgba(150, 60, 25, 0.16)');
-            hg.addColorStop(1, 'rgba(120, 45, 20, 0)');
-            ctx.fillStyle = hg;
-            ctx.fillRect(0, horizon - 30 * S, W, 90 * S);
+            drawDunes(g);
+            drawGround(g);
+            drawFog(g, 0.5);
+            drawSafeGlow(g);
 
-            // ---- collect drawable entities and sort by y for depth ----
-            var drawables = [];
-            for (var i = 0; i < tents.length; i++) drawables.push({ y: tents[i].y, kind: 'tent', ref: tents[i] });
-            for (var k = 0; k < kids.length; k++) drawables.push({ y: kids[k].y, kind: 'kid', ref: kids[k] });
-            drawables.push({ y: zainab.y, kind: 'zainab', ref: zainab });
-            drawables.sort(function (a, b) { return a.y - b.y; });
+            // depth-sorted actors
+            var list = [];
+            for (var i = 0; i < tents.length; i++) list.push({ y: tents[i].y, k: 't', r: tents[i] });
+            for (var k = 0; k < kids.length; k++) list.push({ y: kids[k].y, k: 'k', r: kids[k] });
+            list.push({ y: zainab.y, k: 'z', r: zainab });
+            list.sort(function (a, b) { return a.y - b.y; });
 
-            // safe tent glow drawn under everything near it
-            drawSafeGlow();
-
-            // draw shadows first (soft, on the ground)
-            for (var s1 = 0; s1 < drawables.length; s1++) {
-                var dd = drawables[s1];
-                if (dd.kind === 'kid') drawShadow(dd.ref.x, dd.ref.y, 15 * S * (dd.ref.small || 1));
-                else if (dd.kind === 'zainab') drawShadow(dd.ref.x, dd.ref.y, 22 * S);
+            for (var s1 = 0; s1 < list.length; s1++) {
+                var d = list[s1];
+                if (d.k === 'k') drawShadow(g, d.r.x, d.r.y, 16 * S * (d.r.small || 1));
+                else if (d.k === 'z') drawShadow(g, d.r.x, d.r.y, 24 * S);
             }
 
-            // the lantern light pool cast on the ground (screen-blended)
-            drawLanternPool();
+            drawLanternPool(g);
 
-            // draw entities back-to-front
-            for (var d = 0; d < drawables.length; d++) {
-                var e = drawables[d];
-                if (e.kind === 'tent') drawTent(e.ref);
-                else if (e.kind === 'kid') drawKid(e.ref);
-                else drawZainab(e.ref);
+            for (var d2 = 0; d2 < list.length; d2++) {
+                var e = list[d2];
+                if (e.k === 't') drawTent(g, e.r);
+                else if (e.k === 'k') drawKid(g, e.r);
+                else drawZainab(g, e.r);
             }
 
-            drawAsh();
+            drawGodRays(g);
+            drawEmbers(g);
+            drawAsh(g);
+            drawFog(g, 1);           // near fog over actors, thinner
 
-            // ---- darkness: heavy vignette the lantern must cut through ----
-            drawDarkness();
+            g.restore();
 
-            // lantern bloom on top (screen) so it glows through the dark
-            drawLanternBloom();
+            // ---- POST PIPELINE ----
+            composite();
         }
 
-        function drawStars() {
-            for (var i = 0; i < motes.length; i++) {
-                // reuse motes as stars in the sky band
-                var m = motes[i];
-                if (m.y > H * 0.36) continue;
-                var a = 0.3 + Math.abs(Math.sin(m.ph + t * m.sp)) * 0.7;
-                ctx.globalAlpha = a * 0.8;
-                ctx.fillStyle = '#fff4e6';
-                ctx.fillRect(m.x, m.y, m.s, m.s);
-            }
-            // a few brighter fixed stars
-            ctx.globalAlpha = 1;
-        }
+        function composite() {
+            // 1) bloom: blurred bright copy added back (screen)
+            var bw = bloom.width, bh = bloom.height;
+            bctx.setTransform(1, 0, 0, 1, 0, 0);
+            bctx.clearRect(0, 0, bw, bh);
+            if (supportsFilter) bctx.filter = 'blur(' + Math.round(6 * S) + 'px) brightness(1.15)';
+            bctx.drawImage(scene, 0, 0, bw, bh);
+            bctx.filter = 'none';
 
-        function drawMoon() {
-            var mx = W * 0.2, my = H * 0.15, r = 26 * S;
-            var g = ctx.createRadialGradient(mx, my, 2, mx, my, r * 4);
-            g.addColorStop(0, 'rgba(200, 210, 235, 0.16)');
-            g.addColorStop(1, 'rgba(200, 210, 235, 0)');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(mx, my, r * 4, 0, 6.2832); ctx.fill();
-            // thin crescent
-            ctx.fillStyle = 'rgba(226, 232, 245, 0.85)';
-            ctx.beginPath(); ctx.arc(mx, my, r, 0, 6.2832); ctx.fill();
-            ctx.fillStyle = '#0a0b18';
-            ctx.beginPath(); ctx.arc(mx + r * 0.45, my - r * 0.2, r * 0.92, 0, 6.2832); ctx.fill();
-        }
+            // draw graded scene to the visible canvas
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, W * DPR, H * DPR);
+            if (supportsFilter) ctx.filter = 'contrast(1.08) saturate(1.08) brightness(1.01)';
+            ctx.drawImage(scene, 0, 0);
+            ctx.filter = 'none';
 
-        function drawGroundSpeckle(horizon) {
-            // sparse deterministic speckle for sandy texture (cheap, static)
+            // add bloom
+            ctx.globalCompositeOperation = 'lighter';
             ctx.globalAlpha = 0.5;
-            var step = 46;
-            for (var y = horizon; y < H; y += step) {
-                for (var x = 0; x < W; x += step) {
-                    var h = hash(Math.floor(x / step), Math.floor(y / step));
-                    if (h > 0.6) {
-                        var px = x + h * step, py = y + hash(x, y) * step;
-                        var shade = 20 + Math.floor(h * 26);
-                        ctx.fillStyle = 'rgb(' + shade + ',' + (shade - 4) + ',' + (shade - 8) + ')';
-                        ctx.fillRect(px, py, 2, 1.4);
-                    }
-                }
-            }
+            ctx.drawImage(bloom, 0, 0, W * DPR, H * DPR);
             ctx.globalAlpha = 1;
-        }
+            ctx.globalCompositeOperation = 'source-over';
 
-        function drawShadow(x, y, r) {
-            var g = ctx.createRadialGradient(x, y, 1, x, y, r);
-            g.addColorStop(0, 'rgba(0,0,0,0.5)');
-            g.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = g;
-            ctx.beginPath();
-            ctx.ellipse(x, y, r, r * 0.4, 0, 0, 6.2832);
-            ctx.fill();
-        }
+            // switch to CSS-pixel space for overlays
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-        function drawSafeGlow() {
-            var z = safeZone;
-            var pulse = 0.85 + Math.sin(t * 1.6) * 0.15;
-            var g = ctx.createRadialGradient(z.x, z.y, 4, z.x, z.y, z.r * 1.7);
-            g.addColorStop(0, 'rgba(255, 214, 150, ' + (0.4 * pulse) + ')');
-            g.addColorStop(0.5, 'rgba(255, 185, 110, ' + (0.16 * pulse) + ')');
-            g.addColorStop(1, 'rgba(255, 170, 90, 0)');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(z.x, z.y, z.r * 1.7, 0, 6.2832); ctx.fill();
-            // warm ground disc
-            ctx.fillStyle = 'rgba(255, 200, 130, 0.06)';
-            ctx.beginPath(); ctx.ellipse(z.x, z.y + 10 * S, z.r, z.r * 0.5, 0, 0, 6.2832); ctx.fill();
-        }
+            // 2) teal/amber color grade (filmic split-tone)
+            var grd = ctx.createLinearGradient(0, 0, 0, H);
+            grd.addColorStop(0, 'rgba(30, 60, 80, 0.16)');     // cool top
+            grd.addColorStop(0.6, 'rgba(20, 20, 30, 0)');
+            grd.addColorStop(1, 'rgba(120, 60, 20, 0.14)');    // warm ground
+            ctx.globalCompositeOperation = 'soft-light';
+            ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+            ctx.globalCompositeOperation = 'source-over';
 
-        function drawLanternPool() {
-            // warm lit disc on the ground around Zainab (screen blend)
-            var lx = zainab.x + zainab.facing * 14 * S;
-            var ly = zainab.y - 6 * S;
-            var flick = 0.9 + Math.sin(t * 13) * 0.06 + Math.sin(t * 27) * 0.04;
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            var g = ctx.createRadialGradient(lx, ly, 6 * S, lx, ly, lanternR * flick);
-            g.addColorStop(0, 'rgba(255, 206, 140, 0.34)');
-            g.addColorStop(0.4, 'rgba(240, 160, 90, 0.16)');
-            g.addColorStop(1, 'rgba(200, 120, 60, 0)');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(lx, ly, lanternR * flick, 0, 6.2832); ctx.fill();
+            // 3) vignette
+            var vig = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.34, W / 2, H / 2, Math.max(W, H) * 0.75);
+            vig.addColorStop(0, 'rgba(0,0,0,0)');
+            vig.addColorStop(1, 'rgba(0,0,0,0.62)');
+            ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+
+            // 4) film grain (scrolled tile)
+            ctx.globalCompositeOperation = 'overlay';
+            ctx.globalAlpha = 0.05;
+            var gx = (Math.sin(t * 40) * 64) | 0, gy = (Math.cos(t * 37) * 64) | 0;
+            var pat = ctx.createPattern(grain, 'repeat');
+            ctx.save(); ctx.translate(gx % 128, gy % 128);
+            ctx.fillStyle = pat; ctx.fillRect(-128, -128, W + 256, H + 256);
             ctx.restore();
+            ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+
+            // 5) cinematic letterbox bars
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, W, letterbox);
+            ctx.fillRect(0, H - letterbox, W, letterbox);
         }
 
-        function drawLanternBloom() {
-            var lx = zainab.x + zainab.facing * 15 * S;
-            var ly = zainab.y - 40 * S;
-            var flick = 0.9 + Math.sin(t * 15) * 0.08;
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen';
-            var g = ctx.createRadialGradient(lx, ly, 1, lx, ly, 46 * S * flick);
-            g.addColorStop(0, 'rgba(255, 236, 190, 0.9)');
-            g.addColorStop(0.35, 'rgba(255, 200, 130, 0.5)');
-            g.addColorStop(1, 'rgba(255, 180, 100, 0)');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(lx, ly, 46 * S * flick, 0, 6.2832); ctx.fill();
-            ctx.restore();
+        // ---------- world draws ----------
+        function drawSky(g) {
+            var sky = g.createLinearGradient(0, 0, 0, H);
+            sky.addColorStop(0, '#05060f');
+            sky.addColorStop(0.45, '#0a0a17');
+            sky.addColorStop(0.75, '#171018');
+            sky.addColorStop(1, '#1c1210');
+            g.fillStyle = sky; g.fillRect(0, 0, W, H);
+        }
+        function drawMoon(g) {
+            var mx = W * 0.24 - cam.x * 0.12, my = H * 0.17;
+            var glow = g.createRadialGradient(mx, my, 4, mx, my, 150 * S);
+            glow.addColorStop(0, 'rgba(150, 175, 220, 0.18)');
+            glow.addColorStop(1, 'rgba(150, 175, 220, 0)');
+            g.fillStyle = glow; g.beginPath(); g.arc(mx, my, 150 * S, 0, 6.2832); g.fill();
+            g.fillStyle = 'rgba(214, 224, 244, 0.9)';
+            g.beginPath(); g.arc(mx, my, 26 * S, 0, 6.2832); g.fill();
+            g.fillStyle = '#0a0a17';
+            g.beginPath(); g.arc(mx + 11 * S, my - 5 * S, 24 * S, 0, 6.2832); g.fill();
+        }
+        function drawStars(g) {
+            for (var i = 0; i < motes.length; i++) {
+                var m = motes[i];
+                var sx = (m.x - cam.x * 0.15) % W; if (sx < 0) sx += W;
+                if (m.y > H * 0.4) continue;
+                g.globalAlpha = (0.3 + Math.abs(Math.sin(m.ph + t * m.sp)) * 0.7) * 0.85;
+                g.fillStyle = '#fff4e6'; g.fillRect(sx, m.y, m.s, m.s);
+            }
+            g.globalAlpha = 1;
+        }
+        function drawDunes(g) {
+            for (var l = 0; l < dunes.length; l++) {
+                var dn = dunes[l];
+                var baseY = H * 0.62 - 6 * S - dn.h * 0.2;
+                var shade = 14 + l * 10;
+                g.fillStyle = 'rgb(' + (shade + 8) + ',' + shade + ',' + (shade + 4) + ')';
+                if (supportsFilter && l === 0) g.filter = 'blur(3px)';   // depth of field on the farthest
+                g.beginPath();
+                g.moveTo(cam.x - 40, H);
+                var seg = dn.pts.length - 1;
+                for (var i = 0; i <= seg; i++) {
+                    var x = cam.x - 40 + (i / seg) * (W + 80);
+                    var wob = Math.sin((x + cam.x * dn.depth) * 0.004 + l) * 0.2;
+                    var y = baseY - (dn.pts[i] + wob) * dn.h;
+                    g.lineTo(x, y);
+                }
+                g.lineTo(cam.x + W + 40, H); g.closePath(); g.fill();
+                g.filter = 'none';
+            }
+        }
+        function drawGround(g) {
+            var groundY = H * 0.62;
+            var grd = g.createLinearGradient(0, groundY - 10 * S, 0, H);
+            grd.addColorStop(0, '#1a1310');
+            grd.addColorStop(0.5, '#120c0a');
+            grd.addColorStop(1, '#070505');
+            g.fillStyle = grd; g.fillRect(cam.x - 20, groundY - 10 * S, W + 40, H - groundY + 20 * S);
+
+            // faint far ember-glow along the horizon (dead fires)
+            var hg = g.createLinearGradient(0, groundY - 26 * S, 0, groundY + 40 * S);
+            hg.addColorStop(0, 'rgba(150, 60, 25, 0)');
+            hg.addColorStop(0.5, 'rgba(150, 55, 22, 0.14)');
+            hg.addColorStop(1, 'rgba(120, 45, 20, 0)');
+            g.fillStyle = hg; g.fillRect(cam.x - 20, groundY - 26 * S, W + 40, 66 * S);
+
+            // sand speckle (deterministic)
+            g.globalAlpha = 0.5;
+            var step = 48;
+            for (var y = groundY; y < H; y += step) {
+                for (var x = Math.floor(cam.x / step) * step; x < cam.x + W; x += step) {
+                    var h = hash(Math.floor(x / step), Math.floor(y / step));
+                    if (h > 0.62) { var shade = 22 + Math.floor(h * 24); g.fillStyle = 'rgb(' + shade + ',' + (shade - 4) + ',' + (shade - 8) + ')'; g.fillRect(x + h * step, y + hash(x, y) * step, 2, 1.4); }
+                }
+            }
+            g.globalAlpha = 1;
+        }
+        function drawFog(g, mul) {
+            g.save(); g.globalCompositeOperation = 'screen';
+            for (var i = 0; i < fog.length; i++) {
+                var fb = fog[i];
+                var yy = fb.y + Math.sin(fb.ph) * 8 * S;
+                var rg = g.createRadialGradient(fb.x, yy, 2, fb.x, yy, fb.r);
+                var a = fb.a * mul;
+                rg.addColorStop(0, 'rgba(120, 120, 140, ' + a + ')');
+                rg.addColorStop(1, 'rgba(120, 120, 140, 0)');
+                g.fillStyle = rg; g.beginPath(); g.ellipse(fb.x, yy, fb.r, fb.r * 0.5, 0, 0, 6.2832); g.fill();
+            }
+            g.restore();
+        }
+        function drawSafeGlow(g) {
+            var z = safeZone, pulse = 0.85 + Math.sin(t * 1.6) * 0.15;
+            g.save(); g.globalCompositeOperation = 'screen';
+            var rg = g.createRadialGradient(z.x, z.y, 4, z.x, z.y, z.r * 1.9);
+            rg.addColorStop(0, 'rgba(255, 214, 150, ' + (0.42 * pulse) + ')');
+            rg.addColorStop(0.5, 'rgba(255, 180, 105, ' + (0.16 * pulse) + ')');
+            rg.addColorStop(1, 'rgba(255, 170, 90, 0)');
+            g.fillStyle = rg; g.beginPath(); g.arc(z.x, z.y, z.r * 1.9, 0, 6.2832); g.fill();
+            g.restore();
+        }
+        function lanternPos() { return { x: zainab.x + zainab.facing * 22 * S, y: zainab.y - 40 * S }; }
+        function drawLanternPool(g) {
+            var l = lanternPos();
+            g.save(); g.globalCompositeOperation = 'screen';
+            var rg = g.createRadialGradient(l.x, zainab.y - 6 * S, 6 * S, l.x, zainab.y - 6 * S, lanternR * flick);
+            rg.addColorStop(0, 'rgba(255, 206, 140, 0.30)');
+            rg.addColorStop(0.4, 'rgba(240, 160, 90, 0.14)');
+            rg.addColorStop(1, 'rgba(200, 120, 60, 0)');
+            g.fillStyle = rg; g.beginPath(); g.arc(l.x, zainab.y - 6 * S, lanternR * flick, 0, 6.2832); g.fill();
+            g.restore();
+        }
+        function drawGodRays(g) {
+            // volumetric shafts fanning from the lantern
+            var l = lanternPos();
+            g.save(); g.globalCompositeOperation = 'screen';
+            g.translate(l.x, l.y);
+            var rays = 7;
+            for (var i = 0; i < rays; i++) {
+                var ang = (i / rays) * 6.2832 + t * 0.05;
+                var len = lanternR * 1.5 * flick;
+                var wob = 0.06 + Math.sin(t * 2 + i) * 0.02;
+                g.rotate(0);
+                var gx = Math.cos(ang), gy = Math.sin(ang);
+                var rg = g.createLinearGradient(0, 0, gx * len, gy * len);
+                rg.addColorStop(0, 'rgba(255, 214, 150, 0.10)');
+                rg.addColorStop(1, 'rgba(255, 200, 120, 0)');
+                g.fillStyle = rg;
+                g.beginPath();
+                g.moveTo(0, 0);
+                g.lineTo(Math.cos(ang - wob) * len, Math.sin(ang - wob) * len);
+                g.lineTo(Math.cos(ang + wob) * len, Math.sin(ang + wob) * len);
+                g.closePath(); g.fill();
+            }
+            g.restore();
+        }
+        function drawShadow(g, x, y, r) {
+            var rg = g.createRadialGradient(x, y, 1, x, y, r);
+            rg.addColorStop(0, 'rgba(0,0,0,0.55)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+            g.fillStyle = rg; g.beginPath(); g.ellipse(x, y, r, r * 0.36, 0, 0, 6.2832); g.fill();
         }
 
-        function drawDarkness() {
-            // radial vignette centered on Zainab so her lantern is the eye of light
-            var g = ctx.createRadialGradient(zainab.x, zainab.y - 10 * S, lanternR * 0.5,
-                                              zainab.x, zainab.y - 10 * S, Math.max(W, H) * 0.85);
-            g.addColorStop(0, 'rgba(3, 4, 9, 0)');
-            g.addColorStop(0.55, 'rgba(3, 4, 9, 0.55)');
-            g.addColorStop(1, 'rgba(2, 3, 7, 0.93)');
-            ctx.fillStyle = g;
-            ctx.fillRect(0, 0, W, H);
-        }
-
-        // ---- tents ----
-        function drawTent(tn) {
-            var s = tn.sc;
-            var x = tn.x, y = tn.y;
+        function drawTent(g, tn) {
+            var s = tn.sc, x = tn.x, y = tn.y;
             if (tn.burnt) {
-                // collapsed, charred tent silhouette
-                ctx.fillStyle = '#0c0a09';
-                ctx.beginPath();
-                ctx.moveTo(x - 40 * s, y);
-                ctx.lineTo(x - 10 * s, y - 30 * s);
-                ctx.lineTo(x + 8 * s, y - 14 * s);
-                ctx.lineTo(x + 34 * s, y - 24 * s);
-                ctx.lineTo(x + 44 * s, y);
-                ctx.closePath();
-                ctx.fill();
+                g.fillStyle = '#0b0908';
+                g.beginPath();
+                g.moveTo(x - 42 * s, y); g.lineTo(x - 12 * s, y - 32 * s); g.lineTo(x + 6 * s, y - 15 * s);
+                g.lineTo(x + 34 * s, y - 26 * s); g.lineTo(x + 46 * s, y); g.closePath(); g.fill();
+                // cloth folds (subtle lit ridges)
+                g.strokeStyle = 'rgba(120, 70, 45, 0.25)'; g.lineWidth = 1;
+                g.beginPath(); g.moveTo(x - 30 * s, y); g.lineTo(x - 8 * s, y - 24 * s); g.moveTo(x + 4 * s, y); g.lineTo(x + 24 * s, y - 18 * s); g.stroke();
                 // charred poles
-                ctx.strokeStyle = '#1a1512'; ctx.lineWidth = 2 * s;
-                ctx.beginPath();
-                ctx.moveTo(x - 10 * s, y); ctx.lineTo(x - 6 * s, y - 34 * s);
-                ctx.moveTo(x + 30 * s, y); ctx.lineTo(x + 34 * s, y - 26 * s);
-                ctx.stroke();
-                // glowing embers at the base
-                var eb = 0.55 + Math.sin(t * 4 + tn.seed * 10) * 0.35;
+                g.strokeStyle = '#15100d'; g.lineWidth = 2 * s;
+                g.beginPath(); g.moveTo(x - 12 * s, y); g.lineTo(x - 8 * s, y - 36 * s); g.moveTo(x + 30 * s, y); g.lineTo(x + 34 * s, y - 28 * s); g.stroke();
+                // embers at the base
+                var eb = 0.5 + Math.sin(t * 4 + tn.seed * 10) * 0.35;
+                g.save(); g.globalCompositeOperation = 'screen';
                 for (var e = 0; e < 4; e++) {
-                    var ex = x - 20 * s + e * 14 * s + Math.sin(tn.seed * 9 + e) * 4;
-                    var eg = ctx.createRadialGradient(ex, y - 2 * s, 0, ex, y - 2 * s, 12 * s);
-                    eg.addColorStop(0, 'rgba(255, 120, 40, ' + (0.5 * eb) + ')');
-                    eg.addColorStop(1, 'rgba(255, 90, 30, 0)');
-                    ctx.fillStyle = eg;
-                    ctx.beginPath(); ctx.arc(ex, y - 2 * s, 12 * s, 0, 6.2832); ctx.fill();
-                    ctx.fillStyle = 'rgba(255, 190, 120, ' + (0.7 * eb) + ')';
-                    ctx.beginPath(); ctx.arc(ex, y - 2 * s, 1.6 * s, 0, 6.2832); ctx.fill();
+                    var ex = x - 22 * s + e * 15 * s + Math.sin(tn.seed * 9 + e) * 4;
+                    var rg = g.createRadialGradient(ex, y - 2 * s, 0, ex, y - 2 * s, 14 * s);
+                    rg.addColorStop(0, 'rgba(255, 120, 40, ' + (0.5 * eb) + ')'); rg.addColorStop(1, 'rgba(255, 90, 30, 0)');
+                    g.fillStyle = rg; g.beginPath(); g.arc(ex, y - 2 * s, 14 * s, 0, 6.2832); g.fill();
+                    g.fillStyle = 'rgba(255, 200, 130, ' + (0.8 * eb) + ')'; g.beginPath(); g.arc(ex, y - 2 * s, 1.6 * s, 0, 6.2832); g.fill();
                 }
-                // rising smoke plume (layered translucent puffs)
-                for (var p = 0; p < 5; p++) {
-                    var fr = p / 5;
-                    var sy = y - 10 * s - fr * 90 * s;
-                    var sx = x + 6 * s + Math.sin(t * 0.9 + tn.seed * 8 + p) * (8 + fr * 16) * s;
-                    var sr = (8 + p * 5) * s;
-                    ctx.fillStyle = 'rgba(40, 36, 40, ' + (0.16 * (1 - fr)) + ')';
-                    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 6.2832); ctx.fill();
+                g.restore();
+                // smoke plume
+                for (var p = 0; p < 6; p++) {
+                    var fr = p / 6, sy = y - 10 * s - fr * 120 * s;
+                    var sx = x + 4 * s + Math.sin(t * 0.8 + tn.seed * 8 + p) * (8 + fr * 22) * s;
+                    var sr = (9 + p * 6) * s;
+                    g.fillStyle = 'rgba(36, 32, 36, ' + (0.16 * (1 - fr)) + ')';
+                    g.beginPath(); g.arc(sx, sy, sr, 0, 6.2832); g.fill();
                 }
             } else {
-                // the standing safe tent - upright, warm interior
-                ctx.fillStyle = '#1a1410';
-                ctx.beginPath();
-                ctx.moveTo(x - 46 * s, y);
-                ctx.lineTo(x, y - 58 * s);
-                ctx.lineTo(x + 46 * s, y);
-                ctx.closePath();
-                ctx.fill();
-                // warm doorway glow
-                var dg = ctx.createLinearGradient(x, y - 40 * s, x, y);
-                dg.addColorStop(0, 'rgba(255, 210, 140, 0.9)');
-                dg.addColorStop(1, 'rgba(255, 170, 90, 0.2)');
-                ctx.fillStyle = dg;
-                ctx.beginPath();
-                ctx.moveTo(x - 11 * s, y);
-                ctx.lineTo(x, y - 30 * s);
-                ctx.lineTo(x + 11 * s, y);
-                ctx.closePath();
-                ctx.fill();
-                // rim light on the tent edges
-                ctx.strokeStyle = 'rgba(255, 200, 130, 0.4)'; ctx.lineWidth = 1.5 * s;
-                ctx.beginPath();
-                ctx.moveTo(x - 46 * s, y); ctx.lineTo(x, y - 58 * s); ctx.lineTo(x + 46 * s, y);
-                ctx.stroke();
+                // standing safe tent
+                g.fillStyle = '#1a130e';
+                g.beginPath(); g.moveTo(x - 50 * s, y); g.lineTo(x, y - 64 * s); g.lineTo(x + 50 * s, y); g.closePath(); g.fill();
+                var dg = g.createLinearGradient(x, y - 46 * s, x, y);
+                dg.addColorStop(0, 'rgba(255, 210, 140, 0.95)'); dg.addColorStop(1, 'rgba(255, 165, 85, 0.18)');
+                g.fillStyle = dg;
+                g.beginPath(); g.moveTo(x - 12 * s, y); g.lineTo(x, y - 34 * s); g.lineTo(x + 12 * s, y); g.closePath(); g.fill();
+                g.strokeStyle = 'rgba(255, 200, 130, 0.45)'; g.lineWidth = 1.6 * s;
+                g.beginPath(); g.moveTo(x - 50 * s, y); g.lineTo(x, y - 64 * s); g.lineTo(x + 50 * s, y); g.stroke();
             }
         }
 
-        // ---- Zainab: a veiled figure of light and shadow (no face) ----
-        function drawZainab(z) {
-            var s = S;
-            var x = z.x, y = z.y;
+        // ---- Zainab: veiled figure of light (no face) with flowing cloth ----
+        function drawZainab(g, z) {
+            var s = S, x = z.x, y = z.y, f = z.facing;
             var moving = (z.vx * z.vx + z.vy * z.vy) > 1;
-            var bob = moving ? Math.abs(Math.sin(z.phase)) * 2.4 * s : Math.sin(z.breath * 1.4) * 1.2 * s;
-            var f = z.facing;
+            var bob = moving ? Math.abs(Math.sin(z.phase)) * 2.4 * s : Math.sin(z.breath * 1.4) * 1.1 * s;
 
-            ctx.save();
-            ctx.translate(x, y - bob);
+            // flowing veil ribbon first (behind body)
+            g.beginPath();
+            g.moveTo(x - f * 8 * s, y - 46 * s - bob);
+            for (var i = 0; i < z.veil.length; i++) g.lineTo(z.veil[i].x, z.veil[i].y - bob);
+            for (var j = z.veil.length - 1; j >= 0; j--) { var vv = z.veil[j]; g.lineTo(vv.x - f * (2 + (z.veil.length - j)) * s, vv.y - bob); }
+            g.closePath();
+            var vg = g.createLinearGradient(x, y - 50 * s, x, y + 10 * s);
+            vg.addColorStop(0, '#241f2c'); vg.addColorStop(1, '#0d0b12');
+            g.fillStyle = vg; g.fill();
 
-            // hem shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.beginPath(); ctx.ellipse(0, 2 * s, 20 * s, 6 * s, 0, 0, 6.2832); ctx.fill();
+            g.save();
+            g.translate(x, y - bob);
 
-            // full chador: a tall teardrop robe with a soft gradient (lit on lantern side)
-            var robe = ctx.createLinearGradient(-22 * s, 0, 26 * s, 0);
-            if (f > 0) {
-                robe.addColorStop(0, '#0e0d16');
-                robe.addColorStop(0.6, '#1a1826');
-                robe.addColorStop(1, '#39312e');   // warm-lit edge toward lantern
-            } else {
-                robe.addColorStop(0, '#39312e');
-                robe.addColorStop(0.4, '#1a1826');
-                robe.addColorStop(1, '#0e0d16');
-            }
-            ctx.fillStyle = robe;
+            // robe body: tall teardrop with lit gradient toward lantern
+            var robe = g.createLinearGradient(-24 * s, 0, 28 * s, 0);
+            if (f > 0) { robe.addColorStop(0, '#0d0c14'); robe.addColorStop(0.55, '#1b1826'); robe.addColorStop(1, '#463a32'); }
+            else { robe.addColorStop(0, '#463a32'); robe.addColorStop(0.45, '#1b1826'); robe.addColorStop(1, '#0d0c14'); }
             var sway = moving ? Math.sin(z.phase * 0.5) * 3 * s : 0;
-            ctx.beginPath();
-            ctx.moveTo(0, -64 * s);                                   // crown of the veil
-            ctx.bezierCurveTo(-20 * s, -58 * s, -24 * s, -26 * s, -22 * s + sway, 0);   // left drape to hem
-            ctx.quadraticCurveTo(0, 6 * s, 22 * s - sway, 0);         // hem
-            ctx.bezierCurveTo(24 * s, -26 * s, 20 * s, -58 * s, 0, -64 * s);            // right drape
-            ctx.closePath();
-            ctx.fill();
+            g.fillStyle = robe;
+            g.beginPath();
+            g.moveTo(0, -66 * s);
+            g.bezierCurveTo(-21 * s, -60 * s, -25 * s, -26 * s, -23 * s + sway, 2 * s);
+            g.quadraticCurveTo(0, 8 * s, 23 * s - sway, 2 * s);
+            g.bezierCurveTo(25 * s, -26 * s, 21 * s, -60 * s, 0, -66 * s);
+            g.closePath(); g.fill();
 
-            // inner veil fold suggesting a bowed, patient head (still no face)
-            ctx.fillStyle = 'rgba(0,0,0,0.35)';
-            ctx.beginPath();
-            ctx.ellipse(f * 2 * s, -52 * s, 8.5 * s, 10 * s, 0, 0, 6.2832);
-            ctx.fill();
+            // bowed veiled head (no features)
+            g.fillStyle = 'rgba(0,0,0,0.34)';
+            g.beginPath(); g.ellipse(f * 2 * s, -54 * s, 9 * s, 10.5 * s, 0, 0, 6.2832); g.fill();
 
-            // warm rim light along the lantern-facing edge of the veil
-            ctx.strokeStyle = 'rgba(255, 210, 150, 0.5)';
-            ctx.lineWidth = 1.6 * s;
-            ctx.beginPath();
-            ctx.moveTo(f * 18 * s, -58 * s);
-            ctx.bezierCurveTo(f * 23 * s, -40 * s, f * 22 * s, -18 * s, f * 20 * s, -2 * s);
-            ctx.stroke();
+            // warm rim light on the lantern-facing edge
+            g.strokeStyle = 'rgba(255, 212, 152, 0.6)'; g.lineWidth = 1.8 * s;
+            g.beginPath();
+            g.moveTo(f * 19 * s, -60 * s);
+            g.bezierCurveTo(f * 24 * s, -40 * s, f * 23 * s, -18 * s, f * 21 * s, 0);
+            g.stroke();
 
-            // outstretched arm + lantern
-            ctx.strokeStyle = '#241f1c'; ctx.lineWidth = 3 * s; ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(f * 8 * s, -40 * s);
-            ctx.lineTo(f * 20 * s, -38 * s);
-            ctx.stroke();
-            drawLantern(ctx, f * 22 * s, -40 * s, s);
+            // arm + lantern
+            g.strokeStyle = '#241f1c'; g.lineWidth = 3.2 * s; g.lineCap = 'round';
+            g.beginPath(); g.moveTo(f * 8 * s, -42 * s); g.lineTo(f * 20 * s, -40 * s); g.stroke();
+            drawLantern(g, f * 22 * s, -40 * s, s);
 
-            ctx.restore();
+            g.restore();
+        }
+        function drawLantern(g, lx, ly, s) {
+            g.strokeStyle = '#8a774f'; g.lineWidth = 1.5 * s;
+            g.strokeRect(lx - 4.5 * s, ly - 6 * s, 9 * s, 12 * s);
+            g.beginPath(); g.moveTo(lx, ly - 6 * s); g.lineTo(lx, ly - 10 * s); g.stroke();
+            g.save(); g.globalCompositeOperation = 'screen';
+            var rg = g.createRadialGradient(lx, ly, 0, lx, ly, 14 * s * flick);
+            rg.addColorStop(0, 'rgba(255, 236, 190, ' + flick + ')'); rg.addColorStop(1, 'rgba(255, 200, 120, 0)');
+            g.fillStyle = rg; g.beginPath(); g.arc(lx, ly, 14 * s * flick, 0, 6.2832); g.fill();
+            g.restore();
+            g.fillStyle = 'rgba(255, 240, 200, ' + flick + ')'; g.beginPath(); g.arc(lx, ly, 2.4 * s, 0, 6.2832); g.fill();
         }
 
-        function drawLantern(ctx, lx, ly, s) {
-            var flick = 0.75 + Math.sin(t * 14) * 0.25;
-            // metal frame
-            ctx.strokeStyle = '#7a6a4a'; ctx.lineWidth = 1.4 * s;
-            ctx.strokeRect(lx - 4 * s, ly - 5 * s, 8 * s, 11 * s);
-            ctx.beginPath(); ctx.moveTo(lx, ly - 5 * s); ctx.lineTo(lx, ly - 9 * s); ctx.stroke();
-            // flame core
-            ctx.fillStyle = 'rgba(255, 232, 180, ' + flick + ')';
-            ctx.beginPath(); ctx.arc(lx, ly, 2.6 * s, 0, 6.2832); ctx.fill();
-        }
-
-        // ---- child: a small cloaked figure (no face) ----
-        function drawKid(kid) {
-            var s = S * (kid.small || 1);
-            var x = kid.x, y = kid.y;
-            var lit = dist(zainab.x, zainab.y, x, y) < lanternR;   // warm if in the lantern
+        // ---- child figure (no face) ----
+        function drawKid(g, kid) {
+            var s = S * (kid.small || 1), x = kid.x, y = kid.y;
+            var lit = dist(zainab.x, zainab.y, x, y) < lanternR;
             var scared = kid.st === 'scared' || (kid.st === 'comforting' && kid.comfort < 0.6);
-
             var jitter = scared ? Math.sin(t * 16 + kid.seed * 30) * 1.4 * s * (kid.tremble || 1) : 0;
             var crouch = scared ? 8 * s : (kid.st === 'safe' ? 2 * s : 4 * s);
 
-            ctx.save();
-            ctx.translate(x + jitter, y);
-
-            // cloak body (crouched when scared, taller when comforted)
+            g.save(); g.translate(x + jitter, y);
             var bodyH = 30 * s - crouch;
-            var col;
-            if (kid.st === 'safe') col = '#2e2822';
-            else if (lit && !scared) col = '#2a2420';
-            else col = '#15131a';                       // cold and dim in the dark
-
-            var g = ctx.createLinearGradient(-10 * s, 0, 10 * s, 0);
             var litSide = zainab.x > x ? 1 : -1;
-            g.addColorStop(litSide > 0 ? 0 : 1, col);
-            g.addColorStop(0.5, col);
-            g.addColorStop(litSide > 0 ? 1 : 0, lit ? '#4a3d30' : col);
-            ctx.fillStyle = g;
+            var col = kid.st === 'safe' ? '#2e2822' : (lit && !scared) ? '#2a2420' : '#14121a';
+            var bg = g.createLinearGradient(-10 * s, 0, 10 * s, 0);
+            bg.addColorStop(litSide > 0 ? 0 : 1, col); bg.addColorStop(0.5, col); bg.addColorStop(litSide > 0 ? 1 : 0, lit ? '#4e4032' : col);
+            g.fillStyle = bg;
+            g.beginPath();
+            g.moveTo(0, -bodyH - 6 * s);
+            g.bezierCurveTo(-11 * s, -bodyH, -12 * s, -6 * s, -10 * s, 0);
+            g.quadraticCurveTo(0, 4 * s, 10 * s, 0);
+            g.bezierCurveTo(12 * s, -6 * s, 11 * s, -bodyH, 0, -bodyH - 6 * s);
+            g.closePath(); g.fill();
 
-            ctx.beginPath();
-            ctx.moveTo(0, -bodyH - 6 * s);                       // hooded head top
-            ctx.bezierCurveTo(-11 * s, -bodyH, -12 * s, -6 * s, -10 * s, 0);
-            ctx.quadraticCurveTo(0, 4 * s, 10 * s, 0);
-            ctx.bezierCurveTo(12 * s, -6 * s, 11 * s, -bodyH, 0, -bodyH - 6 * s);
-            ctx.closePath();
-            ctx.fill();
-
-            // a soft comforted glow / warm rim once following or safe
             if (kid.st === 'following' || kid.st === 'safe' || (kid.st === 'comforting' && kid.comfort > 0.6)) {
-                ctx.strokeStyle = 'rgba(255, 205, 140, 0.4)';
-                ctx.lineWidth = 1.2 * s;
-                ctx.beginPath();
-                ctx.moveTo(litSide * 8 * s, -bodyH + 2 * s);
-                ctx.quadraticCurveTo(litSide * 11 * s, -bodyH * 0.5, litSide * 9 * s, -2 * s);
-                ctx.stroke();
+                g.strokeStyle = 'rgba(255, 206, 142, 0.45)'; g.lineWidth = 1.3 * s;
+                g.beginPath(); g.moveTo(litSide * 8 * s, -bodyH + 2 * s); g.quadraticCurveTo(litSide * 11 * s, -bodyH * 0.5, litSide * 9 * s, -2 * s); g.stroke();
             }
+            g.restore();
 
-            ctx.restore();
-
-            // comforting progress: a gentle ring filling around a scared child
             if (kid.st === 'comforting') {
-                ctx.strokeStyle = 'rgba(255, 214, 150, 0.7)';
-                ctx.lineWidth = 2 * S;
-                ctx.beginPath();
-                ctx.arc(x, y - 14 * s, 20 * s, -Math.PI / 2, -Math.PI / 2 + kid.comfort * 6.2832);
-                ctx.stroke();
+                g.strokeStyle = 'rgba(255, 216, 152, 0.75)'; g.lineWidth = 2.2 * S;
+                g.beginPath(); g.arc(x, y - 14 * s, 21 * s, -Math.PI / 2, -Math.PI / 2 + kid.comfort * 6.2832); g.stroke();
             }
-
-            // a small teardrop of light above a still-scared child, to help find them
             if (kid.st === 'scared') {
                 var tw = 0.4 + Math.abs(Math.sin(t * 2 + kid.seed * 12)) * 0.6;
-                ctx.globalAlpha = tw * (lit ? 0.9 : 0.5);
-                ctx.fillStyle = '#8fb2d8';
-                ctx.beginPath(); ctx.arc(x, y - 34 * s, 1.8 * S, 0, 6.2832); ctx.fill();
-                ctx.globalAlpha = 1;
+                g.save(); g.globalCompositeOperation = 'screen';
+                g.globalAlpha = tw * (lit ? 0.9 : 0.55);
+                g.fillStyle = '#9fc0e8'; g.beginPath(); g.arc(x, y - 36 * s, 2 * S, 0, 6.2832); g.fill();
+                g.restore(); g.globalAlpha = 1;
             }
         }
 
-        function drawAsh() {
+        function drawEmbers(g) {
+            g.save(); g.globalCompositeOperation = 'screen';
+            for (var i = 0; i < embers.length; i++) {
+                var em = embers[i], a = clamp(em.life, 0, 1);
+                var rg = g.createRadialGradient(em.x, em.y, 0, em.x, em.y, 5 * S);
+                rg.addColorStop(0, 'rgba(255, 210, 140, ' + (a * 0.9) + ')'); rg.addColorStop(1, 'rgba(255, 170, 90, 0)');
+                g.fillStyle = rg; g.beginPath(); g.arc(em.x, em.y, 5 * S, 0, 6.2832); g.fill();
+            }
+            g.restore();
+        }
+        function drawAsh(g) {
             for (var i = 0; i < ash.length; i++) {
                 var p = ash[i];
+                if (p.x < cam.x - 10 || p.x > cam.x + W + 10) continue;
                 var near = dist(p.x, p.y, zainab.x, zainab.y) < lanternR;
-                ctx.globalAlpha = (near ? 0.5 : 0.22) * (0.6 + Math.sin(p.ph) * 0.4);
-                ctx.fillStyle = near ? '#e8c9a0' : '#5a5550';
-                ctx.fillRect(p.x, p.y, p.s, p.s);
+                g.globalAlpha = (near ? 0.55 : 0.2) * (0.6 + Math.sin(p.ph) * 0.4);
+                g.fillStyle = near ? '#eccaa0' : '#524d48'; g.fillRect(p.x, p.y, p.s, p.s);
             }
-            ctx.globalAlpha = 1;
+            g.globalAlpha = 1;
         }
 
-        // ---------- main loop ----------
+        // ---------- loop ----------
         var last = 0;
-        function loop(ts) {
-            var dt = Math.min(0.033, (ts - last) / 1000 || 0.016);
-            last = ts;
-            update(dt);
-            render();
-            requestAnimationFrame(loop);
-        }
+        function loop(ts) { var dt = Math.min(0.033, (ts - last) / 1000 || 0.016); last = ts; update(dt); render(); requestAnimationFrame(loop); }
 
         // ---------- input ----------
         window.addEventListener('keydown', function (e) {
@@ -1001,34 +919,34 @@
             if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.up = false;
             if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.down = false;
         });
-
-        function touchAt(e) {
-            var tch = e.touches && e.touches[0];
-            if (!tch) return;
-            touchTarget = { x: tch.clientX, y: tch.clientY };
-        }
+        function touchAt(e) { var tc = e.touches && e.touches[0]; if (tc) pointer = { x: tc.clientX, y: tc.clientY }; }
         canvas.addEventListener('touchstart', function (e) { e.preventDefault(); ensureAudio(); touchAt(e); }, { passive: false });
         canvas.addEventListener('touchmove', function (e) { e.preventDefault(); touchAt(e); }, { passive: false });
-        canvas.addEventListener('touchend', function (e) { e.preventDefault(); if (!e.touches.length) touchTarget = null; }, { passive: false });
-        // mouse (desktop) point-to-move as an alternative to keys
-        canvas.addEventListener('mousedown', function (e) { ensureAudio(); touchTarget = { x: e.clientX, y: e.clientY }; });
-        canvas.addEventListener('mousemove', function (e) { if (touchTarget) touchTarget = { x: e.clientX, y: e.clientY }; });
-        window.addEventListener('mouseup', function () { touchTarget = null; });
+        canvas.addEventListener('touchend', function (e) { e.preventDefault(); if (!e.touches.length) pointer = null; }, { passive: false });
+        canvas.addEventListener('mousedown', function (e) { ensureAudio(); pointer = { x: e.clientX, y: e.clientY }; });
+        canvas.addEventListener('mousemove', function (e) { if (pointer) pointer = { x: e.clientX, y: e.clientY }; });
+        window.addEventListener('mouseup', function () { pointer = null; });
 
-        // ---------- buttons ----------
         document.getElementById('btn-start').addEventListener('click', startPlay);
         document.getElementById('btn-again').addEventListener('click', startPlay);
         document.getElementById('btn-home').addEventListener('click', function () { window.location.href = '../spiritual.html'; });
 
         // ---------- boot ----------
-        window.addEventListener('resize', function () { resize(); });
+        window.addEventListener('resize', resize);
+        makeGrain();
         resize();
-        // a quiet standing scene behind the title
-        zainab = { x: W * 0.16, y: H * 0.6, vx: 0, vy: 0, speed: 0, phase: 0, facing: 1, breath: 0, path: [] };
-        safeZone = { x: W * 0.86, y: H * 0.42, r: 84 * S };
-        tents = []; kids = []; ash = []; motes = [];
-        for (var a = 0; a < 40; a++) ash.push({ x: Math.random() * W, y: Math.random() * H, s: rand(0.6, 1.9), vy: rand(6, 16), vx: rand(-10, -3), ph: rand(0, 6.28) });
-        for (var m = 0; m < 26; m++) motes.push({ x: Math.random() * W, y: Math.random() * H * 0.35, s: rand(0.5, 1.6), ph: rand(0, 6.28), sp: rand(0.4, 1.2) });
+        // idle scene behind the title
+        var gy = H * 0.62;
+        zainab = { x: W * 0.24, y: gy, vx: 0, vy: 0, speed: 0, phase: 0, facing: 1, breath: 0, path: [], veil: [] };
+        for (var vi = 0; vi < 7; vi++) zainab.veil.push({ x: zainab.x, y: zainab.y - 40 * S, px: zainab.x, py: zainab.y - 40 * S });
+        safeZone = { x: W * 0.8, y: gy - 6 * S, r: 92 * S };
+        tents = []; kids = []; dunes = [];
+        for (var l = 0; l < 3; l++) { var pts = []; for (var i = 0; i <= 16; i++) pts.push(rand(0.3, 1)); dunes.push({ depth: 0.2 + l * 0.22, pts: pts, h: (70 - l * 14) * S, tone: l }); }
+        ash = []; for (var a = 0; a < 70; a++) ash.push({ x: rand(0, W), y: rand(0, H), s: rand(0.6, 2), vy: rand(5, 15), vx: rand(-12, -3), ph: rand(0, 6.28) });
+        embers = [];
+        motes = []; for (var m = 0; m < 34; m++) motes.push({ x: rand(0, W), y: rand(0, H * 0.4), s: rand(0.5, 1.7), ph: rand(0, 6.28), sp: rand(0.4, 1.2) });
+        fog = []; for (var ff = 0; ff < 7; ff++) fog.push({ x: rand(0, W), y: gy + rand(-30, 60) * S, r: rand(120, 240) * S, sp: rand(4, 12), ph: rand(0, 6.28), a: rand(0.04, 0.09) });
+        cam = { x: 0, y: 0, sway: 0 };
         requestAnimationFrame(loop);
     })();
     </script>
