@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta name="description" content="The Lantern of Sabr - a cinematic, reverent scene of Lady Zainab (peace be upon her) gathering the children of the camp to the light on the night of Ashura. A game about patience through pain. By Syed Zain Raza.">
+    <meta name="description" content="The Lantern of Sabr - a cinematic story about patience through darkness. A woman takes up the last lantern to gather frightened children to the light. A fictional tale by Syed Zain Raza.">
     <meta name="author" content="">
 
     <title>The Lantern of Sabr - Syed Zain Raza</title>
@@ -110,14 +110,14 @@
 
     <div class="screen" id="screen-title">
         <div class="title">The Lantern of Sabr</div>
-        <div class="arabic">&#1588;&#1614;&#1575;&#1605;&#1616; &#1575;&#1604;&#1594;&#1614;&#1585;&#1610;&#1576;&#1614;&#1575;&#1606; &middot; The Night of the Strangers</div>
-        <p class="story">The fires have gone cold. On the night after Ashura, the camp lies in darkness, and the children are scattered and afraid. Lady Zainab, peace be upon her, takes up a lantern and goes into the dark to gather them, one by one, to the light.</p>
+        <div class="arabic">The Long Night &middot; A Tale of Patience</div>
+        <p class="story">A storm of fire swept through the village in the night, and the people fled. Now the dark lies heavy over the broken homes, and the children are scattered and afraid. Layla takes up the last lantern and walks into the night to gather them, one by one, to the light.</p>
         <p class="how">
             Move with <b>arrows / WASD</b>, or hold and drag on a touch screen.<br>
             Bring your <b>lantern</b> close to a frightened child and hold it there until their fear softens. They will follow you.<br>
             <b>Do not rush.</b> Fear cannot be outrun &mdash; only calmed. Move too fast and those behind you are lost to the dark again. Walk with patience, and lead them all to the safe tent's glow.
         </p>
-        <p class="respect">Out of love and reverence, Lady Zainab and the children are shown only as veiled figures of light and shadow. May peace be upon her and the family of the Prophet.</p>
+        <p class="respect">This is a fictional story. Its people are shown only as figures of light and shadow - a small tale to remember that patience is a light we carry for others.</p>
         <button class="btn" id="btn-start">Take up the Lantern</button>
     </div>
 
@@ -136,7 +136,7 @@
 
         /* ============================================================
            The Lantern of Sabr - cinematic edition.
-           A reverent, non-violent scene of Shaam-e-Ghareeban. The
+           A gentle, non-violent story of one long night. The
            gameplay (patience: comfort each child with steady light,
            never leave the chain behind) is unchanged; this version
            adds a full post-processing pipeline for a filmic look:
@@ -180,7 +180,7 @@
         var TOTAL = 6, DURATION = 60;
         var timeLeft = DURATION, saved = 0, sabr = 0, t = 0;
 
-        var zainab, kids, safeZone, tents, dunes, ash, embers, motes, fog, chain = [];
+        var layla, kids, safeZone, tents, dunes, ash, embers, motes, fog, chain = [];
         var lanternR = 155;
         var cam = { x: 0, y: 0, sway: 0 };
         var flick = 1;              // shared lantern flicker
@@ -262,12 +262,12 @@
             elTotal.textContent = TOTAL; elSaved.textContent = '0'; elSabr.style.width = '0%';
 
             var groundY = H * 0.62;
-            zainab = {
+            layla = {
                 x: W * 0.24, y: groundY, vx: 0, vy: 0,
                 speed: 156 * S, phase: 0, facing: 1, breath: 0, path: [],
                 veil: []   // flowing cloth points
             };
-            for (var v = 0; v < 7; v++) zainab.veil.push({ x: zainab.x, y: zainab.y - 40 * S, px: zainab.x, py: zainab.y - 40 * S });
+            for (var v = 0; v < 7; v++) layla.veil.push({ x: layla.x, y: layla.y - 40 * S, px: layla.x, py: layla.y - 40 * S });
 
             safeZone = { x: WW - W * 0.14, y: groundY - 6 * S, r: 92 * S };
 
@@ -314,14 +314,14 @@
             fog = []; for (var f = 0; f < 7; f++) fog.push({ x: rand(0, WW), y: groundY + rand(-30, 60) * S, r: rand(120, 240) * S, sp: rand(4, 12), ph: rand(0, 6.28), a: rand(0.04, 0.09) });
 
             beats = [
-                { at: 0.4, text: 'The fires have died. The night of Ashura falls cold and dark over the camp.' },
+                { at: 0.4, text: 'The fires have died. The long night falls cold and dark over the village.' },
                 { at: 6, text: 'In the darkness, the children weep &mdash; scattered, lost, and afraid.' },
                 { at: 13, text: '&ldquo;Come, little ones. Stay close to my lantern. Do not be afraid.&rdquo;' },
                 { at: 26, text: 'She does not run. Fear cannot be outrun &mdash; it can only be calmed.' },
                 { at: 42, text: 'One by one, she carries the light to them, though her own heart breaks.' }
             ];
             beatIndex = 0;
-            cam.x = clamp(zainab.x - W * 0.42, 0, WW - W);
+            cam.x = clamp(layla.x - W * 0.42, 0, WW - W);
             cam.y = 0;
         }
 
@@ -333,7 +333,7 @@
             var title = document.getElementById('end-title'), msg = document.getElementById('end-message');
             if (saved >= TOTAL) {
                 title.textContent = 'She left no one in the dark.';
-                msg.innerHTML = 'Every child was gathered to the light. This is sabr: to hold others up when your own heart is breaking. Peace be upon Zainab, the patient, who kept the light of the camp alive that night.';
+                msg.innerHTML = 'Every child was gathered to the light. This is sabr: to hold others up when your own heart is breaking. Layla kept the last light of the village alive through the long night.';
                 safeChime();
             } else if (saved > 0) {
                 title.textContent = 'Peace be upon the patient.';
@@ -372,31 +372,31 @@
             var my = (keys.up ? -1 : 0) + (keys.down ? 1 : 0);
             if (pointer) {
                 var wx = pointer.x + cam.x, wy = pointer.y + cam.y;
-                var tdx = wx - zainab.x, tdy = wy - zainab.y, td = Math.sqrt(tdx * tdx + tdy * tdy);
+                var tdx = wx - layla.x, tdy = wy - layla.y, td = Math.sqrt(tdx * tdx + tdy * tdy);
                 if (td > 10 * S) { mx = tdx / td; my = tdy / td; } else { mx = 0; my = 0; }
             }
             var ml = Math.sqrt(mx * mx + my * my), moving = ml > 0.01;
             var groundY = H * 0.62;
             if (moving) {
                 mx /= ml; my /= ml;
-                zainab.vx = mx * zainab.speed; zainab.vy = my * zainab.speed * 0.5;
-                zainab.x = clamp(zainab.x + zainab.vx * dt, 30 * S, WW - 30 * S);
-                zainab.y = clamp(zainab.y + zainab.vy * dt, groundY - 46 * S, groundY + 52 * S);
-                zainab.phase += dt * 6.2;
-                if (Math.abs(mx) > 0.02) zainab.facing = mx > 0 ? 1 : -1;
-            } else { zainab.vx = zainab.vy = 0; }
-            zainab.breath += dt;
+                layla.vx = mx * layla.speed; layla.vy = my * layla.speed * 0.5;
+                layla.x = clamp(layla.x + layla.vx * dt, 30 * S, WW - 30 * S);
+                layla.y = clamp(layla.y + layla.vy * dt, groundY - 46 * S, groundY + 52 * S);
+                layla.phase += dt * 6.2;
+                if (Math.abs(mx) > 0.02) layla.facing = mx > 0 ? 1 : -1;
+            } else { layla.vx = layla.vy = 0; }
+            layla.breath += dt;
 
             // flowing veil (verlet cloth trailing from the shoulder)
             updateVeil(dt);
 
-            zainab.path.push({ x: zainab.x, y: zainab.y });
-            if (zainab.path.length > 300) zainab.path.shift();
+            layla.path.push({ x: layla.x, y: layla.y });
+            if (layla.path.length > 300) layla.path.shift();
 
             // camera follow + handheld sway
             cam.sway += dt;
-            var tcx = clamp(zainab.x - W * 0.42, 0, WW - W);
-            var tcy = clamp(zainab.y - H * 0.56, -20 * S, 30 * S);
+            var tcx = clamp(layla.x - W * 0.42, 0, WW - W);
+            var tcy = clamp(layla.y - H * 0.56, -20 * S, 30 * S);
             cam.x += (tcx - cam.x) * Math.min(1, dt * 3.2);
             cam.y += (tcy - cam.y) * Math.min(1, dt * 3.2);
 
@@ -406,7 +406,7 @@
                 var kid = kids[c];
                 if (kid.st === 'scared' || kid.st === 'comforting') {
                     kid.tremble = 0.6 + Math.sin(t * 14 + kid.seed * 20) * 0.4;
-                    var within = dist(zainab.x, zainab.y, kid.x, kid.y) < lanternR * 0.8;
+                    var within = dist(layla.x, layla.y, kid.x, kid.y) < lanternR * 0.8;
                     if (within) {
                         kid.st = 'comforting';
                         kid.comfort += dt / 1.3;
@@ -417,10 +417,10 @@
                     }
                 } else if (kid.st === 'following') {
                     var idx = chain.indexOf(kid);
-                    var ahead = idx === 0 ? zainab : chain[idx - 1];
+                    var ahead = idx === 0 ? layla : chain[idx - 1];
                     var spacing = 42 * S;
                     var dx = ahead.x - kid.x, dy = ahead.y - kid.y, d = Math.sqrt(dx * dx + dy * dy) || 0.001;
-                    var followSpeed = zainab.speed * 0.92;
+                    var followSpeed = layla.speed * 0.92;
                     if (d > spacing) { var step = Math.min(followSpeed * dt, d - spacing); kid.x += (dx / d) * step; kid.y += (dy / d) * step; kid.phase += dt * 6; }
                     if (d > 132 * S) {
                         kid.morale -= dt * 0.55; chainWhole = false;
@@ -447,12 +447,12 @@
         }
 
         function updateVeil(dt) {
-            var s = S, f = zainab.facing;
+            var s = S, f = layla.facing;
             // anchor at the back shoulder, opposite the lantern
-            var ax = zainab.x - f * 8 * s, ay = zainab.y - 46 * s;
+            var ax = layla.x - f * 8 * s, ay = layla.y - 46 * s;
             var prev = { x: ax, y: ay };
-            for (var i = 0; i < zainab.veil.length; i++) {
-                var v = zainab.veil[i];
+            for (var i = 0; i < layla.veil.length; i++) {
+                var v = layla.veil[i];
                 // verlet integration with gravity + drag
                 var vx = (v.x - v.px) * 0.86, vy = (v.y - v.py) * 0.86;
                 v.px = v.x; v.py = v.y;
@@ -506,7 +506,7 @@
             var list = [];
             for (var i = 0; i < tents.length; i++) list.push({ y: tents[i].y, k: 't', r: tents[i] });
             for (var k = 0; k < kids.length; k++) list.push({ y: kids[k].y, k: 'k', r: kids[k] });
-            list.push({ y: zainab.y, k: 'z', r: zainab });
+            list.push({ y: layla.y, k: 'z', r: layla });
             list.sort(function (a, b) { return a.y - b.y; });
 
             for (var s1 = 0; s1 < list.length; s1++) {
@@ -521,7 +521,7 @@
                 var e = list[d2];
                 if (e.k === 't') drawTent(g, e.r);
                 else if (e.k === 'k') drawKid(g, e.r);
-                else drawZainab(g, e.r);
+                else drawLayla(g, e.r);
             }
 
             drawGodRays(g);
@@ -691,15 +691,15 @@
             g.fillStyle = rg; g.beginPath(); g.arc(z.x, z.y, z.r * 1.9, 0, 6.2832); g.fill();
             g.restore();
         }
-        function lanternPos() { return { x: zainab.x + zainab.facing * 22 * S, y: zainab.y - 40 * S }; }
+        function lanternPos() { return { x: layla.x + layla.facing * 22 * S, y: layla.y - 40 * S }; }
         function drawLanternPool(g) {
             var l = lanternPos();
             g.save(); g.globalCompositeOperation = 'screen';
-            var rg = g.createRadialGradient(l.x, zainab.y - 6 * S, 6 * S, l.x, zainab.y - 6 * S, lanternR * flick);
+            var rg = g.createRadialGradient(l.x, layla.y - 6 * S, 6 * S, l.x, layla.y - 6 * S, lanternR * flick);
             rg.addColorStop(0, 'rgba(255, 206, 140, 0.30)');
             rg.addColorStop(0.4, 'rgba(240, 160, 90, 0.14)');
             rg.addColorStop(1, 'rgba(200, 120, 60, 0)');
-            g.fillStyle = rg; g.beginPath(); g.arc(l.x, zainab.y - 6 * S, lanternR * flick, 0, 6.2832); g.fill();
+            g.fillStyle = rg; g.beginPath(); g.arc(l.x, layla.y - 6 * S, lanternR * flick, 0, 6.2832); g.fill();
             g.restore();
         }
         function drawGodRays(g) {
@@ -777,8 +777,8 @@
             }
         }
 
-        // ---- Zainab: veiled figure of light (no face) with flowing cloth ----
-        function drawZainab(g, z) {
+        // ---- Layla: veiled figure of light (no face) with flowing cloth ----
+        function drawLayla(g, z) {
             var s = S, x = z.x, y = z.y, f = z.facing;
             var moving = (z.vx * z.vx + z.vy * z.vy) > 1;
             var bob = moving ? Math.abs(Math.sin(z.phase)) * 2.4 * s : Math.sin(z.breath * 1.4) * 1.1 * s;
@@ -842,14 +842,14 @@
         // ---- child figure (no face) ----
         function drawKid(g, kid) {
             var s = S * (kid.small || 1), x = kid.x, y = kid.y;
-            var lit = dist(zainab.x, zainab.y, x, y) < lanternR;
+            var lit = dist(layla.x, layla.y, x, y) < lanternR;
             var scared = kid.st === 'scared' || (kid.st === 'comforting' && kid.comfort < 0.6);
             var jitter = scared ? Math.sin(t * 16 + kid.seed * 30) * 1.4 * s * (kid.tremble || 1) : 0;
             var crouch = scared ? 8 * s : (kid.st === 'safe' ? 2 * s : 4 * s);
 
             g.save(); g.translate(x + jitter, y);
             var bodyH = 30 * s - crouch;
-            var litSide = zainab.x > x ? 1 : -1;
+            var litSide = layla.x > x ? 1 : -1;
             var col = kid.st === 'safe' ? '#2e2822' : (lit && !scared) ? '#2a2420' : '#14121a';
             var bg = g.createLinearGradient(-10 * s, 0, 10 * s, 0);
             bg.addColorStop(litSide > 0 ? 0 : 1, col); bg.addColorStop(0.5, col); bg.addColorStop(litSide > 0 ? 1 : 0, lit ? '#4e4032' : col);
@@ -894,7 +894,7 @@
             for (var i = 0; i < ash.length; i++) {
                 var p = ash[i];
                 if (p.x < cam.x - 10 || p.x > cam.x + W + 10) continue;
-                var near = dist(p.x, p.y, zainab.x, zainab.y) < lanternR;
+                var near = dist(p.x, p.y, layla.x, layla.y) < lanternR;
                 g.globalAlpha = (near ? 0.55 : 0.2) * (0.6 + Math.sin(p.ph) * 0.4);
                 g.fillStyle = near ? '#eccaa0' : '#524d48'; g.fillRect(p.x, p.y, p.s, p.s);
             }
@@ -937,8 +937,8 @@
         resize();
         // idle scene behind the title
         var gy = H * 0.62;
-        zainab = { x: W * 0.24, y: gy, vx: 0, vy: 0, speed: 0, phase: 0, facing: 1, breath: 0, path: [], veil: [] };
-        for (var vi = 0; vi < 7; vi++) zainab.veil.push({ x: zainab.x, y: zainab.y - 40 * S, px: zainab.x, py: zainab.y - 40 * S });
+        layla = { x: W * 0.24, y: gy, vx: 0, vy: 0, speed: 0, phase: 0, facing: 1, breath: 0, path: [], veil: [] };
+        for (var vi = 0; vi < 7; vi++) layla.veil.push({ x: layla.x, y: layla.y - 40 * S, px: layla.x, py: layla.y - 40 * S });
         safeZone = { x: W * 0.8, y: gy - 6 * S, r: 92 * S };
         tents = []; kids = []; dunes = [];
         for (var l = 0; l < 3; l++) { var pts = []; for (var i = 0; i <= 16; i++) pts.push(rand(0.3, 1)); dunes.push({ depth: 0.2 + l * 0.22, pts: pts, h: (70 - l * 14) * S, tone: l }); }
