@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to cut LLM costs - exact and semantic caching, prompt caching, model routing and cascades, distillation to smaller models, token trimming, and batch pricing - by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Cutting LLM Costs</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Cutting LLM Costs</h1>
+                        <h2 class="subheading">Caching, routing, and smaller models: making AI cheap enough to ship</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>A feature that delights users in a demo can quietly bankrupt the unit economics when a million people use it. LLM calls are metered by the token - every word in and every word out has a price - and at scale those fractions of a cent compound fast. Cost control is not a nice-to-have you bolt on later; it is often what decides whether an AI feature can ship at all.</p>
+
+                    <h3>Understand the Bill First</h3>
+
+                    <p>You pay for input tokens (your prompt, including any retrieved context and examples) and output tokens (what the model generates), usually at different rates, with output more expensive. Two levers follow immediately: send fewer tokens in, and generate fewer tokens out. Most cost waste hides in bloated prompts - giant system messages, redundant examples, whole documents stuffed in when a paragraph would do.</p>
+
+                    <h3>1. Caching: Do Not Pay Twice</h3>
+
+                    <p><strong>Exact-match caching.</strong> If the same input has been answered before, return the stored answer for free. Trivial to implement, and for anything with repeated queries (FAQs, common lookups) it can eliminate a large share of calls.</p>
+
+                    <pre><code>key = hash(prompt)
+if key in cache:
+    return cache[key]          # $0, instant
+answer = call_model(prompt)
+cache[key] = answer
+return answer</code></pre>
+
+                    <p><strong>Semantic caching.</strong> Real questions are rarely identical but often equivalent. Embed the incoming query, and if a past query is close enough in meaning, reuse its answer. Powerful, but set the similarity threshold carefully - too loose and you serve the right answer to the wrong question.</p>
+
+                    <p><strong>Prompt caching.</strong> Many providers now let you cache a large static prefix (a long system prompt, a fixed knowledge block) so you are not billed full price to re-process it on every call. If you send the same 3,000-token instructions every time, this alone can cut input cost sharply.</p>
+
+                    <h3>2. Routing: Match the Model to the Task</h3>
+
+                    <p>Not every request needs your most capable, most expensive model. A classification or a simple rewrite can go to a small cheap model; only the genuinely hard reasoning needs the flagship. A router - even a simple one - decides per request.</p>
+
+                    <pre><code>def route(task):
+    if task.type in ("classify", "extract", "short_rewrite"):
+        return SMALL_MODEL      # cents on the dollar
+    if task.needs_deep_reasoning:
+        return FLAGSHIP_MODEL
+    return MID_MODEL</code></pre>
+
+                    <p>A common pattern is the cascade: try the cheap model first, and only escalate to the expensive one when the cheap answer fails a confidence check or a validation. Most traffic is handled cheaply; the flagship is reserved for the tail that needs it.</p>
+
+                    <h3>3. Smaller Models, Sharpened</h3>
+
+                    <p>Small models are dramatically cheaper and faster, and for a narrow, well-defined task a small model - optionally fine-tuned on that one task - can match a large general model at a fraction of the cost. The move: prototype with the big model to prove the task is solvable, then distill down to the smallest model that still passes your eval set. Do not run a flagship in production for a job a small model does fine.</p>
+
+                    <h3>4. Trim the Tokens</h3>
+
+                    <p>Concrete reductions that add up: prune system prompts to what is load-bearing; drop redundant few-shot examples once the model is reliable without them; in RAG, retrieve fewer, better chunks rather than many mediocre ones and re-rank so you can send top 3 instead of top 10; cap max output length so the model cannot ramble; and ask for terse formats (JSON, bullet points) rather than verbose prose when a program will consume the result.</p>
+
+                    <h3>5. Batch and Stream</h3>
+
+                    <p>For non-urgent workloads, many providers offer batch pricing at a steep discount in exchange for slower turnaround - ideal for offline processing, nightly summarization, or bulk classification. For user-facing latency, streaming does not cut cost but improves perceived speed, which can let you use a slightly cheaper model without users noticing.</p>
+
+                    <h3>Measure Cost Per Outcome, Not Per Call</h3>
+
+                    <p>The metric that matters is not cost per API call but cost per successful outcome - per resolved ticket, per correct extraction, per satisfied user. A cheaper model that fails half the time and triggers retries or human escalation is not cheaper. Instrument cost alongside quality, watch them together, and optimize the ratio.</p>
+
+                    <h3>The Order of Operations</h3>
+
+                    <p>In practice: cache aggressively (the cheapest token is the one you never send), route so most traffic hits small models, trim prompts and outputs, distill to the smallest model that passes evals, and batch what can wait. Do these and the same feature that looked unaffordable at scale becomes not just viable but profitable - which is the difference between an AI experiment and an AI product.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Retrieval-augmented generation explained from scratch - chunking, embeddings, vector search, generation, and the real-world failure modes - by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - RAG from First Principles</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>RAG from First Principles</h1>
+                        <h2 class="subheading">Retrieval-augmented generation: chunking, embeddings, retrieval, and where it breaks</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>A language model only knows what was in its training data, frozen at some cutoff date. It has never seen your company's documents, last week's news, or the ticket a customer opened this morning. Retrieval-Augmented Generation (RAG) is the technique that lets a model answer questions about knowledge it was never trained on, by fetching relevant text at query time and placing it in the prompt.</p>
+
+                    <p>The idea is simple: do not make the model memorize your knowledge; let it read the relevant page just before it answers, the way a person looks something up.</p>
+
+                    <h3>The Pipeline</h3>
+
+                    <pre><code>Ingest (once):
+  documents -> split into chunks -> embed each chunk -> store vectors
+
+Query (every question):
+  question -> embed -> find nearest chunks -> stuff into prompt -> generate</code></pre>
+
+                    <h3>Step 1: Chunking</h3>
+
+                    <p>You cannot embed a 100-page document as one vector and expect useful retrieval. You split it into chunks - typically a few hundred tokens each. This is the step that quietly determines whether your whole system works.</p>
+
+                    <p>Chunk too large and each vector becomes a blurry average of many topics, so retrieval returns "sort of related" text. Chunk too small and you sever the context a sentence needs to make sense. Two rules that help: split on natural boundaries (paragraphs, headings, sentences) rather than a fixed character count that cuts words in half, and use a small overlap between consecutive chunks so a fact that straddles a boundary is not lost.</p>
+
+                    <h3>Step 2: Embeddings</h3>
+
+                    <p>An embedding model turns a piece of text into a vector - a list of numbers - such that texts with similar meaning land near each other in that space. "How do I reset my password?" and "I forgot my login credentials" produce nearby vectors even though they share almost no words. This is why RAG retrieves on meaning, not keywords.</p>
+
+                    <pre><code>embed("cancel my subscription")  -> [0.021, -0.44, 0.13, ...]  (e.g. 1536 numbers)
+embed("how do I stop being billed") -> [0.019, -0.41, 0.15, ...]  (very close)</code></pre>
+
+                    <h3>Step 3: Storage and Retrieval</h3>
+
+                    <p>You store every chunk's vector in a vector database (or, for small corpora, just an in-memory array). At query time you embed the question and find the chunks whose vectors are closest, usually by cosine similarity. Those top-k chunks are your retrieved context.</p>
+
+                    <pre><code>def retrieve(question, index, k=5):
+    q = embed(question)
+    scored = [(cosine(q, chunk.vec), chunk) for chunk in index]
+    scored.sort(reverse=True)
+    return [chunk for _, chunk in scored[:k]]</code></pre>
+
+                    <h3>Step 4: Generation</h3>
+
+                    <p>Finally you build a prompt that places the retrieved chunks in front of the question and instructs the model to answer from them:</p>
+
+                    <pre><code>Answer the question using only the context below. If the answer is
+not in the context, say you do not know - do not guess.
+
+Context:
+{retrieved_chunk_1}
+{retrieved_chunk_2}
+...
+
+Question: {question}</code></pre>
+
+                    <p>That "if it is not in the context, say you do not know" line is doing heavy lifting: it is what turns a confident hallucinator into a grounded assistant.</p>
+
+                    <h3>Where RAG Breaks</h3>
+
+                    <p><strong>Retrieval, not generation, is usually the failure.</strong> When a RAG system gives a wrong answer, the model is often fine - it was simply handed the wrong chunks. Debug retrieval first: print what got fetched before blaming the model.</p>
+
+                    <p><strong>Semantic search misses exact terms.</strong> Embeddings are great at meaning and weak at precise identifiers - part numbers, error codes, names. The fix is hybrid search: combine vector similarity with old-fashioned keyword (BM25) search so exact matches are not lost.</p>
+
+                    <p><strong>The question is not shaped like the answer.</strong> A short question ("2023 refund policy?") may not embed near the long clause that answers it. Techniques like query rewriting (expand the question first) and re-ranking (fetch 30 candidates, then use a stronger model to pick the best 5) address this.</p>
+
+                    <p><strong>Stale or duplicated data.</strong> If your source updates, you must re-embed. Duplicated chunks crowd out diversity in the top-k. Hygiene at ingestion matters as much as the clever retrieval.</p>
+
+                    <h3>Why It Matters</h3>
+
+                    <p>RAG is how most real AI products ground themselves in private, current, or proprietary knowledge without the cost and staleness of retraining. It separates the two things a useful assistant needs - fluent language (the model) and accurate facts (your data) - and lets you improve each independently. Master retrieval quality and you have solved most of what makes AI applications actually trustworthy.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to evaluate LLM outputs - eval sets, deterministic checks, reference metrics, LLM-as-judge and its biases, human review, and closing the loop - by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Evaluating LLM Outputs</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Evaluating LLM Outputs</h1>
+                        <h2 class="subheading">The hardest unsolved problem in shipping AI, and how teams tackle it anyway</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>You can build an impressive AI demo in an afternoon. Turning it into something you trust in production is where most teams stall, and the reason is almost always the same: they cannot tell, reliably, whether a change made the system better or worse. Evaluation - measuring the quality of model outputs - is the hardest unsolved problem in shipping AI, because unlike traditional software, there is often no single correct answer to check against.</p>
+
+                    <h3>Why It Is Hard</h3>
+
+                    <p>A function that adds two numbers has one right answer, and a test asserts it. A prompt that "summarizes a support ticket helpfully" has thousands of acceptable answers and no exact string to compare. Quality is fuzzy, subjective, and context-dependent. And LLMs are non-deterministic - the same input can produce different outputs - so you cannot even rely on a fixed result. This is why "it looked good when I tried it" is the trap that sinks AI projects.</p>
+
+                    <h3>Start With an Eval Set, Not a Metric</h3>
+
+                    <p>Before choosing how to measure, assemble what to measure against: a curated set of representative inputs, ideally including the hard cases and past failures. This eval set is the single highest-leverage asset in an AI project. Every prompt tweak, model swap, or retrieval change is run against it so you can compare versions on the same ground instead of arguing from anecdotes. Twenty carefully chosen examples beat two thousand random ones.</p>
+
+                    <h3>The Ladder of Evaluation Methods</h3>
+
+                    <p><strong>1. Deterministic checks.</strong> Whenever the task has any objective component, assert it in code - cheap, fast, and reliable. Is the output valid JSON? Does it match the required schema? Does the extracted date parse? Does the answer contain the one fact it must? Automate everything that can be automated before reaching for anything fancier.</p>
+
+                    <pre><code>def check(output):
+    assert is_valid_json(output)
+    data = json.loads(output)
+    assert "refund_amount" in data
+    assert isinstance(data["refund_amount"], (int, float))</code></pre>
+
+                    <p><strong>2. Reference-based metrics.</strong> When you do have a gold answer, you can score similarity - exact match for classification, or embedding similarity for open-ended text (does the answer mean the same thing as the reference, even if worded differently). Useful, but limited: many good answers legitimately differ from your one reference.</p>
+
+                    <p><strong>3. LLM-as-judge.</strong> For genuinely subjective quality, use a strong model to grade outputs against a rubric you write. "Rate this summary 1-5 on faithfulness to the source, and explain." This scales human-like judgment cheaply and correlates surprisingly well with human ratings - when the rubric is specific.</p>
+
+                    <pre><code>Judge prompt:
+"You are grading a support reply. Score 1-5 on each:
+  - Accuracy: does it correctly address the ticket?
+  - Tone: is it professional and empathetic?
+  - Completeness: does it resolve the issue or escalate correctly?
+Return JSON with a score and one-line reason per category."</code></pre>
+
+                    <p><strong>4. Human review.</strong> Still the gold standard for the cases that matter most and for calibrating your automated judges. You cannot review everything, so sample - especially the disagreements where your judge is unsure.</p>
+
+                    <h3>The Traps in LLM-as-Judge</h3>
+
+                    <p>It is powerful but biased in known ways. Judges favor longer answers, favor the first option when comparing two, and can favor outputs from the same model family. Mitigate by writing tight rubrics, randomizing option order, using pairwise comparison ("is A or B better?") rather than absolute scores when you can, and periodically checking the judge against human labels. A judge you never audit is a metric you should not trust.</p>
+
+                    <h3>Evaluate the Pieces, Not Just the Whole</h3>
+
+                    <p>In a RAG system, a wrong final answer could come from bad retrieval or bad generation. Measure each: retrieval quality (did the right chunks come back?) separately from answer quality (given good chunks, was the answer faithful?). Component-level evals tell you where to fix; end-to-end evals tell you whether the fix helped.</p>
+
+                    <h3>Close the Loop With Production</h3>
+
+                    <p>Your eval set will never cover everything real users do. Log real inputs and outputs, capture user signals (thumbs up/down, edits, escalations, follow-up questions that indicate the first answer failed), and feed the failures back into the eval set. The system that improves is the one where production failures become tomorrow's test cases.</p>
+
+                    <h3>The Bottom Line</h3>
+
+                    <p>Treat evaluation as the foundation, not an afterthought. Build the eval set first, automate every objective check, use LLM-as-judge for the subjective majority with its biases in mind, keep humans in the loop for calibration, and turn production failures into new tests. Teams that measure rigorously ship AI that works; teams that go on vibes ship demos that quietly break.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

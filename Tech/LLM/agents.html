@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How AI agents work - tools, memory, the reason-act (ReAct) loop, tool-calling, and the guardrails that keep agents reliable - by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Building an AI Agent</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Building an AI Agent</h1>
+                        <h2 class="subheading">Tools, memory, and the reason-act loop that turns a model into an agent</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>A language model on its own is a text predictor: you give it words, it gives you words back. An agent is what you get when you wrap that model in a loop that lets it take actions in the world - search the web, query a database, call an API, run code - observe the results, and decide what to do next. The model becomes less like an autocomplete and more like a colleague who can actually do things.</p>
+
+                    <h3>The Three Ingredients</h3>
+
+                    <p><strong>Tools</strong> are functions the model is allowed to call - each with a name, a description, and a schema of arguments. <strong>Memory</strong> is what the agent carries between steps: the conversation so far, results of previous actions, relevant retrieved facts. <strong>The loop</strong> is the control flow that ties them together: reason, act, observe, repeat.</p>
+
+                    <h3>The Reason-Act Loop</h3>
+
+                    <p>The core pattern (often called ReAct, for Reason + Act) is a cycle:</p>
+
+                    <pre><code>1. THINK   - the model reasons about what to do next
+2. ACT     - it chooses a tool and arguments
+3. OBSERVE - the tool runs; its result is fed back in
+4. repeat until the model decides it has the answer, then ANSWER</code></pre>
+
+                    <p>Concretely, for "What was our revenue last quarter compared to the same quarter last year?":</p>
+
+                    <pre><code>THINK:  I need two numbers from the database.
+ACT:    query_db("SELECT revenue WHERE quarter='Q3-2026'")
+OBSERVE: 4.2M
+THINK:  Now the year-ago figure.
+ACT:    query_db("SELECT revenue WHERE quarter='Q3-2025'")
+OBSERVE: 3.1M
+THINK:  I have both. 4.2 vs 3.1 is +35%. I can answer.
+ANSWER: Revenue was $4.2M, up 35% year over year.</code></pre>
+
+                    <h3>How the Model Calls a Tool</h3>
+
+                    <p>You do not parse free text hoping to spot an intent. Modern models have native tool-calling: you pass the tool definitions alongside the prompt, and the model responds with a structured request to call a specific tool with specific arguments. Your code executes it and returns the result.</p>
+
+                    <pre><code>tools = [{
+  "name": "query_db",
+  "description": "Run a read-only SQL query against the analytics warehouse.",
+  "parameters": { "sql": "string" }
+}]
+
+# The model replies with a tool call, not prose:
+#   { "tool": "query_db", "arguments": { "sql": "SELECT ..." } }
+# Your runtime runs it, appends the result, and loops.</code></pre>
+
+                    <p>The description matters enormously. The model decides whether and how to use a tool almost entirely from its name and description - treat those as prompt engineering, not documentation.</p>
+
+                    <h3>Memory: Short-Term and Long-Term</h3>
+
+                    <p><strong>Short-term memory</strong> is the running context of the current task - every thought, action, and observation appended as the loop turns. It is bounded by the context window, which is why long agent runs eventually need summarization: compress older steps into a short recap so the window does not overflow.</p>
+
+                    <p><strong>Long-term memory</strong> persists across sessions - user preferences, facts learned earlier, past outcomes - usually stored externally and retrieved (via RAG) when relevant. This is what lets an agent remember that you prefer metric units or that a customer already tried a fix last week.</p>
+
+                    <h3>Where Agents Go Wrong</h3>
+
+                    <p><strong>Loops that never end.</strong> An agent can get stuck repeating an action or chasing its own tail. Always cap the number of steps and fail gracefully when the cap is hit.</p>
+
+                    <p><strong>Compounding errors.</strong> Each step conditions on the last, so one bad observation can derail everything after it. Short chains are more reliable than long ones; design tasks to need few steps.</p>
+
+                    <p><strong>Dangerous actions.</strong> The moment an agent can write to a database, send an email, or spend money, a wrong decision has real consequences. Gate irreversible actions behind confirmation, give tools the narrowest permissions possible, and make every write idempotent so a retry is safe.</p>
+
+                    <p><strong>Tool sprawl.</strong> Give an agent forty tools and it chooses poorly. A small, well-described toolset beats a large one; if you have many, retrieve the relevant few for each task rather than presenting all of them.</p>
+
+                    <h3>The Mental Model</h3>
+
+                    <p>An agent is not a smarter model - it is the same model given hands and a feedback loop. Its intelligence lives in the reasoning; its usefulness lives in the tools and the guardrails around them. Build the loop simple, keep the tools few and sharp, cap the steps, and protect anything irreversible. Most of what separates a reliable agent from a flaky demo is not the prompt - it is that engineering discipline around the loop.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
