@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="When to fine-tune vs use RAG vs prompt engineering - a practical decision framework with the new-employee test - by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Fine-Tune, RAG, or Prompt?</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Fine-Tune, RAG, or Prompt?</h1>
+                        <h2 class="subheading">A decision framework for the question every AI project eventually asks</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Every AI project eventually hits the same fork: the base model is not doing what you need. Three roads lead out of it - better prompting, retrieval-augmented generation (RAG), and fine-tuning. Teams routinely reach for the most expensive one first. The right instinct is the opposite: start cheap, and only climb when the cheaper option provably cannot get there.</p>
+
+                    <h3>What Each One Actually Changes</h3>
+
+                    <p><strong>Prompting</strong> changes the instructions. You are working entirely within the model's existing knowledge and abilities, just steering them. Zero training, instant iteration.</p>
+
+                    <p><strong>RAG</strong> changes the knowledge. You inject relevant facts into the prompt at query time so the model can answer questions about data it never saw in training. It does not teach the model new skills or behaviors - it hands it a reference sheet.</p>
+
+                    <p><strong>Fine-tuning</strong> changes the model. You continue training on your own examples so new behavior, format, or tone is baked into the weights themselves. It teaches skills and styles, but it is the poorest way to teach facts.</p>
+
+                    <h3>The Decision Framework</h3>
+
+                    <pre><code>Is the problem that the model lacks KNOWLEDGE
+(your docs, current data, private info)?
+    -> RAG.  Fine-tuning is the wrong tool for facts;
+       facts change, and retraining every time is madness.
+
+Is the problem that the model lacks a SKILL or won't follow
+a specific FORMAT/STYLE consistently, even with good prompts?
+    -> Fine-tuning.  You are teaching behavior, not facts.
+
+Is the problem just that you haven't told it clearly enough
+what you want?
+    -> Prompting.  Try this first, every time. It's free and instant.</code></pre>
+
+                    <h3>The Test: Could a New Employee Do It?</h3>
+
+                    <p>A useful mental model. Imagine handing the task to a sharp new hire.</p>
+
+                    <p>If they could do it well with a clear instruction sheet, you need better <strong>prompting</strong>. If they could do it well but only with access to your internal wiki and databases, you need <strong>RAG</strong>. If they would need weeks of training to internalize a specialized skill or a very particular house style, you need <strong>fine-tuning</strong>.</p>
+
+                    <h3>Why Fine-Tuning Is Usually Premature</h3>
+
+                    <p>Fine-tuning is seductive because it feels like "really" teaching the model. But it carries costs the other two avoid: you need a curated dataset of hundreds to thousands of high-quality examples, a training and evaluation loop, a place to host the custom model, and a re-training plan every time the base model improves or your requirements shift. Worse, if you fine-tune to inject facts, those facts go stale and there is no easy way to update a single one - you retrain.</p>
+
+                    <p>In practice, a large majority of "we need to fine-tune" instincts are solved by a better prompt plus RAG, at a fraction of the cost and with far faster iteration.</p>
+
+                    <h3>When Fine-Tuning Genuinely Wins</h3>
+
+                    <p>It earns its cost when: you need a consistent output format or voice that prompting cannot reliably enforce; you have a narrow, high-volume task where a smaller fine-tuned model can replace a large expensive one and cut cost dramatically; you need to reduce latency or prompt length by moving instructions and examples into the weights; or you are teaching a genuinely specialized skill (a domain classification, a structured extraction) for which you have good labeled data.</p>
+
+                    <h3>The Hybrid Answer</h3>
+
+                    <p>These are not mutually exclusive, and mature systems combine them. A common production shape: a lightly fine-tuned model for consistent format and tone, wrapped in RAG for current facts, driven by a carefully engineered prompt for control. Each layer does the job it is best at - fine-tuning for behavior, RAG for knowledge, prompting for steering.</p>
+
+                    <p>The discipline is to add each layer only when the cheaper ones demonstrably fall short. Start with a prompt. Add retrieval when it needs your data. Fine-tune only when you have proven a skill or format gap that neither can close - and when you have the data and the appetite to maintain a model of your own.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
