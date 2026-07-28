@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Pathfinding in games - how game AI works, BFS vs Dijkstra vs Greedy vs A*, and why I chose A* for an endless runner. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Pathfinding and Game AI</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="../css/clean-blog.min.css?v=2" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about.html">About</a></li>
+                    <li><a href="../blogs.html">Blogs</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="intro-header" style="background-image: url('../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Pathfinding and Game AI</h1>
+                        <h2 class="subheading">How game AI moves, the algorithms that make it possible, and why I chose A* for an endless runner</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on June 12th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post Content -->
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Back in 2017 I built a pathfinding system for an endless runner. The pursuers in the game needed to chase the player intelligently around obstacles rather than walking blindly into walls, and that small problem opened the door to one of the most satisfying corners of game programming. The source is still up on <a href="https://bitbucket.org/ZainRaza14/pathfinding/src" target="_blank">Bitbucket</a>. This post is the write-up I wish I had when I started it: how AI actually works in games, the family of pathfinding algorithms you can choose from, and why A* was the right call.</p>
+
+                    <h3>What "AI" Really Means in a Game</h3>
+
+                    <p>Game AI is rarely the machine learning that the term implies today. It is a set of well-understood techniques for making non-player characters behave believably, and it splits cleanly into two layers: <strong>deciding what to do</strong>, and <strong>figuring out how to move there</strong>.</p>
+
+                    <p>The decision layer is handled by structures like finite state machines (patrol, chase, flee, attack), behavior trees (used in most modern AAA games for their composability), utility systems that score possible actions, and steering behaviors for the small local adjustments - seek, flee, avoid, flock. A guard "sees" the player and its state machine flips from Patrol to Chase.</p>
+
+                    <p>But once the guard decides to chase, it faces a purely geometric question: what is the actual route from where I stand to where the player is, given the walls, pits, and obstacles between us? That is <strong>pathfinding</strong>, and it is the movement layer that makes the decision layer look intelligent. A perfect decision system paired with a character that walks straight into a wall looks broken. Pathfinding is what sells the illusion of a thinking opponent.</p>
+
+                    <h3>Turning a Level Into a Graph</h3>
+
+                    <p>No pathfinding algorithm reasons about pixels or 3D geometry directly. The first job is to abstract the walkable world into a <strong>graph</strong>: a set of nodes (places you can be) connected by edges (moves you can make), each edge carrying a cost.</p>
+
+                    <p>The most common representations are a uniform <strong>grid</strong> of square (or hex) tiles, where each walkable tile connects to its neighbors; a <strong>navigation mesh</strong>, which covers open floor with convex polygons and is standard in 3D games because it needs far fewer nodes; and <strong>waypoint graphs</strong>, hand-placed points connected by known-clear links. For my endless runner, a grid was the natural fit - the world was already tile-based, so every cell became a node, blocked cells were simply removed from the graph, and each node linked to its open neighbors.</p>
+
+                    <pre><code>// Each walkable tile is a node; neighbors are the open cells around it.
+// On a grid, "cost" to step to an orthogonal neighbor is 1,
+// and to a diagonal neighbor is ~1.414 (sqrt of 2).
+neighbors(cell):
+    for each of the 4 (or 8) adjacent cells:
+        if in-bounds and not blocked:
+            yield that cell</code></pre>
+
+                    <p>Once the world is a graph, "find a path" becomes the classic computer-science problem of searching a graph from a start node to a goal node - and now we can talk about algorithms.</p>
+
+                    <h3>The Family of Pathfinding Algorithms</h3>
+
+                    <p>They form a natural progression, each fixing a weakness of the last.</p>
+
+                    <p><strong>Breadth-First Search (BFS)</strong> explores outward from the start in rings, one layer of neighbors at a time. On a graph where every step costs the same, it finds the shortest path (fewest steps) and is dead simple. Its weakness: it treats all edges as equal, so it cannot handle terrain where some moves cost more than others (mud slower than road), and it explores blindly in every direction, including away from the goal - wasteful on large maps.</p>
+
+                    <p><strong>Dijkstra's Algorithm</strong> generalizes BFS to weighted graphs. Instead of counting steps, it tracks the cheapest known cost to reach each node and always expands the cheapest-so-far node next. It guarantees the true shortest path even when edges have different costs, which is why it underpins everything from game maps to GPS routing. Its weakness is the same blindness as BFS: it has no notion of where the goal is, so it fans out in all directions equally and can explore an enormous number of nodes before stumbling onto the target.</p>
+
+                    <p><strong>Greedy Best-First Search</strong> attacks that blindness. It uses a <em>heuristic</em> - a cheap estimate of the remaining distance to the goal - and always expands the node that <em>looks</em> closest to the target. This makes it fast and goal-directed, charging straight toward the destination. But it is greedy in the bad sense: it only considers distance-to-go and ignores the cost already paid, so it happily walks into a dead end or takes a longer route that merely started out pointing the right way. It is fast but not optimal.</p>
+
+                    <h3>A*: The Best of Both Worlds</h3>
+
+                    <p>A* (pronounced "A-star") is the algorithm that combines Dijkstra's guarantee of optimality with Greedy's goal-directed speed, and it is why it became the default for game pathfinding. The insight is a single scoring function evaluated at every node:</p>
+
+                    <pre><code>f(n) = g(n) + h(n)
+
+  g(n)  = the actual cost of the path from the start to node n
+  h(n)  = the heuristic estimate of the cost from n to the goal
+  f(n)  = the estimated total cost of a path through n</code></pre>
+
+                    <p>At each step A* expands the node with the lowest <code>f</code>. The <code>g</code> term is Dijkstra's honesty about the cost already spent; the <code>h</code> term is Greedy's sense of direction toward the goal. Together they mean A* pushes toward the target but never forgets the road it took to get there - so it finds the genuinely shortest path while exploring only a fraction of the nodes Dijkstra would.</p>
+
+                    <p>The magic is in the heuristic. As long as <code>h</code> never <em>overestimates</em> the true remaining cost - a property called <strong>admissibility</strong> - A* is guaranteed to return the optimal path. On a grid, the standard admissible heuristics are Manhattan distance (for 4-directional movement) and diagonal/octile distance (for 8-directional). If <code>h</code> is always zero, A* degrades exactly into Dijkstra; the sharper (but still admissible) the heuristic, the fewer nodes A* touches. That tunable trade-off between speed and guaranteed optimality is what makes it so practical.</p>
+
+                    <pre><code>function aStar(start, goal):
+    open = priority queue ordered by f          // frontier to explore
+    gScore = { start: 0 }
+    cameFrom = {}
+    open.push(start, f = h(start, goal))
+
+    while open not empty:
+        current = open.pop()                    // lowest f
+        if current == goal:
+            return reconstruct(cameFrom, goal)
+
+        for neighbor in neighbors(current):
+            tentative = gScore[current] + cost(current, neighbor)
+            if tentative &lt; gScore.get(neighbor, INFINITY):
+                cameFrom[neighbor] = current
+                gScore[neighbor] = tentative
+                f = tentative + h(neighbor, goal)   // g + h
+                open.push(neighbor, f)
+
+    return no path                              // goal unreachable
+
+// Manhattan heuristic for 4-directional grid movement
+function h(a, b):
+    return abs(a.x - b.x) + abs(a.y - b.y)</code></pre>
+
+                    <h3>Why A* Was Right for the Endless Runner</h3>
+
+                    <p>Choosing A* for that 2017 project came down to the specific constraints of the genre.</p>
+
+                    <p><strong>Optimality mattered for believability.</strong> A pursuer that takes a visibly dumb, roundabout route breaks immersion instantly. A* gave me the shortest route every time, so the chasers always looked like they knew where they were going.</p>
+
+                    <p><strong>Performance mattered more, because it is a runner.</strong> Endless runners live and die on frame rate - the world scrolls constantly and you cannot afford a hitch. A* touches dramatically fewer nodes than Dijkstra thanks to the heuristic, so I got optimal paths at a cost the frame budget could absorb. On the tile grid, the Manhattan heuristic was essentially free to compute and kept the search tightly focused toward the player.</p>
+
+                    <p><strong>The grid made it a perfect fit.</strong> The game was already built on tiles, so I did not need a navigation mesh or hand-placed waypoints - the level geometry <em>was</em> the graph. A* on a grid with a Manhattan heuristic is close to the canonical textbook case, which also made it far easier to debug and reason about than a fancier alternative would have been.</p>
+
+                    <p><strong>It was the industry-proven default.</strong> When you are learning, choosing the algorithm that has powered game pathfinding for decades means the largest possible pool of references, optimizations, and battle-tested wisdom to draw on. There was no reason to reinvent when the standard tool fit the problem exactly.</p>
+
+                    <h3>What I Would Add Today</h3>
+
+                    <p>The core would stay A*, but with the optimizations real games layer on top. Recomputing a full path every frame is wasteful when the target only drifts a little - so you throttle re-planning, or reuse and repair the previous path. For many units sharing one destination you would use a <strong>flow field</strong> (compute the direction-to-goal once for the whole map, and every unit just reads its cell) instead of running A* per agent. And you would smooth the raw grid path, which zig-zags along tile edges, into natural-looking movement with steering. But every one of those is a refinement around the same idea: represent the world as a graph, and let <code>f = g + h</code> find the way through.</p>
+
+                    <h3>The Takeaway</h3>
+
+                    <p>Pathfinding is where game AI stops being abstract and starts looking alive. The decision layer chooses the goal; A* is what makes the character reach it convincingly. Understanding the progression from BFS to Dijkstra to Greedy to A* is really understanding one question asked four ways - how do you search a graph efficiently when you have information about where you are trying to go? A* is the answer that has held up for over fifty years, and building it into that endless runner in 2017 taught me more about elegant algorithm design than any lecture ever did.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://bitbucket.org/ZainRaza14/pathfinding/src" target="_blank">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-bitbucket fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Theme JavaScript -->
+    <script src="../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
