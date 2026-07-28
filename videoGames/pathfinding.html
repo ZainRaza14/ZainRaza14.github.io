@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Pathfinding in games - how game AI works, BFS vs Dijkstra vs Greedy vs A*, and why I chose A* for an endless runner. By Syed Zain Raza.">
+    <meta name="description" content="Pathfinding in games - how game AI works, BFS vs Dijkstra vs Greedy vs A*, why I chose A* for NPCs chasing the player in an endless runner, and how it balanced the game. By Syed Zain Raza.">
     <meta name="author" content="">
 
     <title>Syed Zain Raza - Pathfinding and Game AI</title>
@@ -68,7 +68,7 @@
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-                    <p>Back in 2017 I built a pathfinding system for an endless runner. The pursuers in the game needed to chase the player intelligently around obstacles rather than walking blindly into walls, and that small problem opened the door to one of the most satisfying corners of game programming. The source is still up on <a href="https://bitbucket.org/ZainRaza14/pathfinding/src" target="_blank">Bitbucket</a>. This post is the write-up I wish I had when I started it: how AI actually works in games, the family of pathfinding algorithms you can choose from, and why A* was the right call.</p>
+                    <p>Back in 2017 I built a pathfinding system for an endless runner. The NPCs were pursuers, and their whole job was to reach the main character - who was constantly running and weaving through a field of obstacles. They could not simply walk in a straight line at the player; they had to navigate around the same walls and hazards the player was dodging, and keep re-targeting a moving destination that never stood still. Getting that chase to feel intelligent, rather than the enemies bumping uselessly into walls, opened the door to one of the most satisfying corners of game programming. The source is still up on <a href="https://bitbucket.org/ZainRaza14/pathfinding/src" target="_blank">Bitbucket</a>. This post is the write-up I wish I had when I started it: how AI actually works in games, the family of pathfinding algorithms you can choose from, why A* was the right call, and how it quietly made the game <em>balanced</em> - which is what makes a game fun.</p>
 
                     <h3>What "AI" Really Means in a Game</h3>
 
@@ -154,6 +154,25 @@ function h(a, b):
                     <p><strong>The grid made it a perfect fit.</strong> The game was already built on tiles, so I did not need a navigation mesh or hand-placed waypoints - the level geometry <em>was</em> the graph. A* on a grid with a Manhattan heuristic is close to the canonical textbook case, which also made it far easier to debug and reason about than a fancier alternative would have been.</p>
 
                     <p><strong>It was the industry-proven default.</strong> When you are learning, choosing the algorithm that has powered game pathfinding for decades means the largest possible pool of references, optimizations, and battle-tested wisdom to draw on. There was no reason to reinvent when the standard tool fit the problem exactly.</p>
+
+                    <h3>How Pathfinding Balanced the Game</h3>
+
+                    <p>Here is the part I did not expect going in: adding A* did not just make the enemies smarter, it made the whole game <em>balanced</em>. And game balancing matters for one reason above all - it is what makes a game fun to play.</p>
+
+                    <p>A game is fun when it sits in the sweet spot between too easy and too hard. Too easy and the player is bored; too hard and they are frustrated and quit. That narrow, satisfying middle - where the player feels genuinely challenged but always believes they can win - is called <strong>flow</strong>, and balancing is the craft of keeping the game inside it.</p>
+
+                    <p>Before A*, my pursuers were broken in a way that made the game <em>unbalanced in both directions at once</em>. When they got stuck on an obstacle, the game was suddenly too easy - the player could just outrun brainless enemies that trapped themselves on walls. But when an enemy happened to spawn on a clear line to the player, it rushed in unfairly fast, and the game spiked to too hard for no reason the player could read. The difficulty was random and unearned, which is the opposite of fun.</p>
+
+                    <p>A* fixed both ends at once. Because every NPC now took the genuine shortest route around the obstacles, the threat became <strong>consistent and legible</strong>: the pursuers were always a fair, steady pressure behind the player, never trapping themselves and never teleporting into an unfair lead. That consistency is what let me actually <em>tune</em> the game. Once enemy behavior was predictable, difficulty became a set of dials I could turn:</p>
+
+                    <pre><code>Levers I could balance once pathfinding was reliable:
+  - enemy movement speed        (relative to the player's speed)
+  - how often NPCs re-plan      (chase responsiveness vs. giving
+                                 the player room to juke)
+  - obstacle density            (more walls = more escape routes)
+  - number of pursuers          (raising pressure smoothly over time)</code></pre>
+
+                    <p>The key insight: <strong>you cannot balance a system you cannot predict.</strong> Random, buggy AI cannot be tuned, because every playthrough behaves differently. By giving the enemies reliable, optimal movement, A* turned enemy difficulty from noise into a controllable variable - and only then could I dial the game into that fun, fair, "just one more run" zone that an endless runner lives on. The obstacles helped too: because both the player and the pursuers had to route around them, the walls became the player's tool for escape, giving skilled players a way to earn distance through clever movement rather than raw speed. That is balance you can feel - the game is hard, but every death feels fair, and every escape feels earned.</p>
 
                     <h3>What I Would Add Today</h3>
 
