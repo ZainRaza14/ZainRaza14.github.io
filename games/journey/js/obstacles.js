@@ -28,7 +28,7 @@
         but drawn in warm savanna dusk colors. */
     var TYPES = [
         {
-            key: 'spikes', word: 'Fear', w: 46, h: 26,
+            key: 'spikes', word: 'Apnea', w: 46, h: 26,
             draw: function (ctx, o, t, s) {
                 ctx.fillStyle = '#4a2440';
                 ctx.strokeStyle = 'rgba(255, 150, 120, 0.75)';
@@ -55,7 +55,7 @@
             }
         },
         {
-            key: 'crack', word: 'Doubt', w: 58, h: 12,
+            key: 'crack', word: 'Jaundice', w: 58, h: 12,
             draw: function (ctx, o, t, s) {
                 ctx.fillStyle = '#1c0e20';
                 ctx.beginPath();
@@ -93,7 +93,7 @@
             box: function (o, s) { return { x: o.x + 8 * s, y: o.baseY - 4 * s, w: o.w * s - 16 * s, h: 8 * s }; }
         },
         {
-            key: 'smoke', word: 'Anxiety', w: 34, h: 52,
+            key: 'smoke', word: 'Infection', w: 34, h: 52,
             draw: function (ctx, o, t, s) {
                 var puffs = 3 + o.variant;
                 var lean = (prand(o.seed, 1) - 0.5) * 14;
@@ -115,7 +115,7 @@
             box: function (o, s) { return { x: o.x + 6 * s, y: o.baseY - o.h * s * 0.8, w: o.w * s - 12 * s, h: o.h * s * 0.8 }; }
         },
         {
-            key: 'creature', word: 'Despair', w: 34, h: 30,
+            key: 'creature', word: 'Low Oxygen', w: 34, h: 30,
             draw: function (ctx, o, t, s) {
                 var breathe = Math.sin(t * 3 + o.seed * 7) * 2 * s;
                 var cx = o.x + o.w * s / 2;
@@ -169,7 +169,7 @@
             }
         },
         {
-            key: 'thorns', word: 'Anger', w: 40, h: 34,
+            key: 'thorns', word: 'Reflux', w: 40, h: 34,
             draw: function (ctx, o, t, s) {
                 ctx.strokeStyle = '#5c2438';
                 ctx.lineWidth = 3 * s;
@@ -201,7 +201,7 @@
             }
         },
         {
-            key: 'pillar', word: 'Pride', w: 22, h: 56,
+            key: 'pillar', word: 'Low Weight', w: 22, h: 56,
             draw: function (ctx, o, t, s) {
                 function block(bx, by, bw, bh, tilt) {
                     ctx.save();
@@ -231,7 +231,7 @@
             }
         },
         {
-            key: 'barrier', word: 'Greed', w: 30, h: 40,
+            key: 'barrier', word: 'Anemia', w: 30, h: 40,
             draw: function (ctx, o, t, s) {
                 function shard(cx, cy, w, h, rot) {
                     ctx.save();
