@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AI for RevOps - where LLMs genuinely help (call summaries, CRM cleanup, lead research, outreach drafting) and where they do not, with the human-in-the-loop pattern that keeps it safe. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - AI for RevOps</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>AI for RevOps</h1>
+                        <h2 class="subheading">Where LLMs actually help your go-to-market systems - and where they will burn you</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Every RevOps team is being asked the same question this year: what do we do with AI? Most of the answers in circulation are either breathless ("AI will run your whole go-to-market") or dismissive ("it's a toy that hallucinates"). The truth sits where it usually does - in the boring, high-leverage middle. AI is genuinely useful in RevOps today, but only for a specific class of problems, and knowing which is the whole game.</p>
+
+                    <h3>The One Rule: AI Is for Language Work, Not Systems of Record</h3>
+
+                    <p>Large language models are extraordinary at reading, summarizing, drafting, extracting, and classifying unstructured text. They are unreliable at being a source of truth, doing exact math, or taking irreversible action on their own. That single distinction tells you where AI belongs in a GTM stack and where it does not.</p>
+
+                    <p>Use AI to <strong>turn messy language into structure</strong> - a sprawling call transcript into five clean fields, a company website into a firmographic summary, a rambling email thread into a next step. Do not use it as the system that <em>holds</em> those fields, decides quota attainment, or fires the billing event. Salesforce stays the source of truth; AI is the layer that reads and writes language around it, with a human or a validation gate in between.</p>
+
+                    <h3>Where It Pays Off Today</h3>
+
+                    <p><strong>Call and meeting summaries.</strong> The highest-ROI, lowest-risk use in RevOps. Conversation-intelligence tools transcribe a sales call and an LLM produces a structured recap - pain points, competitors mentioned, next steps, risk signals - written back to the opportunity. Reps stop spending twenty minutes on notes they used to skip, and managers finally get consistent, searchable deal context. The failure mode is mild: a slightly off summary a rep can correct, not a corrupted record.</p>
+
+                    <p><strong>CRM data cleanup.</strong> The tedious hygiene work AI is genuinely good at: normalizing job titles ("VP Sales", "V.P. of Sales", "Vice President, Sales" into one), standardizing company names, inferring industry or segment from a domain, deduplicating on fuzzy matches, and flagging records that look stale or wrong. Pair this with your existing <a href="dataHygiene.html">data hygiene</a> process - AI proposes the fix, your rules and a human approve it before it writes.</p>
+
+                    <p><strong>Lead and account research.</strong> Before every call, an SDR needs a picture of the account - what the company does, recent news, likely pain, who the person is. That is hours of manual tab-hopping that an AI research step can compress into a one-paragraph brief attached to the lead. This is the single biggest time-sink you can give back to a sales team.</p>
+
+                    <p><strong>Email and outreach drafting.</strong> Not "AI sends the emails" - AI drafts a first version grounded in the account context, and the rep edits and sends. The value is beating the blank page and personalizing at a scale humans cannot, while keeping a person accountable for what actually goes out.</p>
+
+                    <p><strong>Routing and triage of unstructured inbound.</strong> A contact-us form, a support email, an inbound reply - AI can read intent and sentiment and classify it (sales-ready, support, spam, partnership) far better than keyword rules, feeding your <a href="leadRouting.html">routing</a> logic a cleaner signal to act on.</p>
+
+                    <h3>Where It Does Not Belong (Yet)</h3>
+
+                    <p><strong>Anything that must be exact.</strong> Quota attainment, commission math, forecast roll-ups, revenue recognition - these need deterministic logic, not a probabilistic model. An LLM that is right 95 percent of the time is a disaster for a commission run.</p>
+
+                    <p><strong>Autonomous, irreversible actions.</strong> AI that updates opportunity stages, deletes records, or sends contracts without a human gate will eventually make a confident, expensive mistake. Keep a person or a hard validation between the model and any write that is hard to undo.</p>
+
+                    <p><strong>The system of record itself.</strong> Do not let AI-generated fields silently overwrite trusted data. Land AI output in a staging or "suggested" field, and promote it only after a rule or a human confirms it.</p>
+
+                    <h3>The Pattern That Makes It Safe: Human-in-the-Loop</h3>
+
+                    <p>Almost every successful RevOps AI deployment follows the same shape: <strong>AI proposes, a human (or a deterministic rule) disposes.</strong> The model does the language-heavy 80 percent - the draft, the summary, the suggested cleanup - and a person approves, edits, or rejects before anything becomes official. This keeps the speed of automation and the accountability of a human, and it is the difference between AI that scales trust and AI that quietly erodes it.</p>
+
+                    <pre><code>The safe RevOps AI loop:
+
+  unstructured input  ->  AI reads / drafts / extracts
+                      ->  lands in a SUGGESTED field or draft
+                      ->  human or rule reviews
+                      ->  approved output writes to the system of record</code></pre>
+
+                    <h3>Buy vs. Build, Applied to AI</h3>
+
+                    <p>The <a href="buyVsBuild.html">buy-vs-build</a> logic holds here too. Commodity AI capabilities - transcription, generic summarization, enrichment - buy them; vendors will out-execute an internal version and the feature is not differentiating. Build only where the AI works on <em>your</em> proprietary context and process: a lead-research agent that knows your ICP, a scoring assist tuned to your historical wins, a summarizer that writes into your exact field structure. Own the logic that encodes how your business works; rent the raw model capability underneath.</p>
+
+                    <h3>How to Start Without Betting the Org</h3>
+
+                    <p>Pick one narrow, low-risk, high-toil task - call summaries or pre-call research are the usual first wins. Ship it human-in-the-loop. Measure the boring things: time saved per rep, adoption, and error rate on the AI's output. Only expand once that loop is trusted. The teams that get value from AI in RevOps are not the ones with the grandest strategy - they are the ones who automated one painful language task well, earned trust, and then did it again.</p>
+
+                    <h3>The Takeaway</h3>
+
+                    <p>AI does not replace your GTM systems; it wraps them in a language layer that reads and writes the messy human text those systems were never good at. Keep Salesforce as the source of truth, keep exact math and irreversible actions deterministic, and put AI everywhere there is unstructured language and manual toil - with a human in the loop. Do that, and AI becomes what RevOps has always wanted: leverage, without giving up control.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
