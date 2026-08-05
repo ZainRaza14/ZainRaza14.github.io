@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How reinforcement learning and memory work together - POMDPs, recurrent and attention-based memory, experience replay, prioritization, and meta-learning - and why memory is a powerful lever for AI optimization. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Reinforcement Learning and Memory</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Theme CSS -->
+    <link href="../css/clean-blog.min.css?v=2" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../index.html">Home</a></li>
+                    <li><a href="../about.html">About</a></li>
+                    <li><a href="../blogs.html">Blogs</a></li>
+                    <li><a href="../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="intro-header" style="background-image: url('../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Reinforcement Learning and Memory</h1>
+                        <h2 class="subheading">How agents remember, and why memory is one of the biggest levers in AI optimization</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on August 5th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post Content -->
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>The classic picture of reinforcement learning is an agent that reacts to whatever it sees right now: observe the current state, pick an action, get a reward, repeat. That framing hides one of the most important and underappreciated questions in the whole field - <em>what should the agent remember?</em> The moment a problem depends on the past, memory stops being optional. And once you take memory seriously, it turns out to be one of the most powerful levers we have for making AI systems learn faster, generalize better, and optimize themselves. This post is about how memory and RL fit together, and why that pairing matters far beyond games.</p>
+
+                    <h3>The Markov Assumption, and Where It Breaks</h3>
+
+                    <p>Standard RL rests on a comfortable assumption called the Markov property: the current state contains everything you need to act optimally, so the past can be safely forgotten. In a chessboard position that is true - the board is the state. But the real world is rarely so tidy. A robot with a camera sees only what is in front of it, not what is behind. A trading agent sees the latest price, not the trend that produced it. A dialogue agent hears the last message, not the conversation that gives it meaning.</p>
+
+                    <p>These are <strong>partially observable</strong> problems, formalized as POMDPs (Partially Observable Markov Decision Processes). The single observation is no longer the full state, and an agent that reacts only to the present is flying half-blind. The fix is memory: the agent must summarize its history of observations into an internal state that recovers the information the raw observation is missing.</p>
+
+                    <pre><code>Fully observable (MDP):
+    action = policy(current_observation)
+
+Partially observable (POMDP):
+    memory  = update(memory, current_observation)   // carry the past
+    action  = policy(memory)                          // act on the summary</code></pre>
+
+                    <h3>How Memory Actually Gets Into an RL Agent</h3>
+
+                    <p>Memory in RL shows up at several levels, from crude to sophisticated.</p>
+
+                    <p><strong>Frame stacking.</strong> The simplest trick, and the one that made the original Atari-playing agents work: feed the network the last few frames instead of one. From a single frame you cannot tell which way the ball is moving; from four stacked frames you can. It is memory by brute force - a tiny fixed window of the past bolted onto the input.</p>
+
+                    <p><strong>Recurrent policies.</strong> Give the agent a recurrent network (an LSTM or GRU) so it maintains a hidden state that it updates every step. Now the agent learns <em>what</em> to remember rather than being handed a fixed window. This is how agents handle tasks where the relevant clue appeared many steps ago - a door code seen at the start of a level, a signal that only pays off much later.</p>
+
+                    <p><strong>Attention and Transformers.</strong> Recurrent memory compresses everything into one vector and tends to forget the distant past. Attention-based memory instead keeps a set of past states and lets the agent look back at whichever ones are relevant right now. This is the same mechanism powering large language models, and it has become the backbone of agents that must reason over long horizons.</p>
+
+                    <p><strong>External and episodic memory.</strong> The most explicit form: a separate, addressable memory store the agent can write to and read from - closer to a notebook than a hidden state. Episodic memory lets an agent recall a specific past experience ("I have been in a situation like this before, and this worked"), which is exactly how humans shortcut learning.</p>
+
+                    <h3>Two Kinds of Memory: Within a Task, and Across Tasks</h3>
+
+                    <p>It helps to separate two things people both call "memory."</p>
+
+                    <p><strong>Working memory</strong> is remembering <em>within</em> an episode - holding the door code until you reach the door. That is the POMDP problem above, solved by recurrent or attention-based state.</p>
+
+                    <p><strong>Learned memory</strong> is remembering <em>across</em> episodes - the knowledge baked into the policy's weights by training, plus the replay buffer that stores past experience. This second kind is where memory quietly becomes an <em>optimization</em> tool, and it is the part most people overlook.</p>
+
+                    <h3>Why Memory Is a Superpower for Optimization</h3>
+
+                    <p>Here is the connection to AI optimization that makes this worth caring about.</p>
+
+                    <p><strong>Experience replay makes learning dramatically more sample-efficient.</strong> Instead of learning from each experience once and throwing it away, an RL agent stores transitions in a memory buffer and trains on them many times, in random order. This one idea - remembering and reusing past experience - is what made deep RL practical. It breaks the harmful correlation between consecutive samples and squeezes far more learning out of every interaction. In any setting where collecting data is slow or expensive - robotics, recommendation, real-world control - remembering and reusing experience is the difference between feasible and hopeless.</p>
+
+                    <pre><code>Naive: interact -> learn once -> discard        (wasteful)
+Replay: interact -> store in memory buffer
+        -> sample old experiences repeatedly
+        -> learn many times from each              (efficient)</code></pre>
+
+                    <p><strong>Prioritized memory focuses effort where it matters.</strong> Not all experiences are equally useful. Prioritized experience replay remembers <em>which</em> transitions were most surprising (high learning error) and revisits them more often, so the agent spends its optimization budget on what it still needs to learn rather than on what it already knows. That is memory being used to optimize the learning process itself.</p>
+
+                    <p><strong>Memory enables transfer and meta-learning.</strong> An agent that remembers across tasks does not start from zero each time. Meta-reinforcement learning takes this to its conclusion: the agent uses memory to encode the <em>strategy of learning itself</em>, so that when it meets a new task, its recurrent memory adapts within a few steps instead of requiring a full retraining. Memory turns "learn one task" into "learn how to learn tasks" - the holy grail of optimization, because it amortizes the cost of learning across an entire family of problems.</p>
+
+                    <p><strong>Memory reduces exploration cost.</strong> Exploration - trying things to discover what works - is the most expensive part of RL. Episodic memory lets an agent recognize "I have seen this before" and reuse a known-good action instead of re-exploring, collapsing what would be thousands of trial-and-error steps into a lookup. Remembering is cheaper than rediscovering.</p>
+
+                    <h3>The Connection to Modern AI Agents</h3>
+
+                    <p>This is not academic. The AI agents being built today - the ones that use tools, browse, and carry out multi-step tasks - are RL-flavored systems whose competence lives or dies on memory. Short-term memory (the context window) is their working memory for the current task; long-term memory (retrieval from an external store) is their learned memory across sessions. The same two-tier structure from RL theory reappears exactly. And the same optimization wins apply: an agent that remembers what worked last time does not re-solve solved problems, which is precisely how you make expensive models cheap enough to deploy.</p>
+
+                    <h3>The Takeaway</h3>
+
+                    <p>Memory changes what reinforcement learning can do at two levels. Within a task, it turns a half-blind reactive agent into one that can act on the full arc of its experience, cracking the partial-observability problems that describe almost everything real. Across tasks, it becomes an optimization engine: experience replay for sample efficiency, prioritization for focused learning, meta-learning for transfer, and episodic recall for cheap exploration. The reward hypothesis says all goals can be framed as reward maximization. Memory is what makes that maximization <em>efficient</em> - and efficiency, in the end, is what separates AI that works in a paper from AI that works in the world.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <!-- Theme JavaScript -->
+    <script src="../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
