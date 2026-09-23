@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="How to choose an AI model - a decision framework balancing capability, cost, latency, context window, privacy and control, with the cascade pattern of prototyping on the frontier and shipping on the smallest model that passes. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Choosing a Model</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Choosing a Model</h1>
+                        <h2 class="subheading">A decision framework for picking the right model for the job</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on September 12th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Once you have decided a task genuinely needs a model, the next question is which one, and it is rarely "the biggest, smartest one." Model choice is a multi-dimensional trade-off, and defaulting to the frontier model for everything is how AI features become unaffordable. Here is the framework for choosing deliberately.</p>
+
+                    <h3>The Dimensions You Are Trading Off</h3>
+
+                    <p>There is no best model, only the best model for a specific task under specific constraints. Five dimensions matter:</p>
+
+                    <pre><code>Capability   can it actually do the task well enough?
+Cost         price per call, multiplied by your volume
+Latency      how fast must the answer come back?
+Context      how much input must it read at once?
+Control      privacy, data residency, self-hosting, stability</code></pre>
+
+                    <p>A task's requirements on these dimensions - not the model's leaderboard rank - decide the choice. A high-volume classification with a tight latency budget and a low tolerance for cost points somewhere very different than a once-a-day, deep-reasoning report.</p>
+
+                    <h3>Capability: Only As Much As the Task Needs</h3>
+
+                    <p>The instinct to pick the most capable model is expensive and usually unnecessary. A classification, a short rewrite, or a simple extraction is handled by a small, cheap model at a fraction of the cost and latency. Reserve the flagship for what genuinely requires it: multi-step reasoning, nuanced judgment, hard synthesis. Match the model's strength to the task's difficulty, not to your anxiety about quality - and let your eval set, not your gut, tell you when the smaller model is good enough.</p>
+
+                    <h3>Cost and Latency Are Volume-Dependent</h3>
+
+                    <p>A price difference that is meaningless in a demo becomes the whole business case at scale. Multiply the per-call cost by realistic volume before you commit; a model that is trivially more expensive per call can be ruinous at a million calls a day. Latency works the same way: for a user-facing, real-time feature, a slow flagship model may simply be disqualified regardless of quality, while for an overnight batch job, latency does not matter and you should chase cost instead.</p>
+
+                    <h3>Control: Privacy, Residency, and Stability</h3>
+
+                    <p>Sometimes the deciding factor is not performance at all. If the data cannot leave your environment, a hosted API is off the table and you are choosing among open models you can run yourself. If you need output behavior to stay stable over time, a model you control beats one the vendor silently updates under you. Regulatory and privacy constraints frequently narrow the field before capability is even considered - and that is correct; a slightly weaker model you are allowed to use beats a stronger one you are not.</p>
+
+                    <h3>The Cascade: Prototype High, Ship Low</h3>
+
+                    <p>The practical pattern that resolves most of this: prototype on the most capable model to prove the task is solvable at all, then step down to the smallest, cheapest model that still passes your evals. A common production shape is a cascade - try the cheap model first, and escalate to the expensive one only when a confidence check or validation fails - so the bulk of traffic is handled cheaply and the flagship is reserved for the hard tail. This gives you flagship quality where it matters and small-model economics everywhere else.</p>
+
+                    <h3>The Takeaway</h3>
+
+                    <p>Choosing a model is an engineering and business decision, not a popularity contest. Write down the task's real requirements on capability, cost, latency, context, and control; prototype on the best model to establish the ceiling; then ship on the smallest model that clears your eval bar, escalating only when needed. The teams that do this run AI features profitably; the teams that route everything to the flagship because it is the smartest ship features that work beautifully and lose money on every call.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

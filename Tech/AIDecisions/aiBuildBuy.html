@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The AI build-vs-buy decision - when to use a hosted API, when to buy an AI product, and when to fine-tune or self-host, framed around differentiation, data sensitivity, and total cost of ownership. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Build, Buy, or Fine-Tune</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Build, Buy, or Fine-Tune</h1>
+                        <h2 class="subheading">The build-versus-buy decision, in its AI-specific form</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on September 14th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Every team adopting AI faces a version of the oldest question in software - build or buy - but with an extra option and sharper stakes. Should you call a hosted model API, buy a finished AI product, or invest in fine-tuning and self-hosting your own? Choosing wrong on this axis wastes months and money in one direction or ships something undifferentiated in the other. Here is how to reason about it.</p>
+
+                    <h3>The Three Roads</h3>
+
+                    <p><strong>Buy a product</strong> means adopting a finished AI tool - a coding assistant, a support bot, a note-taker. Fastest to value, least control, and you are not differentiated because your competitor can buy the same thing. <strong>Build on an API</strong> means calling a hosted model and building your own product logic around it. This is the sweet spot for most teams: you get frontier capability without owning the model, and your differentiation lives in the workflow, data, and experience you wrap around it. <strong>Fine-tune or self-host</strong> means training or running your own model. Maximum control and, potentially, cost efficiency at scale, but the heaviest commitment in data, expertise, and maintenance.</p>
+
+                    <h3>The First Question: Is This Differentiating?</h3>
+
+                    <p>If the capability is generic - it works the same at every company - buy it. A calendar-scheduling assistant or a generic transcription tool is not where you win, and building it yourself is reinventing a commodity. Save your building for where your process, data, or customer relationship is genuinely different. The test: would copying a competitor's version of this hurt you? If no, it is a commodity - buy. If yes, it is worth building around.</p>
+
+                    <h3>The Second Question: How Sensitive Is the Data?</h3>
+
+                    <p>Data constraints often make the decision before anything else does. If your data can flow to a vendor under an acceptable agreement, a hosted API is the pragmatic default. If it genuinely cannot leave your environment - regulatory, contractual, or privacy reasons - hosted APIs and third-party products are ruled out, and self-hosting an open model becomes not a preference but a requirement. Answer this early, because it can collapse the whole decision tree.</p>
+
+                    <h3>Why Fine-Tuning Is Usually Premature</h3>
+
+                    <p>Fine-tuning is seductive because it feels like "really" owning the AI, but for most teams it is the wrong first move. It demands a curated dataset, a training and evaluation loop, hosting, and a plan to retrain every time the base model improves or requirements shift. Worse, teams reach for it to inject knowledge, which it does poorly - facts belong in retrieval, not weights. The large majority of "we need to fine-tune" instincts are better served by a good prompt plus retrieval on a hosted API, at a fraction of the cost and with far faster iteration. Fine-tune when you have proven a specific behavior or format gap that prompting and retrieval cannot close, and when a smaller tuned model will meaningfully cut the cost of a high-volume task.</p>
+
+                    <pre><code>Generic capability, not your edge          -> BUY a product
+Your differentiation, data can use an API   -> BUILD on an API  (default)
+Data cannot leave, or extreme scale/control -> SELF-HOST / FINE-TUNE
+Proven format/skill gap + volume to justify -> FINE-TUNE</code></pre>
+
+                    <h3>Count the Real Cost, Not the Sticker Price</h3>
+
+                    <p>Each road hides its true cost. Buying looks cheap until you add integration, the switching cost when the vendor changes, and the fact that you are not differentiated. An API looks cheap per call until you multiply by volume. Self-hosting looks cheap at scale until you count the engineering, the infrastructure, and the ongoing maintenance and retraining. Compare three-year ownership cost, not the first invoice, and weigh it against how much this capability actually matters to your business.</p>
+
+                    <h3>The Layered Answer</h3>
+
+                    <p>These are not mutually exclusive, and mature stacks combine them: buy the commodity tools, build your differentiated product on a hosted API, and reserve self-hosting or fine-tuning for the narrow places where data sensitivity or scale truly demands it. The discipline is to start at the cheapest, fastest option and only move to a heavier one when the lighter one provably cannot meet a real constraint. Own the logic that encodes how your business works; rent the raw model capability underneath it.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

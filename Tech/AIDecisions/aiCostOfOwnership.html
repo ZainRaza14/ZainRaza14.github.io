@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The real cost of an AI feature - the full total cost of ownership beyond inference: evals, human review, monitoring, maintenance and retries - and why cost per successful outcome, not cost per call, is the number that matters. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - The Real Cost of an AI Feature</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>The Real Cost of an AI Feature</h1>
+                        <h2 class="subheading">Total cost of ownership, and why cost-per-call is the wrong number</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on September 16th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>When teams budget an AI feature, they price the model call and stop. That number is a fraction of the real cost, and optimizing it in isolation leads to worse decisions, not better ones. The cost of an AI feature is a total-cost-of-ownership question, and the metric that actually matters is not what you think.</p>
+
+                    <h3>Inference Is the Visible Tip</h3>
+
+                    <p>The per-call price of the model is the one cost everyone sees, so it gets all the attention. It is real - and at scale it compounds fast, which is why caching, routing to smaller models, and prompt trimming matter. But it is the visible tip of a much larger iceberg, and a feature can have cheap inference and ruinous total cost.</p>
+
+                    <h3>The Costs Under the Waterline</h3>
+
+                    <p><strong>Evaluation.</strong> Building and maintaining the eval set, running graders, and reviewing results is ongoing work, not a one-time setup. It is the cost of knowing your feature still works, and it never goes to zero. <strong>Human review.</strong> For anything consequential, a person checks or approves the output. That human time is frequently the single largest line item, dwarfing inference, and it scales with volume. <strong>Monitoring.</strong> Quality drifts as models update and inputs shift; catching that requires instrumentation and someone watching it. <strong>Maintenance.</strong> Prompts rot, models get deprecated, retrieval sources change, and each requires engineering time to keep the feature working. <strong>Retries and failures.</strong> Every wrong answer that triggers a retry, an escalation, or a support ticket has a cost that never appears in the inference bill but is entirely caused by the feature.</p>
+
+                    <pre><code>What teams budget:   inference cost per call
+What it actually is:  inference
+                    + eval set upkeep + grading
+                    + human review time      (often the biggest)
+                    + monitoring & drift detection
+                    + prompt / model maintenance
+                    + cost of wrong answers (retries, escalations, support)</code></pre>
+
+                    <h3>The Metric That Matters: Cost Per Successful Outcome</h3>
+
+                    <p>Here is the key reframe. The right unit is not cost per API call but cost per <em>successful outcome</em> - per resolved ticket, per correct extraction, per satisfied user. This single change flips many decisions. A cheaper model that is wrong more often is not cheaper: it triggers more retries, more human corrections, and more escalations, so its cost per successful outcome can be higher than the "expensive" model that gets it right the first time. You cannot see this if you only track cost per call; you can only see it if you track cost per outcome, with quality and cost measured together.</p>
+
+                    <h3>Why This Changes Decisions</h3>
+
+                    <p>Once you measure cost per outcome, the counterintuitive moves become obvious. Spending more per call on a better model can lower total cost by removing downstream human correction. Investing in evals and prompt quality - pure cost on paper - pays for itself by raising the success rate and shrinking the expensive failure tail. Adding a cheap validation step that catches bad outputs before they reach a human saves far more than it costs. Every one of these looks wasteful through the cost-per-call lens and clearly correct through the cost-per-outcome lens.</p>
+
+                    <h3>The Takeaway</h3>
+
+                    <p>Budget the whole iceberg, not the tip. An AI feature's true cost includes evaluation, human review, monitoring, maintenance, and the price of being wrong - and human review often exceeds inference by a wide margin. Measure cost per successful outcome, not per call, and instrument cost and quality together so you can optimize the ratio rather than blindly minimizing the one number that is easy to see. The teams that do this ship AI that is genuinely economical; the teams that optimize inference in isolation ship features that look cheap in the model bill and quietly cost a fortune everywhere else.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
