@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Should this feature use AI at all - a decision framework for when a model beats deterministic code, when it does not, and why "use AI" is a means, not a goal. A business and engineering decision guide by Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Should This Even Use AI?</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Should This Even Use AI?</h1>
+                        <h2 class="subheading">The first and most-skipped decision in any AI project</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on September 10th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>The most important decision in any AI project is the one teams skip: whether to use AI at all. In a climate where every roadmap has "add AI" written on it, the reflex is to reach for a model first and find the problem later. That is backwards, and it produces expensive, unreliable features that a few lines of ordinary code would have handled better. Before anything else, ask the honest question: does this actually need a model?</p>
+
+                    <h3>AI Is a Means, Not a Goal</h3>
+
+                    <p>"Use AI" is not a product requirement; it is an implementation choice, and often the wrong one. Users do not want AI - they want their problem solved reliably, quickly, and cheaply. If deterministic code solves it, that is almost always the better answer: it is faster, cheaper, testable, predictable, and it never hallucinates. Reaching for a model when a rule would do is choosing a slower, pricier, less reliable tool to look modern. The goal is the outcome; AI is one way to get there and should have to earn its place.</p>
+
+                    <h3>The Test: Is the Problem Fuzzy or Crisp?</h3>
+
+                    <p>The cleanest dividing line is whether the task has a crisp specification or a fuzzy one. If you can write down the rules - if this, then that - use code. Tax is math; a state machine is logic; a lookup is a lookup. But some problems genuinely resist specification: understanding messy natural language, summarizing, judging tone, extracting structure from unstructured text, handling the near-infinite variety of human phrasing. Those are the tasks where writing the rules is impossible and a model earns its cost, because it generalizes over a space you could never enumerate.</p>
+
+                    <pre><code>Can you write the rules down?
+   Yes  -> use code.  It's cheaper, faster, testable, exact.
+   No, but you can show examples of good vs bad output
+        -> AI is a candidate.  The task is fuzzy by nature.
+   No, and you can't even judge good vs bad
+        -> stop. You can't build OR evaluate it yet.</code></pre>
+
+                    <h3>The Cost-of-Wrong Question</h3>
+
+                    <p>Even when a task is fuzzy, ask what a wrong answer costs. AI is probabilistic; it will be wrong some fraction of the time. If the task is high-volume and a mistake is cheap and correctable - a suggested tag, a draft email - AI fits beautifully. If a single wrong answer is catastrophic or irreversible and there is no human check, the probabilistic nature of the model is a liability, not a feature. The right frame is not "can AI do this?" but "can we tolerate AI being wrong at this, and can we catch it when it is?"</p>
+
+                    <h3>The Hybrid Answer Is Usually Best</h3>
+
+                    <p>The false choice is "AI or code." Mature systems use each for what it is good at: deterministic code for the parts that are crisp, exact, and must be right; a model for the narrow fuzzy step in the middle that code cannot express; and validation code wrapped back around the model's output to catch its mistakes. Let AI do the one thing it uniquely can - turn messy language into something structured - and let ordinary software do everything around it. The best AI features are mostly not-AI.</p>
+
+                    <h3>Why This Decision Pays Off</h3>
+
+                    <p>Getting this right early saves enormous cost and pain. Every task you correctly route to deterministic code is a task that is cheaper to run, easier to test, impossible to hallucinate, and simpler to maintain. Every task you correctly route to a model is one where that model's cost buys something real. Teams that ask this question ship features that are both reliable and modern; teams that skip it ship a model where a regex belonged and spend the next year apologizing for it. Before you choose which model, choose whether you need one.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

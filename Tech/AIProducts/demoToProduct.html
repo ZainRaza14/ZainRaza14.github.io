@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Why AI demos are easy and AI products are hard - evals, edge cases, latency, cost, trust, and the unglamorous work that turns a compelling demo into something people rely on. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - From Demo to Product</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>From Demo to Product</h1>
+                        <h2 class="subheading">The 80% of an AI product that nobody sees in the demo</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on September 2nd, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Anyone can build an AI demo now. Wire a model to a prompt, feed it a curated example, and it looks like magic. The gap that has quietly become the hardest problem in software is the distance between that demo and something people can actually depend on. The demo is maybe twenty percent of the work. This is a tour of the other eighty, the part that never makes it into the launch video.</p>
+
+                    <h3>The Demo Runs on Happy Paths; The Product Meets Everyone</h3>
+
+                    <p>A demo shows the model succeeding on the input you chose. A product faces every input real users bring: the typo-ridden query, the adversarial prompt, the question just outside the model's competence, the file in the wrong format, the request in a language you did not test. The demo optimizes for the best case. The product is judged on its worst case, because that is the one users remember and screenshot.</p>
+
+                    <p>Most of the eighty percent is simply confronting that distribution. You cannot hand-pick the input anymore, so you have to build for the long tail of inputs you never imagined.</p>
+
+                    <h3>You Cannot Ship What You Cannot Measure</h3>
+
+                    <p>The single biggest difference between a demo and a product is evaluation. In the demo you eyeball one output and call it good. In the product you need to know, before you ship a change, whether it made things better or worse across thousands of cases you will never read individually. That means an eval set, graders, and a way to compare versions objectively. Teams that skip this ship on vibes, and shipping AI on vibes is how you regress silently and only find out from angry users.</p>
+
+                    <pre><code>Demo:     one input  -> one output  -> "looks great!"
+Product:  eval set   -> graded runs -> "v2 is +6% on faithfulness,
+                                        -2% on latency. Ship?"</code></pre>
+
+                    <h3>Latency and Cost Become Product Constraints</h3>
+
+                    <p>In a demo, nobody cares that the answer took nine seconds and cost a few cents. In a product used a million times a day, those two numbers decide whether the feature is viable at all. Suddenly you are caching, routing simple requests to smaller models, trimming prompts, streaming tokens so the wait feels shorter, and setting hard limits on output length. None of this shows up in the demo, and all of it determines whether the product survives contact with a real bill and a real user's patience.</p>
+
+                    <h3>Trust Is Earned in the Failure Cases</h3>
+
+                    <p>A demo never has to admit it does not know. A product does, constantly. Users forgive a system that says "I am not sure, here is what I found" far faster than one that confidently invents an answer and gets caught. So you build the humility in: grounding answers in retrieved sources, showing confidence or citations, letting users correct and undo, and designing graceful failure instead of a blank screen or a hallucination. The trust layer is invisible in the demo and is the entire product in the long run.</p>
+
+                    <h3>The Unglamorous Scaffolding</h3>
+
+                    <p>Then there is everything around the model that a demo simply does not have: logging every request and output so you can debug and improve, monitoring for quality drift as the model or the data changes, rate limiting and abuse prevention, a feedback mechanism that turns real failures into tomorrow's eval cases, versioning so you can roll back a bad prompt, and a human-in-the-loop path for the cases that must not be wrong. This scaffolding is most of the codebase and none of the pitch.</p>
+
+                    <h3>Why This Matters</h3>
+
+                    <p>The reason so many AI features launch to applause and quietly disappear is that their makers mistook the demo for the product. The demo proves the idea is possible. The product proves it is reliable, affordable, and trustworthy at scale, and that proof is the eighty percent. If you are building with AI, budget your time accordingly: the compelling part is quick, and the part that decides whether anyone still uses it in six months is long, unglamorous, and where all the real engineering lives.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

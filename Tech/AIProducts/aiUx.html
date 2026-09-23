@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AI product UX - designing for non-determinism: setting expectations, streaming, showing confidence and sources, easy correction and undo, and human-in-the-loop, so users trust a system that is sometimes wrong. By Syed Zain Raza.">
+    <meta name="author" content="">
+
+    <title>Syed Zain Raza - Designing UX for Non-Deterministic Systems</title>
+
+    <link href="../../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/clean-blog.min.css?v=2" rel="stylesheet">
+    <link href="../../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="../../index.html">Syed Zain Raza</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../about.html">About</a></li>
+                    <li><a href="../../blogs.html">Blogs</a></li>
+                    <li><a href="../../contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="intro-header" style="background-image: url('../../img/post-bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Designing UX for Non-Deterministic Systems</h1>
+                        <h2 class="subheading">How to design product experiences around a model that is sometimes wrong</h2>
+                        <span class="meta">Posted by <a href="#">Syed Zain Raza</a> on September 4th, 2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <article>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <p>Traditional software is a promise: press the button, get the same result every time. AI products break that promise. The same input can produce different outputs, and some of those outputs are wrong. This is not a bug to be fixed; it is the nature of the technology, and it demands a different kind of interface design. The job of AI product UX is to make a probabilistic system feel trustworthy to people who expect determinism.</p>
+
+                    <h3>Set Expectations Before the First Output</h3>
+
+                    <p>The fastest way to lose a user is to imply certainty you cannot deliver. Framing matters enormously. A feature labeled "AI assistant" or "draft" or "suggestion" primes the user to treat the output as a starting point to refine, which is exactly right. A feature that presents the same output as an authoritative answer sets the user up to be betrayed the first time it is wrong. The words around the model are part of the model's UX.</p>
+
+                    <h3>Make the Wait Feel Like Thinking</h3>
+
+                    <p>AI is slow compared to a database lookup, so latency has to be designed, not hidden. Streaming the output token by token is the single most important pattern: it turns a nine-second blank wait into something that feels like a system thinking out loud, and it lets the user start reading immediately. Showing the intermediate steps of an agent ("searching...", "reading three sources...") does the same job - it converts dead time into visible progress and, as a bonus, into an explanation of how the answer was formed.</p>
+
+                    <h3>Show the Work: Confidence and Sources</h3>
+
+                    <p>Because the system is sometimes wrong, help the user judge when. Grounding answers in citations lets people verify the claim that matters to them. Surfacing confidence, even coarsely, tells the user when to lean in and when to double-check. The goal is not to pretend the model is always right; it is to give the user the signals to know how much to trust <em>this particular</em> answer. A system that shows its sources is forgiven far more than one that asks for blind faith.</p>
+
+                    <h3>Make Correction Effortless</h3>
+
+                    <p>Assume the output will sometimes be wrong and design for the recovery, not just the success. The best AI interfaces make it trivial to edit, regenerate, or undo. If a user can fix a bad output in one gesture, a wrong answer is a minor annoyance. If fixing it means starting over, the same wrong answer is a reason to quit. Editability is the safety net that makes non-determinism tolerable.</p>
+
+                    <pre><code>Design for the failure, not just the win:
+  - Regenerate           try again cheaply
+  - Edit in place        keep the 90% that was right
+  - Undo                 no action is a dead end
+  - "Not helpful?"       one tap that becomes an eval case</code></pre>
+
+                    <h3>Keep a Human in the Loop Where It Counts</h3>
+
+                    <p>For anything consequential - money, medical, legal, anything hard to reverse - the interface should put a person between the model and the outcome. "AI proposes, human approves" is not a limitation to apologize for; it is the pattern that lets you use AI on high-stakes tasks at all. The UX job is to make that approval fast and informed rather than a rubber stamp or a bottleneck.</p>
+
+                    <h3>The Principle Underneath</h3>
+
+                    <p>Every one of these patterns is the same idea in a different place: honesty about uncertainty, paired with easy recovery. Do not hide that the system is probabilistic; design around it. Tell the user what kind of thing they are getting, show your work, make the wait feel productive, and make mistakes cheap to fix. Get that right and users will happily rely on a system that is wrong ten percent of the time, because you have made the ten percent survivable. Get it wrong and they will abandon a system that is wrong one percent of the time, because that one percent felt like a betrayal.</p>
+
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <hr>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                        <li>
+                            <a href="https://x.com/zainraza1110">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.facebook.com/zain.raza.338211">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/ZainRaza14">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fa fa-circle fa-stack-2x"></i>
+                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted">Copyright &copy; Syed Zain Raza 2026</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../../vendor/jquery/jquery.min.js"></script>
+    <script src="../../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../../js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
